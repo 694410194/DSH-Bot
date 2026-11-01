@@ -289,16 +289,6 @@
   background: var(--dsw-alias-bg-layer-1);
   color: var(--dsw-alias-label-primary);
 }
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  background: color-mix(in srgb, var(--dsw-alias-bg-base) 85%, transparent);
-}
 .dialog {
   position: relative;
   margin: 0;
@@ -322,22 +312,6 @@
 .dialogHeader h2 {
   margin: 0;
   font-size: 21px;
-}
-.dialogTitleAction {
-  border: 0;
-  padding: 0;
-  border-radius: 4px;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-.dialogTitleAction:hover {
-  text-decoration: underline;
-}
-.dialogTitleAction:focus-visible {
-  outline: 2px solid var(--dsw-alias-state-business-primary);
-  outline-offset: 3px;
 }
 .dialogDescription {
   margin: 0;
@@ -652,33 +626,7 @@
   overflow-wrap: anywhere;
 }
 
-.managementTabs {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
 
-.managementTabs > button {
-  appearance: none;
-  font: inherit;
-  color: var(--dsw-alias-label-secondary);
-  background: var(--dsw-alias-bg-base);
-  border: 1px solid var(--dsw-alias-border-l3);
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  min-width: 0;
-  max-width: 100%;
-}
-.managementTabs > button[aria-selected="true"] {
-  color: var(--dsw-alias-state-business-primary);
-  border-color: var(--dsw-alias-state-business-primary);
-  background: var(--dsw-alias-bg-layer-1);
-}
-.managementTabs > button:hover { background: var(--dsw-alias-interactive-bg-hover); }
-.managementTabs > button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
 
 .recentList { list-style: none; padding: 0; margin: 12px 0; }
 .recentRow { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--dsw-alias-border-l3); min-width: 0; }
@@ -692,3 +640,5 @@
 .recentMore { flex: 0 0 auto; max-width: 45%; }
 .recentMore summary { cursor: pointer; padding: 8px; }
 .recentMore[open] { display: grid; gap: 4px; }
+
+.sectionNavigation[hidden] { display: none; }

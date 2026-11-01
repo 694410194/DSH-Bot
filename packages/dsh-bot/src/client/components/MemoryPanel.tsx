@@ -1,6 +1,8 @@
+import { SegmentedTabs } from '@deepseek-ai/dsh-client-ui-primitives';
+import { SettingsBotContext } from './SettingsBotContext.js';
 import { SharedMemoryPanel, type SharedMemoryBinding } from './SharedMemoryPanel.js';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
-import { type FormEvent, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { type FormEvent, useEffect, useContext, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { type BotRecord, type MemoryPatch, type MemoryRecord, memoryAddSchema } from '../../shared/schema.js';
 import type { MemoryCatalog } from '../memory-state.js';
 import styles from '../styles/bots.module.css';
@@ -31,6 +33,7 @@ export interface MemoryPanelProps {
  * mutations. No Context, Host service, portal or additional modal is needed here.
  */
 export function MemoryPanel({ bot, catalog, onSave, onUpdate, onRemove, onOpenSession, forgetting, shared, t }: MemoryPanelProps) {
+  const embedded = Boolean(useContext(SettingsBotContext));
   const [managedOpened, setManagedOpened] = useState(false);
   const [scope, setScope] = useState<'legacy' | 'private' | 'shared' | 'quarantine'>('legacy');
   const snapshot = useSyncExternalStore(catalog.subscribe, catalog.getSnapshot, catalog.getSnapshot);
@@ -140,25 +143,24 @@ export function MemoryPanel({ bot, catalog, onSave, onUpdate, onRemove, onOpenSe
 
 
   return (
-    <section className={panel.panel} aria-label={t('memory.title')}>
+    <section data-memory-embedded={embedded || undefined} className={panel.panel} aria-label={t('memory.title')}>
       <style data-dsh-bot-memory-styles="">{css}</style>
-      <div className={styles.actions}>
+      {!embedded && <div className={styles.actions}>
         <BotAvatar bot={bot} size={32} />
         <strong>{bot.name}</strong>
-      </div>
+      </div>}
       {!bot.memory.enabled && <p className={styles.notice}>{t('memory.disabled')}</p>}
       {bot.memory.enabled && bot.persona.complete && <p className={styles.notice}>{t('memory.complete')}</p>}
-      <p className={styles.hint}>{t('memory.sessionNotice')}</p>
-      {shared && <div className={styles.actions} role="tablist" aria-label={t('shared.scopes')}>
-        {(['legacy', 'private', 'shared', 'quarantine'] as const).map(value => <button type="button" role="tab" key={value}
-          className={styles.button} aria-selected={scope === value}
-          onClick={() => { if (value !== 'legacy') setManagedOpened(true); setScope(value); }}>{t(`shared.scope.${value}`)}</button>)}
-      </div>}
+      {shared && <div className={panel.scopeStrip}><SegmentedTabs label={t('shared.scopes')} value={scope}
+        onChange={value => { if (value !== 'legacy') setManagedOpened(true); setScope(value); }}
+        items={(['legacy', 'private', 'shared', 'quarantine'] as const).map(value => ({ value,
+          label: t(`shared.scope.${value}`), id: `${uid}-scope-${value}`, panelId: `${uid}-scope-panel-${value}`,
+        })) as [import('@deepseek-ai/dsh-client-ui-primitives').SegmentedTab<typeof scope>, ...import('@deepseek-ai/dsh-client-ui-primitives').SegmentedTab<typeof scope>[]]} /></div>}
       <RootInstructionsWarning roots={snapshot.roots} t={t} />
-      {shared && managedOpened && <div hidden={scope === 'legacy'}>
+      {shared && managedOpened && <div hidden={scope === 'legacy'} role="tabpanel" id={scope === 'legacy' ? undefined : `${uid}-scope-panel-${scope}`} aria-labelledby={`${uid}-scope-${scope}`}>
         <SharedMemoryPanel binding={shared} scope={scope === 'legacy' ? 'shared' : scope} botId={bot.id} statuses={snapshot.cleanups} t={t} />
       </div>}
-      <div hidden={scope !== 'legacy'}>
+      <div hidden={scope !== 'legacy'} role="tabpanel" id={`${uid}-scope-panel-legacy`} aria-labelledby={shared ? `${uid}-scope-legacy` : undefined}>
       {forgetting && <MemoryCleanupStatus statuses={snapshot.cleanups ?? []} retry={id => perform(
         () => forgetting.retry(id), 'memory.removeError')} t={t} />}
       {forgetId && forgetting && <ForgetPreview key={forgetId} memoryId={forgetId} actions={forgetting}
@@ -244,6 +246,7 @@ export function MemoryPanel({ bot, catalog, onSave, onUpdate, onRemove, onOpenSe
         </div>
       )}
       </div>
+      <details><summary>{t('memory.behavior')}</summary><p className={styles.hint}>{t('memory.sessionNotice')}</p></details>
     </section>
   );
 }

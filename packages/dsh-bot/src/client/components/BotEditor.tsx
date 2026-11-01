@@ -291,6 +291,7 @@ export function BotEditor({
           <label className={styles.field}>
             {t('editor.name')}
             <input
+              data-modal-autofocus
               value={name}
               onChange={(event) => setName(event.target.value)}
               disabled={disabled}
@@ -426,7 +427,7 @@ export function BotEditor({
           </label>
           <p className={styles.hint} data-bots-workspace="" data-effective-cwd={defaultCwd.trim() ? undefined : ''}>
             {t('editor.cwdDefault', {
-              path: botsPath ?? t(workspaceFailed ? 'editor.cwdWorkspaceUnavailable' : 'editor.cwdWorkspaceLoading'),
+              path: botsPath ?? t(!editing ? 'editor.cwdWorkspaceOnCreate' : workspaceFailed ? 'editor.cwdWorkspaceUnavailable' : 'editor.cwdWorkspaceLoading'),
             })}
           </p>
           {defaultCwd.trim() && (

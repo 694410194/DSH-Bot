@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useRef, forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
 export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: string; size?: string; icon?: ReactNode;
@@ -51,4 +51,30 @@ export function observeComposition(document: Document) {
   const start = () => { composing = true; }, end = () => { composing = false; ended = true; }, release = () => { ended = false; };
   document.addEventListener('compositionstart', start); document.addEventListener('compositionend', end); document.addEventListener('keyup', release);
   return { guards(event: KeyboardEvent) { const guarded = composing || ended || event.isComposing || event.keyCode === 229; ended = false; return guarded; }, dispose() { document.removeEventListener('compositionstart', start); document.removeEventListener('compositionend', end); document.removeEventListener('keyup', release); } };
+}
+
+/** Contract doubles only; native portal/keyboard behavior is covered by native-settings-spike.mjs. */
+export const Input = forwardRef<HTMLInputElement, import('react').InputHTMLAttributes<HTMLInputElement>>(function Input(props, ref) { return <input {...props} ref={ref} />; });
+export function Checkbox({ checked, onChange, label, disabled }: { checked: boolean; onChange(value: boolean): void; label: string; disabled?: boolean }) {
+  return <label><input type="checkbox" checked={checked} disabled={disabled} onChange={e => onChange(e.target.checked)} />{label}</label>;
+}
+export function SegmentedTabs({ items, value, onChange, label }: { items: readonly { value: string; label: ReactNode; id: string; panelId: string }[]; value: string; onChange(value: string): void; label: string }) {
+  return <div role="tablist" aria-label={label}>{items.map(item => <button type="button" role="tab" key={item.value} id={item.id} aria-controls={item.panelId} aria-selected={item.value === value} onClick={() => onChange(item.value)}>{item.label}</button>)}</div>;
+}
+export function Modal({ open, title, onClose, children, className }: { open: boolean; title: string; onClose(): void; children?: ReactNode; className?: string; headless?: boolean }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement;
+    (dialog.current?.querySelector<HTMLElement>('[data-modal-autofocus], input:not(:disabled), textarea:not(:disabled), button:not(:disabled)') ?? dialog.current)?.focus();
+    return () => { if (previous instanceof HTMLElement && previous.isConnected) previous.focus(); };
+  }, [open]);
+  return open ? <dialog open ref={dialog} className={className} aria-modal="true" aria-label={title} onCancel={event => { event.preventDefault(); onClose(); }} onKeyDown={event => {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onClose(); }
+    if (event.key === 'Tab') {
+      const fields = [...(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [tabindex="0"]') ?? [])].filter(el => !el.closest('[hidden]'));
+      if (event.shiftKey && document.activeElement === fields[0]) { event.preventDefault(); fields.at(-1)?.focus(); }
+      if (!event.shiftKey && document.activeElement === fields.at(-1)) { event.preventDefault(); fields[0]?.focus(); }
+    }
+  }}>{children}</dialog> : null;
 }

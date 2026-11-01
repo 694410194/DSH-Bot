@@ -946,6 +946,17 @@
     "execution.failed": "本次执行未能完成",
     "execution.allowance": "自动后续执行次数",
     "execution.thinking": "思考过程",
-    "execution.noReasoning": "暂无已提供的思考内容。"
+    "execution.noReasoning": "暂无已提供的思考内容。",
+    "settings.chooseBot": "选择 Bot",
+    "settings.botContext": "Bot 设置",
+    "settings.botUnavailable": "原 Bot 已删除或重建，请重新选择 Bot。",
+    "settings.noBots": "创建 Bot 后可配置它的记忆、连接器与通知。",
+    "settings.allBots": "所有 Bots · 定时任务与执行统计",
+    "settings.globalScope": "全局服务 · 适用于所有 Bots",
+    "connectors.empty": "暂无连接器。添加已安装的服务后，可将它绑定到当前 Bot。",
+    "connectors.sharedDefinitions": "服务定义为全局共享，连接状态与绑定操作属于当前 Bot。",
+    "notifications.emptyPolicies": "此 Bot 暂无通知策略。",
+    "editor.cwdWorkspaceOnCreate": "创建时使用共享 Bots 工作区",
+    "memory.behavior": "记忆如何生效"
   }
 }

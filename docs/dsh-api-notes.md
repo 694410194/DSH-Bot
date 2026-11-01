@@ -1409,3 +1409,12 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 - `starting` 阶段只有预留 child ID；等 `startActivation` 已返回、delivery 进入 running 后才读取。原生 `SessionReference.ready` 可能在读取失败时也 resolve，必须再检查公开 `SessionFace.getSnapshot().openState`，不能把空投影当成没有思考。
 - `uiConversation.binding(reference.binding).target('chat')` 是公开可观察投影；读取 `ChatSnapshot.nodes` 的 `assistant-step` 数据，不解析底层日志或调用模型。引用、异步 readiness 和 React 订阅在收起、卸载、切换时释放或忽略迟到结果。
 - 完整 `conversation.content` 不能在自身内递归。本次只嵌入公开的 root reasoning Factory，不新增聊天容器、发送入口或 SessionProvider 嵌套。用户气泡布局使用插件自己的主题 alias；原生完整用户 row 没有独立的公开 Factory。
+
+## U0/U1：原生设置与基础控件（2026-11-01）
+
+- `@deepseek-ai/dsh-client-ui-primitives` 的公开 `Modal`、`Input`、`Checkbox`、`SegmentedTabs` 已在隔离 rc.2/rc.5 实测。Modal 使用 body portal；初始焦点用 `data-modal-autofocus`，不额外维护 focus trap 或 document Escape。busy 是调用方的 `onClose` 门控；headless 保留业务标题与关闭按钮。
+- `SegmentedTabs` 接受 `{value,label,id,panelId}`，自身管理方向键/选中项 focus，业务方负责 panel 身份与内容；同 Bot 保留面板，跨 `id+createdAt` 更换整棵面板，避免迟到请求影响新编辑器。
+- `Input` 保留 input 属性，官方 `Checkbox.onChange` 接 boolean，且不公开 required。需浏览器 required 校验的明确确认框继续使用原生 HTML input。
+- `@deepseek-ai/dsh-client-ui-settings/client` 的类型增强仅列入精确锁定 devDependency。`settings.section` 的 owner.close 可返回原页，`settings.plugins.tab` 由 Plugins owner 声明；两个 slot 均实测挂载成功，注册进入 `ctx.effect`。
+- `SettingsForm` 在卸载时 discard。`SettingsFormModel` 为配置 namespace 的 revision-fenced staged form；fixture scope 实测保存/拒绝/卸载，不等于生产配置写入验证。Bot、记忆、连接器、通知 CRUD 保留现有 owner/revision 与业务确认，不强行映射为配置文档。
+- 完整运行边界和命令见 [U0/U1 验证记录](verification/native-settings/README.md)。

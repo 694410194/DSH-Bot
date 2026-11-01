@@ -1,6 +1,6 @@
 import { ManagementHeader } from './ManagementHeader.js';
 import { RetainedPanel } from './RetainedPanel.js';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { BotRecord } from '../../shared/schema.js';
 import type { WorkspaceActions } from '../workspace-state.js';
@@ -8,7 +8,7 @@ import type { BotsPageInjected } from '../pages/BotsPage.js';
 import { MemoryPanel } from './MemoryPanel.js';
 import { TransferPanel } from './BotTransferPanel.js';
 import { GraphPanel } from './ReferenceMemoryPanel.js';
-import { Statistics } from './WorkspaceStatistics.js';
+import { SettingsBotContext, useSettingsBot } from './SettingsBotContext.js';
 import styles from '../styles/integrations.module.css';
 import css from '../styles/integrations.module.css?inline';
 type Locale = PropsLocale<'dsh-bot'>;
@@ -22,13 +22,13 @@ export function ManagementPanel({
   actions: WorkspaceActions;
   createMemoryPanel: BotsPageInjected['createMemoryPanel'];
 } & Locale) {
-  const [id, setId] = useState(bots[0]?.id),
-    [tab, setTab] = useState<'records' | 'graph' | 'transfer'>('records');
-  const bot = bots.find((b) => b.id === id) ?? bots[0];
+  const embedded = Boolean(useContext(SettingsBotContext));
+  const [tab, setTab] = useState<'records' | 'graph' | 'transfer'>('records');
+  const { bot, select: setId } = useSettingsBot(bots);
   return (
     <section className={styles.panel} aria-label={t('manage.memoryTools')}>
       <style>{css}</style>
-      <ManagementHeader title={t('manage.memoryTools')} selector={{ bots, value: bot?.id ?? '', onChange: setId }} t={t} />
+      {!embedded && <ManagementHeader title={t('manage.memoryTools')} selector={{ bots, value: bot?.id ?? '', onChange: setId }} t={t} />}
       <div role="tablist" aria-label={t('manage.memoryTools')}>
         {(['records', 'graph', 'transfer'] as const).map((key) => (
           <button type="button" key={key} role="tab" aria-selected={tab === key} onClick={() => setTab(key)}>
@@ -36,7 +36,6 @@ export function ManagementPanel({
           </button>
         ))}
       </div>
-      <Statistics actions={actions} t={t} />
       <RetainedPanel active={tab === 'transfer'}>
         <TransferPanel key={bot ? `${bot.id}:${bot.createdAt}` : 'none'} bot={bot} actions={actions} t={t} />
       </RetainedPanel>

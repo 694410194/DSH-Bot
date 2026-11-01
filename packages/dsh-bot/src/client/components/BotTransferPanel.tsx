@@ -1,3 +1,4 @@
+import { useSettingsDraft } from './SettingsNavigation.js';
 import { TransferPreview } from './TransferPreview.js';
 import { useEffect, useRef, useState } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
@@ -20,6 +21,8 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
     useState<Extract<Awaited<ReturnType<WorkspaceActions['workspace']>>, { ok: true }>['value']>();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(false);
+  const [acceptedDraft, setAcceptedDraft] = useState(JSON.stringify(['', '']));
+  useSettingsDraft(busy || JSON.stringify([document, newId]) !== acceptedDraft);
   const alive = useRef(true);
   useEffect(() => {
     alive.current = true;
@@ -69,7 +72,9 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
                   }),
                 );
                 if (alive.current && r.kind === 'export') {
-                  setDocument(JSON.stringify(r.document, null, 2));
+                  const text = JSON.stringify(r.document, null, 2);
+                  setDocument(text);
+                  setAcceptedDraft(JSON.stringify([text, newId]));
                   invalidate();
                 }
               });
@@ -169,7 +174,7 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
                     confirmed: true,
                   }),
                 );
-                if (alive.current) setPreview(r);
+                if (alive.current) { setPreview(r); setAcceptedDraft(JSON.stringify([document, newId])); }
               } catch (error) {
                 const r = unwrap(
                   await actions.workspace({

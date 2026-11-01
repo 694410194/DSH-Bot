@@ -23,7 +23,7 @@ export function draftQualifiers(rows: ManagedDraft['qualifiers']): Record<string
 /** Volatile per-scope drafts. Nothing containing memory text is written to browser storage. */
 export function memoryDrafts() {
   const drafts = new Map<string, ManagedDraft>();
-  return { get: (scope: string) => drafts.get(scope),
+  return { hasDrafts: () => drafts.size > 0, get: (scope: string) => drafts.get(scope),
     put(scope: string, draft?: ManagedDraft) { if (draft) drafts.set(scope, draft); else drafts.delete(scope); },
     clear: () => drafts.clear() };
 }

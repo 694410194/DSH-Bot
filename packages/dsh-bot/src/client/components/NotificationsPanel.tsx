@@ -1,11 +1,15 @@
-import { useSettingsDraft } from './SettingsNavigation.js';
-import { useState } from 'react';
+import { Button, Input, Checkbox } from '@deepseek-ai/dsh-client-ui-primitives';
+import { useSettingsDraft, useSettingsLeave } from './SettingsNavigation.js';
+import { useState, useId } from 'react';
 import { type NotificationPolicy, sameBot } from '../../shared/integrations.js';
 import { IntegrationFrame, useIntegrationPanel, type IntegrationPanelProps } from './IntegrationFrame.js';
 export function NotificationsPanel(props: IntegrationPanelProps) {
   const { actions, t, onOpenSession } = props;
   const state = useIntegrationPanel(actions, props.bots);
   const { data, bot, owner, busy, perform, setError } = state;
+  const uid = useId();
+  const leave = useSettingsLeave();
+  const [editing, setEditing] = useState(false);
   const [policy, setPolicy] = useState<NotificationPolicy>();
   const [policyEnabled, setPolicyEnabled] = useState(true);
   const [policyId, setPolicyId] = useState('');
@@ -40,11 +44,12 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
   ]);
   const formValue = JSON.stringify([policyId, policyEnabled, channel, target, timezone, start, end, limit, cooldown, preapproved]);
   const [savedForm, setSavedForm] = useState(formValue);
-  useSettingsDraft(formValue !== savedForm || Boolean(testText));
+  useSettingsDraft((editing && formValue !== savedForm) || Boolean(testText));
   const confirmed = confirmation === scopeDraft;
   const setConfirmed = (value: boolean) => setConfirmation(value ? scopeDraft : undefined);
   const editPolicy = (p?: NotificationPolicy) => {
     setSavedForm(JSON.stringify([p?.id ?? '', p?.enabled ?? true, p?.channel ?? 'in-app', p?.targetRef ?? '', p?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone, p?.quietHours?.start ?? '', p?.quietHours?.end ?? '', String(p?.dailyLimit ?? data.defaults.dailyLimit), String(p?.cooldownSec ?? data.defaults.cooldownSec), p?.authorization.mode === 'preapproved']));
+    setEditing(true);
     setPolicy(p);
     setPolicyEnabled(p?.enabled ?? true);
     setPolicyId(p?.id ?? '');
@@ -85,7 +90,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
         {data.notifications
           .filter(
             (r) =>
-              (!owner || sameBot(r.owner, owner)) &&
+              (owner && sameBot(r.owner, owner)) &&
               (filter === 'all' ||
                 (filter === 'unread' && r.readAt === undefined) ||
                 filter === r.state ||
@@ -101,7 +106,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
                 {t(`notifications.${r.state}`)} {r.reasonCode ?? ''}
               </p>
               {r.readAt === undefined && (
-                <button
+                <Button
                   type="button"
                   disabled={busy}
                   onClick={() => {
@@ -109,37 +114,38 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
                   }}
                 >
                   {t('notifications.markRead')}
-                </button>
+                </Button>
               )}
               {r.source.sessionId && (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     void perform(() => onOpenSession(r.source.sessionId ?? ''));
                   }}
                 >
                   {t('notifications.openSession')}
-                </button>
+                </Button>
               )}
             </li>
           ))}
       </ul>
       <h3>{t('notifications.policies')}</h3>
+      {!data.policies.some(p => owner && sameBot(p.owner, owner)) && <p>{t('notifications.emptyPolicies')}</p>}
       <ul>
         {data.policies
           .filter((p) => owner && sameBot(p.owner, owner))
           .map((p) => (
             <li key={p.id}>
-              <button type="button" onClick={() => editPolicy(p)}>
+              <Button type="button" disabled={busy} onClick={() => leave(() => editPolicy(p))}>
                 {p.id} · {p.channel} · v{p.revision}
-              </button>
+              </Button>
             </li>
           ))}
       </ul>
-      <button type="button" onClick={() => editPolicy()}>
+      <Button variant="primary" type="button" disabled={busy || !owner} onClick={() => leave(() => editPolicy())}>
         {t('notifications.newPolicy')}
-      </button>
-      <form
+      </Button>
+      {editing && <form
         onSubmit={(e) => {
           e.preventDefault();
           if (!owner) return;
@@ -168,13 +174,15 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
             );
             setPolicy(p);
             setSavedForm(formValue);
+            setEditing(false);
             setConfirmed(false);
           });
         }}
       >
-        <label>
+        <fieldset disabled={busy}>
+        <label htmlFor={`${uid}-NotificationsPanel-1`}>
           {t('integrations.id')}
-          <input required disabled={Boolean(policy)} value={policyId} onChange={(e) => setPolicyId(e.target.value)} />
+          <Input id={`${uid}-NotificationsPanel-1`} required disabled={Boolean(policy)} value={policyId} onChange={(e) => setPolicyId(e.target.value)} />
         </label>
         <label>
           {t('notifications.channel')}
@@ -184,50 +192,44 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
           </select>
         </label>
         {channel === 'im' && (
-          <label>
+          <label htmlFor={`${uid}-NotificationsPanel-2`}>
             {t('notifications.target')}
-            <input value={target} required onChange={(e) => setTarget(e.target.value)} />
+            <Input id={`${uid}-NotificationsPanel-2`} value={target} required onChange={(e) => setTarget(e.target.value)} />
           </label>
         )}
-        <label>
+        <label htmlFor={`${uid}-NotificationsPanel-3`}>
           {t('notifications.timezone')}
-          <input required value={timezone} onChange={(e) => setTimezone(e.target.value)} />
+          <Input id={`${uid}-NotificationsPanel-3`} required value={timezone} onChange={(e) => setTimezone(e.target.value)} />
         </label>
-        <label>
+        <label htmlFor={`${uid}-NotificationsPanel-4`}>
           {t('notifications.quietStart')}
-          <input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+          <Input id={`${uid}-NotificationsPanel-4`} type="time" value={start} onChange={(e) => setStart(e.target.value)} />
         </label>
-        <label>
+        <label htmlFor={`${uid}-NotificationsPanel-5`}>
           {t('notifications.quietEnd')}
-          <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+          <Input id={`${uid}-NotificationsPanel-5`} type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
         </label>
         <p>{t('notifications.quietHint')}</p>
-        <label>
+        <label htmlFor={`${uid}-NotificationsPanel-6`}>
           {t('notifications.dailyLimit')}
-          <input type="number" min="0" max="1000" value={limit} onChange={(e) => setLimit(e.target.value)} />
+          <Input id={`${uid}-NotificationsPanel-6`} type="number" min="0" max="1000" value={limit} onChange={(e) => setLimit(e.target.value)} />
         </label>
-        <label>
+        <label htmlFor={`${uid}-NotificationsPanel-7`}>
           {t('notifications.cooldown')}
-          <input type="number" min="0" max="86400" value={cooldown} onChange={(e) => setCooldown(e.target.value)} />
+          <Input id={`${uid}-NotificationsPanel-7`} type="number" min="0" max="86400" value={cooldown} onChange={(e) => setCooldown(e.target.value)} />
         </label>
-        <label>
-          <input type="checkbox" checked={policyEnabled} onChange={(e) => setPolicyEnabled(e.target.checked)} />
-          {t('notifications.enablePolicy')}
-        </label>
-        <label>
-          <input type="checkbox" checked={preapproved} onChange={(e) => setPreapproved(e.target.checked)} />
-          {t('notifications.preapproved')}
-        </label>
+        <Checkbox checked={policyEnabled} onChange={setPolicyEnabled} label={t('notifications.enablePolicy')} />
+        <Checkbox checked={preapproved} onChange={setPreapproved} label={t('notifications.preapproved')} />
         {preapproved && (
           <label>
             <input type="checkbox" required checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
             {t('notifications.confirmScope')}
           </label>
         )}
-        <button type="submit" disabled={busy || !owner}>
-          {t('integrations.save')}
-        </button>
-      </form>
+        <Button variant="primary" type="submit" disabled={busy || !owner}>{t('integrations.save')}</Button>
+        <Button disabled={busy} onClick={() => leave(() => { setEditing(false); setPolicy(undefined); setTestText(''); })}>{t('actions.cancel')}</Button>
+        </fieldset>
+      </form>}
       {policy && owner && (
         <>
           <label>
@@ -247,7 +249,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
             <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
             {t('notifications.confirmSend')}
           </label>
-          <button
+          <Button
             type="button"
             disabled={busy || !confirmed || !testText}
             onClick={() => {
@@ -275,8 +277,8 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
             }}
           >
             {t('notifications.test')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => {
               setRetryOf(testRequest?.id);
@@ -285,7 +287,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
             }}
           >
             {t('notifications.newAttempt')}
-          </button>
+          </Button>
         </>
       )}
     </IntegrationFrame>

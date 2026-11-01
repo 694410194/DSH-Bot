@@ -1,3 +1,4 @@
+import { useSettingsDraft } from './SettingsNavigation.js';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { DshBotMemoryRemoteMethods } from '../../shared/remote-contract.js';
 import type { MemoryQuery, ManagedMemoryRow, MemoryResolve } from '../../shared/memory-management.js';
@@ -22,6 +23,7 @@ export function SharedMemoryPanel({ binding, scope, botId, statuses, t }: {
   const [busy, setBusy] = useState(false), [error, setError] = useState(false), [confirming, setConfirming] = useState<ManagedMemoryRow>();
   const [forget, setForget] = useState<{ row: ManagedMemoryRow; contribution: boolean }>();
   const [cleanups, setCleanups] = useState<Parameters<typeof MemoryCleanupStatus>[0]['statuses']>([]);
+  useSettingsDraft(busy || drafts.current.hasDrafts());
   const [comparison, setComparison] = useState<{ revision: number; content: string }>();
   useEffect(() => { if (statuses) setCleanups(statuses); }, [statuses]);
   const life = useRef(0), active = useRef(false), currentScope = useRef(scope);

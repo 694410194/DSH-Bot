@@ -1,0 +1,21 @@
+.workspace {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding-top: 12px;
+}
+.workspace > header { max-width: 32rem; }
+.workspace select {
+  font: inherit;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-layer-1);
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+}
+.workspace p { color: var(--dsw-alias-label-secondary); }
+.tabStrip { overflow-x: auto; min-width: 0; padding: 4px; }
+.tabStrip > div { min-width: max-content; }
+.tabStrip button { min-height: 44px; }
+.tabStrip [role="status"] { display: inline-flex; align-items: center; gap: 4px; margin-inline-start: 6px; }

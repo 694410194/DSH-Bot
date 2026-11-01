@@ -30,3 +30,9 @@
 7. 无真实模型、无桌面安装、无依赖升级；所有运行目录在仓库 .dsh-dev，公共 API 记录入 docs/dsh-api-notes.md。
 
 U2–U4、群聊算法、详情页大改与真实 IM/Teams 验收不在本 PR 范围。
+
+## 实施结果
+
+U0/U1 已实现，见 [验证记录](../docs/verification/native-settings/README.md)。原生 Modal、Input、Checkbox、SegmentedTabs 已接入；设置 owner 与 SettingsForm 的运行边界已记录。Bot CRUD 继续使用既有业务 Remote。
+
+本地验收 1–7 已通过（第 6 项的 GitHub CI 以 Draft PR #13 当前提交为准）；没有执行桌面安装、真实模型或 U2–U4。源码树检查与包含历史未跟踪审查材料的工作目录检查分别报告。

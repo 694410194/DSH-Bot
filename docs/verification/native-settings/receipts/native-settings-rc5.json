@@ -1,0 +1,53 @@
+{
+  "label": "rc5",
+  "checks": [
+    "Modal initial focus",
+    "Tab remains in native modal",
+    "Menu consumes first Escape",
+    "Nested modal / return focus",
+    "Caller busy close guard",
+    "Native tab keyboard selection",
+    "SettingsForm staged revision-fenced save",
+    "Refused save retains draft",
+    "Unmount discards draft",
+    "Themes and 1440/768/390 no horizontal overflow",
+    "Modal return focus",
+    "Both settings slot owners available",
+    "Plugins tab mounts through public slot",
+    "Settings section renders and owner.close returns to prior page"
+  ],
+  "receipt": {
+    "section": true,
+    "plugins": true,
+    "mutations": [
+      {
+        "ops": [
+          {
+            "op": "set",
+            "path": [
+              "title"
+            ],
+            "value": "changed"
+          }
+        ],
+        "revision": 7
+      },
+      {
+        "ops": [
+          {
+            "op": "set",
+            "path": [
+              "title"
+            ],
+            "value": "refuse"
+          }
+        ],
+        "revision": 8
+      }
+    ],
+    "discarded": 2
+  },
+  "errors": [],
+  "modelRequests": 10,
+  "scope": "Real platform APIs; synthetic SettingsForm scope, not Host config writes"
+}

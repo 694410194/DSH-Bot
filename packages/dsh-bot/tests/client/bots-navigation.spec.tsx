@@ -87,6 +87,7 @@ it('does not substitute a recreated group into an open detail', async () => {
 it('protects unsaved connector settings when returning or changing the selected Bot', async () => {
   const app = await mount(bots);
   await click(settingsButton(app));
+  await click(button(app.container, en.ui['connectors.newConnector']));
   await fill(field(app.container, en.ui['integrations.label']), 'Unsaved connector');
   await click(settingsButton(app));
   expect(app.container.querySelector('dialog')?.textContent).toContain(en.ui['navigation.unsaved']);
@@ -101,13 +102,14 @@ it('protects unsaved connector settings when returning or changing the selected 
   await click(button(requireValue(app.container.querySelector('dialog')), en.ui['navigation.discardLeave']));
   expect(app.container.querySelector('h1')?.textContent).toBe(en.ui['bots.title']);
   await click(settingsButton(app));
-  expect(field(app.container, en.ui['integrations.label']).value).toBe('');
+  expect(app.container.querySelector('form')).toBeNull();
   expect(app.remote.connectors.saveDefinition).not.toHaveBeenCalled();
 });
 
 it('saved HTTP connector credentials do not cause a false unsaved warning', async () => {
   const app = await mount(bots);
   await click(settingsButton(app));
+  await click(button(app.container, en.ui['connectors.newConnector']));
   await fill(field(app.container, en.ui['integrations.id']), 'saved-connector');
   await fill(field(app.container, en.ui['integrations.label']), 'Saved connector');
   await fill(field(app.container, en.ui['connectors.url']), 'https://example.test/mcp');
