@@ -53,8 +53,8 @@ await write('MJ-CJM__DSH-Bot--packages-dsh-bot.yml', [
   'name: MJ-CJM/DSH-Bot#dsh-bot',
   'category: workflow',
   'description:',
-  '  en: Personal Bots with memory, workspace group chats and native background tasks for DeepSeek Harness.',
-  '  zh: 在 DeepSeek Harness 中提供具备记忆的个人 Bot、工作区群聊和原生后台任务。',
+  '  en: Personal agents with persistent memory, multi-Bot group collaboration and native background tasks for DeepSeek Harness.',
+  '  zh: DeepSeek Harness 个人智能体插件，支持持久记忆、多 Bot 群聊协作和原生后台任务。',
   'icon: https://raw.githubusercontent.com/MJ-CJM/DSH-Bot/main/packages/dsh-bot/assets/icon-256.png',
   `tarball: ${stableDownload}`, '',
 ].join('\n'));

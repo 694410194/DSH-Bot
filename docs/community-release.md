@@ -96,8 +96,8 @@ url: https://github.com/MJ-CJM/DSH-Bot/tree/main/packages/dsh-bot
 name: MJ-CJM/DSH-Bot#dsh-bot
 category: workflow
 description:
-  en: Personal Bots with memory, workspace group chats and native background tasks for DeepSeek Harness.
-  zh: 在 DeepSeek Harness 中提供具备记忆的个人 Bot、工作区群聊和原生后台任务。
+  en: Personal agents with persistent memory, multi-Bot group collaboration and native background tasks for DeepSeek Harness.
+  zh: DeepSeek Harness 个人智能体插件，支持持久记忆、多 Bot 群聊协作和原生后台任务。
 tarball: https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz
 ```
 
@@ -116,7 +116,7 @@ tarball: https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz
 1. 审阅并合入准备改动，最终 tag 必须指向与候选包一致的源码；若 `release.json` 记录了 dirty 工作树，核对其改动确实包含在该提交中。
 2. 创建版本 Release，上传候选目录中的两个同字节 `.tgz`、`SHA256SUMS`、`dsh-bot.tgz.sha256`、`release.json` 和填写实际结果的发布说明。上传完成前保留草稿；审核后公开，稳定版本才设为 latest。预发布标记为 prerelease，不让它接管稳定入口。不要把 Actions artifact 的页面当作插件下载地址，也不要覆盖旧 tag 的安装包。
 3. 从公开固定版本 URL 和 `https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz` 重新下载包，确认 latest 对应预期 tag，并核对两包 SHA256 相同。版本包使用 `SHA256SUMS`；固定名称包使用同一 Release 的 `dsh-bot.tgz.sha256`，两份校验文件各只含对应的一个文件，单独下载任一包都可校验。发布过程中应从已解析的同一 tag 下载包与校验文件，避免跨版本混用。
-4. 仓库 About 增加 `dsh-plugin` topic。建议简介：`Personal agents with memory and workspace group chats for DeepSeek Harness.` 可另加 `deepseek-harness`、`ai-agents`、`mcp`；npm keywords 不能代替 GitHub topics。
+4. 仓库 About 保留 `dsh-plugin`、`deepseek-harness`、`ai-agents`、`mcp`，补充 `personal-agent`、`multi-agent`、`bot` topics。建议简介：`Personal agents with memory and workspace group chats for DeepSeek Harness.` GitHub topics 可多选，但不是社区 YAML 标签；条目仍只填 `category: workflow`，不添加不受支持的 `tags` 或 `categories` 字段。npm keywords 不能代替 GitHub topics。
 5. 确认 GitHub 私密漏洞报告或其他私密渠道实际可用后更新 SECURITY.md；不要把一个未确认可用的地址当作支持承诺。
 6. 首次将生成的 YAML 放进社区目录 `data/plugins/` 后单独开 PR；已有申请直接更新原 PR。采用固定 `latest/download/dsh-bot.tgz` 后，后续常规发版无需更新目录，只在描述、分类或仓库位置等条目信息变化时提 PR。不提交生成的目录 README。
 
