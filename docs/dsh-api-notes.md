@@ -1422,3 +1422,9 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 ## U2：页内详情与共享身份（2026-11-01）
 
 继续复用 U0 已验证的公开 Button、Input、Menu、SegmentedTabs、Modal；新增公开 `Toast` 用于短暂成功反馈，错误仍保留在编辑表单中。其声明 `text/onDone` 从 ui-primitives 根入口核实；不导入内部详情或模型选择器。真实 rc.5 页内导航、Modal 草稿确认、50 Bot 列表、84 个主题/语言/尺寸页面已运行，见 [U2 验证](verification/ui-completion/U2.md)。完整 rc.2 与最终产物组合验证留到 U4。
+
+## U3/U4：过程菜单与设置收敛（2026-11-01）
+
+新增复用公开 `JsonBlock`，从 ui-primitives 根导出核对 `label/payload/defaultOpen/truncatedLabel`；rc.2/rc.5 实际下载和预览导出 JSON 已验证。其余 Menu、Button、Checkbox、SegmentedTabs 沿用 U0 API，SegmentedTab 必须提供唯一 `id/panelId` 并关联外部 panel；不仿制键盘导航。Toast 实际页内保存成功显示通过。原生 Menu 的 Escape、补充后焦点、准确停止单成员与另一成员继续运行均在两个 Host 组合验证。完整证据见 [U2–U4 验收](verification/ui-completion/README.md)。
+
+没有新增 Host API/依赖，也未修改真实模型、权限、IM 门控。完整 child 会话公开 factory 无安全裁剪派发 prompt 的参数，继续只读原生呈现；不得以 DOM 删除、日志改写或私有组件替代。

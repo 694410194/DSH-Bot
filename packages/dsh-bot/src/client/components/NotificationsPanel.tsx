@@ -1,4 +1,4 @@
-import { Button, Input, Checkbox } from '@deepseek-ai/dsh-client-ui-primitives';
+import { Button, Input, Checkbox, SegmentedTabs } from '@deepseek-ai/dsh-client-ui-primitives';
 import { useSettingsDraft, useSettingsLeave } from './SettingsNavigation.js';
 import { useState, useId } from 'react';
 import { type NotificationPolicy, sameBot } from '../../shared/integrations.js';
@@ -8,6 +8,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
   const state = useIntegrationPanel(actions, props.bots);
   const { data, bot, owner, busy, perform, setError } = state;
   const uid = useId();
+  const [section, setSection] = useState<'records' | 'policies'>('records');
   const leave = useSettingsLeave();
   const [editing, setEditing] = useState(false);
   const [policy, setPolicy] = useState<NotificationPolicy>();
@@ -49,7 +50,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
   const setConfirmed = (value: boolean) => setConfirmation(value ? scopeDraft : undefined);
   const editPolicy = (p?: NotificationPolicy) => {
     setSavedForm(JSON.stringify([p?.id ?? '', p?.enabled ?? true, p?.channel ?? 'in-app', p?.targetRef ?? '', p?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone, p?.quietHours?.start ?? '', p?.quietHours?.end ?? '', String(p?.dailyLimit ?? data.defaults.dailyLimit), String(p?.cooldownSec ?? data.defaults.cooldownSec), p?.authorization.mode === 'preapproved']));
-    setEditing(true);
+    setSection('policies'); setEditing(true);
     setPolicy(p);
     setPolicyEnabled(p?.enabled ?? true);
     setPolicyId(p?.id ?? '');
@@ -72,10 +73,12 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
         editPolicy(); setTestText(''); setTestRequest(undefined); setRetryOf(undefined);
       }}
     >
-      <p>{t('notifications.scheduleHint')}</p>
-      {Boolean(bot?.channels.length) && <p>{t('notifications.legacyChannels')}</p>}
-      <p>{t('notifications.desktopUnsupported')}</p>
-      {!data.imSupported && <p>{t('notifications.imUnsupported')}</p>}
+      <div>
+        <SegmentedTabs label={t('notifications.notifications')} value={section} onChange={setSection} items={[{ value: 'records', id: `${uid}-records`, panelId: `${uid}-records-panel`, label: t('notifications.records') }, { value: 'policies', id: `${uid}-policies`, panelId: `${uid}-policies-panel`, label: t('notifications.policies') }]} />
+        <Button variant="primary" disabled={busy || !owner} onClick={() => leave(() => editPolicy())}>{t('notifications.newPolicy')}</Button>
+      </div>
+      <section role="tabpanel" id={`${uid}-records-panel`} aria-labelledby={`${uid}-records`} hidden={section !== 'records'} aria-label={t('notifications.records')}>
+      {!data.notifications.some(r => owner && sameBot(r.owner, owner) && (filter === 'all' || (filter === 'unread' && r.readAt === undefined) || filter === r.state || (filter === 'failed' && r.state === 'unknown'))) && <p>{t('notifications.emptyRecords')}</p>}
       <label>
         {t('notifications.filter')}
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
@@ -129,6 +132,12 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
             </li>
           ))}
       </ul>
+      </section>
+      <section role="tabpanel" id={`${uid}-policies-panel`} aria-labelledby={`${uid}-policies`} hidden={section !== 'policies'} aria-label={t('notifications.policies')}>
+      <p>{t('notifications.scheduleHint')}</p>
+      <p>{t('notifications.desktopUnsupported')}</p>
+      {!data.imSupported && <p>{t('notifications.imUnsupported')}</p>}
+      {Boolean(bot?.channels.length) && <details><summary>{t('settings.diagnostics')}</summary><p>{t('notifications.legacyChannels')}</p></details>}
       <h3>{t('notifications.policies')}</h3>
       {!data.policies.some(p => owner && sameBot(p.owner, owner)) && <p>{t('notifications.emptyPolicies')}</p>}
       <ul>
@@ -142,9 +151,6 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
             </li>
           ))}
       </ul>
-      <Button variant="primary" type="button" disabled={busy || !owner} onClick={() => leave(() => editPolicy())}>
-        {t('notifications.newPolicy')}
-      </Button>
       {editing && <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -290,6 +296,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
           </Button>
         </>
       )}
+      </section>
     </IntegrationFrame>
   );
 }

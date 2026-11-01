@@ -1,3 +1,4 @@
+import { Button } from '@deepseek-ai/dsh-client-ui-primitives';
 import { useState } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 type Locale = PropsLocale<'dsh-bot'>;
@@ -23,22 +24,21 @@ export function CopyView({
   return (
     <section aria-label={t('graph.copy')}>
       <p>{t(`graph.phase-${copy.phase}`)}</p>
-      <p>
-        {t('graph.file')}: {copy.targetFileIdentity}.jsonl
-      </p>
+      <p>{t('graph.copyHint')}</p>
       <p>
         {t('graph.verifiedCount', {
           count: copy.records.filter((r) => r.status === 'verified').length,
           total: copy.records.length,
         })}
       </p>
+      <details><summary>{t('settings.diagnostics')}</summary><p>{t('graph.file')}: {copy.targetFileIdentity}.jsonl</p>
       <ul>
         {copy.records.map((r) => (
           <li key={r.memoryId}>
             {r.memoryId} · {t(`graph.record-${r.status}`)}
           </li>
         ))}
-      </ul>
+      </ul></details>
       <label>
         <input
           type="checkbox"
@@ -47,17 +47,17 @@ export function CopyView({
         />
         {t('graph.confirmCount', { count: copy.records.length })}
       </label>
-      <button
+      <Button
         type="button"
         disabled={busy || confirmed !== signature || !['preview', 'staging', 'failed'].includes(copy.phase)}
         onClick={stage}
       >
         {t('graph.stage')}
-      </button>
-      <button type="button" disabled={busy || copy.phase !== 'verified'} onClick={commit}>
+      </Button>
+      <Button type="button" disabled={busy || copy.phase !== 'verified'} onClick={commit}>
         {t('graph.commit')}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         disabled={
           busy || copy.phase === 'rolled-back' || (copy.phase === 'committed' && status?.binding?.importId !== copy.id)
@@ -65,7 +65,7 @@ export function CopyView({
         onClick={rollback}
       >
         {t('graph.rollback')}
-      </button>
+      </Button>
     </section>
   );
 }

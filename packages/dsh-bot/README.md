@@ -28,7 +28,11 @@ Screenshots / 界面截图（isolated Web Host, synthetic demo data / 隔离 Web
 
 - Create with a name, then chat in the native workspace. Lasting role changes use native approval. / 输入名称创建并聊天；长期职责修改走原生审批。
 - Create groups by selecting Bots; use mentions, replies, attachments, individual stops and per-member model settings. / 选成员建群，支持提及、引用、附件、单项停止和逐成员模型。
-- Manage memory in Bots → Manage. Tools are `bot_memory_save`, `bot_memory_search`, `bot_memory_list` and `bot_memory_forget`, without old `memory_*` aliases. Only explicit user actions publish shared content. / 在管理页管理记忆，旧工具名无别名，共享须用户明确确认。
+- Open Profile → Memory, or Plugin settings → Memory & transfer. Tools are `bot_memory_save`, `bot_memory_search`, `bot_memory_list` and `bot_memory_forget`, without old `memory_*` aliases. Only explicit user actions publish shared content. / 在资料 → 记忆或插件设置 → 记忆与导入导出中管理记忆，旧工具名无别名，共享须用户明确确认。
+
+- Profile opens an inline page with overview, tasks/messages, memory, settings and history. Returning restores the list position. / 资料打开页内详情，含概览、任务与消息、记忆、设置和历史，返回保留列表位置。
+- Each group question owns a collapsed execution row. Expand for native member reasoning; member menus supplement or stop one Bot, while stopping the whole discussion is separate. / 每个群聊问题下有可折叠过程，展开查看原生成员思考；成员菜单可补充或停止单个 Bot，整轮停止独立显示。
+- Notifications separate history from policies. Export JSON uses a native inspector; import requires preview and conflict checks before confirmation. / 通知记录与策略分开；导出使用原生 JSON 展示，导入必须预览并检查冲突后确认。
 
 ## Boundaries / 边界
 

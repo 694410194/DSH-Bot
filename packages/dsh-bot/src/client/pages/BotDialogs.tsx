@@ -1,3 +1,4 @@
+import { Button, Checkbox, Input } from '@deepseek-ai/dsh-client-ui-primitives';
 import { botIdSchema } from '../../shared/ids.js';
 import { BotEditor } from '../components/BotEditor.js';
 import { Modal } from '../components/Modal.js';
@@ -82,47 +83,31 @@ export function BotDialogs({ page, model }: { page: BotsPageProps; model: BotsPa
             {deleteChanged && <p role="alert" className={styles.error}>{deletionText('delete.changed')}</p>}
             {deletingRunning && <p role="alert" className={styles.warning}>{deletionText('delete.running')}</p>}
             <p>{deletionText('delete.tasks')}</p>
-            <p>{deletionText('delete.workspaceRetained')}</p>
+            <p className={styles.warning}>{t('delete.history')}</p>
+            <p className={styles.warning}>{t('manage.deleteImpact')}</p>
             {memoryCount.count !== undefined ? (
               <p>{t('delete.memoryCount', { count: memoryCount.count })}</p>
             ) : memoryCount.failed ? (
               <div role="alert" className={styles.error}>
                 <p>{t('delete.countError')}</p>
-                <button type="button" className={styles.button} onClick={() => setCountAttempt((value) => value + 1)}>
+                <Button type="button" className={styles.button} onClick={() => setCountAttempt((value) => value + 1)}>
                   {t('actions.retry')}
-                </button>
+                </Button>
               </div>
             ) : (
               <p role="status">{t('delete.countLoading')}</p>
             )}
-            <label className={styles.checkboxField}>
-              <input
-                type="checkbox"
-                checked={deleteMemories}
-                disabled={busy}
-                onChange={(event) => setDeleteMemories(event.target.checked)}
-              />
-              {t('delete.memories')}
-            </label>
+            <Checkbox checked={deleteMemories} disabled={busy} onChange={setDeleteMemories} label={t('delete.memories')} />
             <p className={styles.warning}>{t(deleteMemories ? 'delete.memoriesWarning' : 'delete.keepMemories')}</p>
-            <label className={styles.checkboxField}>
-              <input
-                type="checkbox"
-                checked={deleteHome}
-                disabled={busy}
-                onChange={(event) => setDeleteHome(event.target.checked)}
-              />
-              {t('delete.home')}
-            </label>
+            <Checkbox checked={deleteHome} disabled={busy} onChange={setDeleteHome} label={t('delete.home')} />
             <p className={styles.warning}>{t(deleteHome ? 'delete.homeWarning' : 'delete.keepHome')}</p>
-            <p className={styles.warning}>{t('delete.history')}</p>
-            <p className={styles.warning}>{t('manage.deleteImpact')}</p>
+            <details><summary>{t('settings.diagnostics')}</summary><p>{deletionText('delete.workspaceRetained')}</p></details>
           </div>
           <footer className={styles.dialogFooter}>
-            <button type="button" className={styles.button} disabled={busy} onClick={() => setDialog(undefined)}>
+            <Button type="button" className={styles.button} disabled={busy} onClick={() => setDialog(undefined)}>
               {t('actions.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               className={styles.dangerButton}
               disabled={busy || memoryCount.count === undefined || deleteChanged || deletingRunning || Boolean(snapshot.error) || snapshot.loading}
@@ -135,7 +120,7 @@ export function BotDialogs({ page, model }: { page: BotsPageProps; model: BotsPa
               }}
             >
               {t('actions.delete')}
-            </button>
+            </Button>
           </footer>
         </Modal>
       )}
@@ -160,7 +145,7 @@ export function BotDialogs({ page, model }: { page: BotsPageProps; model: BotsPa
               <p>{t('duplicate.description', { name: dialog.bot.name })}</p>
               <label className={styles.field} htmlFor={copyInput}>
                 {t('duplicate.id')}
-                <input
+                <Input
                   id={copyInput}
                   value={copyId}
                   disabled={busy}
@@ -176,12 +161,12 @@ export function BotDialogs({ page, model }: { page: BotsPageProps; model: BotsPa
               )}
             </div>
             <footer className={styles.dialogFooter}>
-              <button type="button" className={styles.button} disabled={busy} onClick={() => setDialog(undefined)}>
+              <Button type="button" className={styles.button} disabled={busy} onClick={() => setDialog(undefined)}>
                 {t('actions.cancel')}
-              </button>
-              <button type="submit" className={styles.primaryButton} disabled={busy}>
+              </Button>
+              <Button type="submit" className={styles.primaryButton} disabled={busy}>
                 {t('duplicate.action')}
-              </button>
+              </Button>
             </footer>
           </form>
         </Modal>

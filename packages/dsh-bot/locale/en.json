@@ -976,6 +976,18 @@
     "detail.clearSearch": "Clear search",
     "execution.viewDetails": "View execution",
     "execution.memberActions": "Actions for {name}",
-    "execution.advanced": "Execution limits & diagnostics"
+    "execution.advanced": "Execution limits & diagnostics",
+    "notifications.records": "Notification history",
+    "notifications.emptyRecords": "No notifications match this view.",
+    "settings.diagnostics": "Technical details",
+    "settings.howItWorks": "How it works",
+    "team.distinction": "A native Team delegates work within one Bot. A group chat brings independent Bots into the same discussion.",
+    "team.nextStep": "Continue in the Bot conversation, or use Groups for discussion between Bots. Refresh here after the host enables the Team service.",
+    "im.nextStep": "IM binding and sending are unavailable in this host. Continue with in-app conversations and notifications; refresh after a compatible IM service is enabled.",
+    "manage.import": "Import",
+    "manage.exportJson": "Export JSON (advanced)",
+    "manage.chooseFile": "Choose a JSON file (up to 1 MB)",
+    "manage.jsonTruncated": "Preview shortened; download the complete file ({count} characters).",
+    "execution.stopTurn": "Stop entire discussion"
   }
 }

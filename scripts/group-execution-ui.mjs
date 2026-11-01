@@ -110,6 +110,18 @@ try {
       }
       check('live concurrent reasoning follows each actual child', await liveProcess.count() === 2);
       const liveCount = host.requests();
+      const liveCard = liveQuestion.locator('[data-group-execution-card]').first();
+      const memberMenu = liveCard.getByRole('button', { name: new RegExp(t['execution.memberActions'].replace('{name}', '.+')) });
+      await memberMenu.click(); await page.getByRole('menu').waitFor();
+      await page.keyboard.press('Escape'); await page.getByRole('menu').waitFor({ state: 'hidden' });
+      check('native member menu supports Escape without stopping a task', host.requests() === liveCount);
+      await draft.fill('Keep this supplement draft');
+      await memberMenu.click(); await page.getByRole('menuitem', { name: t['groups.supplement'], exact: true }).click();
+      check('member supplement focuses existing composer without sending', await draft.evaluate(el => el === document.activeElement) && await draft.inputValue() === 'Keep this supplement draft' && host.requests() === liveCount);
+      await memberMenu.click(); await page.getByRole('menuitem', { name: t['execution.stopMember'], exact: true }).click();
+      await liveCard.getByText(t['execution.memberStopped'], { exact: true }).waitFor();
+      check('member stop leaves the other member running', await liveQuestion.locator('[data-group-execution-card]').filter({ hasText: t['groups.running'] }).count() === 1);
+
       await liveProcess.first().locator('[data-disclosure-row]').click();
       await liveQuestion.scrollIntoViewIfNeeded();
       await page.screenshot({ path: resolve(dir, 'live-members.png'), fullPage: true });
@@ -117,7 +129,7 @@ try {
       await liveDisclosure.click(); check('folding releases inline member views', await liveProcess.count() === 0);
       await liveDisclosure.click(); await liveProcess.nth(1).waitFor();
       check('reopening live reasoning does not execute models', host.requests() === liveCount);
-      await liveQuestion.getByRole('button', { name: t['groups.cancelTurn'], exact: true }).click();
+      await liveQuestion.getByRole('button', { name: t['execution.stopTurn'], exact: true }).click();
     }
     await context.close(); page = undefined;
   }
