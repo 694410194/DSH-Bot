@@ -13,7 +13,9 @@
 
 ## 当前状态
 
-- [ ] A：实际原生 API 及内嵌浏览器收据
-- [ ] B：并发与多轮
-- [ ] C：执行过程与控制
-- [ ] D：完整检查、CI 及验收
+- [x] A：rc.2 / rc.5 原生 Host 与原生过程 UI 实测。
+- [x] B：并发、持久续聊、busy inbox、自然空闲、额度暂停/继续、单成员停止。
+- [x] C：同屏原生过程面板、只读与草稿保留，中英/明暗/桌面/窄屏验证。
+- D：本地完整检查、冷恢复、超过五分钟的实跑、候选包验收均 PASS；线上 CI 结果见 [PR #10 当前 head 的 checks](https://github.com/MJ-CJM/DSH-Bot/pull/10/checks)。
+
+具体命令、失败尝试、收据与验收边界见 [验收报告](../docs/verification/group-collaboration/report.md)。

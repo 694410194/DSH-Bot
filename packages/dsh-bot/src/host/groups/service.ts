@@ -66,6 +66,8 @@ export class Groups {
   cancel(...args: Parameters<GroupTurns['cancel']>) {
     return this.turns.cancel(...args);
   }
+  continueTurn(...args: Parameters<GroupTurns['continueTurn']>) { return this.turns.continueTurn(...args); }
+  stopMember(...args: Parameters<GroupTurns['stopMember']>) { return this.turns.stopMember(...args); }
   archive(...args: Parameters<GroupTurns['archive']>) {
     return this.turns.archive(...args);
   }
@@ -74,7 +76,8 @@ export class Groups {
       this.state.stopped = true;
       this.state.shutdownPhase = 'draining-workers';
       this.state.startup.abort();
-      for (const c of this.state.controllers.values()) c.abort();
+      for (const c of this.state.controllers.values()) c.abort('host-unloaded');
+      for (const wake of this.state.wakeTurns.values()) wake();
       // Pending workers check stopped before starting. Drain all callers before roots and preset.
       const errors: unknown[] = [];
       const attempt = async (fn: () => unknown) => {
@@ -93,6 +96,7 @@ export class Groups {
       this.state.shutdownPhase = 'disposing-roots';
       for (const a of this.state.activations.values()) await attempt(() => a.dispose());
       for (const h of this.state.roots.values()) {
+        await attempt(async () => this.state.ctx.subagents.drainChildren(h.agent, (await this.state.ctx.subagents.listChildren(h.agent.id)).map(c => c.id)));
         await attempt(() => this.roots.flush(h));
         await attempt(() => this.roots.release(h));
       }

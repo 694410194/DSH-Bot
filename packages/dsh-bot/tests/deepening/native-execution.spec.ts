@@ -120,7 +120,14 @@ describe('native execution: real ToolRuntime + native provider doubles + real JS
     expect(Config({}).nativeToolPolicy).toBe('native');
     expect(Config({ nativeToolPolicy: 'restricted' }).nativeToolPolicy).toBe('restricted');
     expect(() => Config({ nativeToolPolicy: 'all' as 'native' })).toThrow();
-    expect(Config({}).groupMaxContinuations).toBe(8);
+    expect(Config({}).groupMaxContinuations).toBe(32);
+    expect(Config({}).groupConcurrentMembers).toBe(4);
+    expect(Config({}).groupRoundTimeoutMs).toBe(300000);
+    expect(Config({}).groupTaskTimeoutMs).toBe(0);
+    expect(Config({}).groupMemberTimeoutMs).toBe(0);
+    expect(() => Config({ groupConcurrentMembers: 0 })).toThrow();
+    expect(() => Config({ groupConcurrentMembers: 1.5 })).toThrow();
+    expect(() => Config({ groupRoundTimeoutMs: -1 })).toThrow();
     expect(() => Config({ groupMaxContinuations: 1.5 })).toThrow();
   }));
 

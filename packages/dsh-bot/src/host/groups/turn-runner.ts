@@ -1,3 +1,4 @@
+import { ConcurrentGroups } from './concurrent.js';
 import { workerReservations } from './worker-tool.js';
 import { randomUUID } from 'node:crypto';
 import { SessionId } from '@deepseek-ai/dsh-session';
@@ -19,11 +20,12 @@ import type { GroupState } from './state.js';
 import type { GroupRoots } from './roots.js';
 import type { GroupMessages } from './messages.js';
 export class GroupTurnRunner {
+  private concurrent: ConcurrentGroups;
   constructor(
     private state: GroupState,
     private roots: GroupRoots,
     private messages: GroupMessages,
-  ) {}
+  ) { this.concurrent = new ConcurrentGroups(state, roots, messages, this); }
   /** Called inside the service queue. A delivery receipt is the durable acceptance point. */
   async enqueue(t: GroupTurn, memberId: string, triggerMessageId: string, id: string, returnMemberId?: string, requestDigest?: string) {
     const old = this.state.table('deliveries').get(id);
@@ -32,20 +34,23 @@ export class GroupTurnRunner {
       return old;
     }
     const g = this.state.record(t.group), rows = this.state.deliveries(t.id);
-    if (this.state.cancelledTurns.has(t.id) || terminal(need(this.state.table('turns').get(t.id))) ||
-      Date.now() >= t.createdAt + this.state.registry.config.groupRoundTimeoutMs) throw new OperationError('unavailable');
-    if (rows.length >= t.orderedMemberIds.length + this.state.registry.config.groupMaxContinuations) throw new OperationError('invalid');
+    const timeout = t.protocol === 2 ? this.state.registry.config.groupTaskTimeoutMs : this.state.registry.config.groupRoundTimeoutMs;
+    if (this.state.cancelledTurns.has(t.id) || (terminal(need(this.state.table('turns').get(t.id))) && !(t.protocol === 2 && this.state.table('turns').get(t.id)?.state === 'paused')) ||
+      (timeout > 0 && Date.now() >= t.createdAt + timeout)) throw new OperationError('unavailable');
+    if (t.protocol !== 2 && rows.length >= t.orderedMemberIds.length + this.state.registry.config.groupMaxContinuations) throw new OperationError('invalid');
+    if (t.protocol === 2 && rows.some(row => row.memberId === memberId && row.state === 'unknown')) throw new OperationError('recovery-needed');
     if (g.membershipRevision !== t.membershipRevision) throw new OperationError('conflict');
     const member = this.state.members(g).find(m => m.id === memberId && m.enabled && m.removedAt === undefined);
     if (!member) throw new OperationError('invalid');
     const bot = await this.state.bot(member.bot), status = need((await this.state.registry.status()).find(s => s.id === bot.id));
     const row: GroupDelivery = { id, turnId: t.id, memberId, ordinal: rows.length, bot: member.bot,
       botRevision: bot.updatedAt, presetId: status.presetId, triggerMessageId, returnMemberId, requestDigest,
-      contextOutputMessageIds: [], contextTruncated: false, state: 'pending' };
+      contextOutputMessageIds: [], contextTruncated: false, state: 'pending', ...(t.protocol === 2 ? { automatic: true } : {}) };
     await this.state.putDelivery(row);
     return row;
   }
   async groupMessage(agent: Agent, binding: WorkerBinding, input: z.output<typeof groupToolInput>, callId: string, signal: AbortSignal) {
+    if (this.state.table('turns').get(binding.turnId)?.protocol === 2) return this.concurrent.message(agent, binding, input, callId, signal);
     return this.state.queue.run(async () => {
       signal.throwIfAborted();
       const t = need(this.state.table('turns').get(binding.turnId)), g = this.state.record(t.group),
@@ -100,7 +105,8 @@ export class GroupTurnRunner {
         signal.aborted ||
         !member?.enabled ||
         member.removedAt !== undefined ||
-        g.archived
+        g.archived ||
+        this.state.table('turns').get(t.id)?.stoppedMemberIds?.includes(d.memberId)
       ) {
         await this.state.putDelivery({ ...d, state: 'cancelled' });
         return;
@@ -115,7 +121,7 @@ export class GroupTurnRunner {
       const previous = this.state
         .turns(g).filter(prior => prior.id === t.id || t.predecessorTurnIds?.includes(prior.id))
         .flatMap(prior => this.state.deliveries(prior.id))
-        .filter((row) => row.ordinal < d.ordinal || row.turnId !== t.id)
+        .filter((row) => t.protocol === 2 ? row.turnId !== t.id : row.ordinal < d.ordinal || row.turnId !== t.id)
         .filter((d) => d.outputMessageId)
         .map((d) => need(messages.find((m) => m.id === d.outputMessageId)));
       const participantNames = await Promise.all(
@@ -137,8 +143,14 @@ export class GroupTurnRunner {
         [...previous, ...messages.filter(m => m.id === (d.triggerMessageId ? question.replyTo : t.replyTo))],
         this.state.registry.config.groupContextMaxBytes,
       );
+      if (t.protocol === 2 && d.automatic) {
+        const current = need(this.state.table('turns').get(t.id));
+        if ((current.automaticExecutions ?? 0) >= (current.continuationAllowance ?? 0)) return;
+        await this.state.putTurn({ ...current, automaticExecutions: (current.automaticExecutions ?? 0) + 1 });
+      }
       await this.state.putDelivery({
         ...d,
+        startedAt: Date.now(),
         state: 'starting',
         contextOutputMessageIds: context.outputIds,
         contextTruncated: context.truncated,
@@ -206,17 +218,25 @@ export class GroupTurnRunner {
       await this.state.putDelivery({
         ...d,
         state,
+        endedAt: Date.now(),
         ...output,
         stopReason: result.stopReason,
         ...(state !== 'completed' && state !== 'skipped'
           ? {
-              reasonCode: signal.aborted ? 'cancelled-or-timeout' : text.trim() ? 'partial-output' : 'empty-or-failed',
+              reasonCode: signal.aborted ? String(signal.reason ?? 'user-stop') : text.trim() ? 'partial-output' : 'empty-or-failed',
             }
           : {}),
       });
-      if (state === 'completed' && output && d.returnMemberId &&
+      if (t.protocol === 2 && state === 'completed' && output && !this.state.cancelledTurns.has(t.id) && g.membershipRevision === t.membershipRevision) {
+        const requests = [d, ...this.state.deliveries(t.id).filter(row => row.joinedDeliveryId === d.id && row.reasonCode === 'inbox-accepted')];
+        for (const request of requests) if (request.returnMemberId && !this.state.table('turns').get(t.id)?.stoppedMemberIds?.includes(request.returnMemberId)) {
+          const next = await this.enqueue(need(this.state.table('turns').get(t.id)), request.returnMemberId, output.outputMessageId, `group-return:${digest(request.id)}`);
+          await this.concurrent.returnToActive(t, next, text, d.memberId, signal);
+        }
+      }
+      if (t.protocol !== 2 && state === 'completed' && output && d.returnMemberId &&
         this.state.deliveries(t.id).length < t.orderedMemberIds.length + this.state.registry.config.groupMaxContinuations &&
-        Date.now() < t.createdAt + this.state.registry.config.groupRoundTimeoutMs && g.membershipRevision === t.membershipRevision)
+        (this.state.registry.config.groupRoundTimeoutMs === 0 || Date.now() < t.createdAt + this.state.registry.config.groupRoundTimeoutMs) && g.membershipRevision === t.membershipRevision)
         await this.enqueue(t, d.returnMemberId, output.outputMessageId, `group-return:${digest(d.id)}`);
       if (state === 'completed' && output) {
         await this.state.putGroup({
@@ -233,7 +253,7 @@ export class GroupTurnRunner {
     const inputAdmission = new AbortController();
     this.state.inputAdmissions.set(d0.id, inputAdmission);
     this.state.controllers.set(d0.id, controller);
-    const timer = setTimeout(() => controller.abort(), Math.max(1, deadline - Date.now()));
+    const timer = Number.isFinite(deadline) ? setTimeout(() => controller.abort('configured-timeout'), Math.max(1, deadline - Date.now())) : undefined;
     let activation: SubagentActivation | undefined;
     let reservedChild: string | undefined;
     let disposal: Promise<void> | undefined;
@@ -324,6 +344,7 @@ export class GroupTurnRunner {
   }
   async execute(id: string) {
     let t = need(this.state.table('turns').get(id));
+    if (t.protocol === 2) return this.concurrent.execute(id);
     if (terminal(t)) {
       this.state.cancelledTurns.delete(id);
       return;
@@ -331,7 +352,7 @@ export class GroupTurnRunner {
     await this.state.queue.run(async () => {
       t = await this.state.putTurn({ ...t, state: 'running' });
     });
-    const deadline = t.createdAt + this.state.registry.config.groupRoundTimeoutMs;
+    const deadline = this.state.registry.config.groupRoundTimeoutMs ? t.createdAt + this.state.registry.config.groupRoundTimeoutMs : Infinity;
     for (;;) {
       const d0 = this.state.deliveries(id).find(d => d.state === 'pending');
       if (!d0) break;

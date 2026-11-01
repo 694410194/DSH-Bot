@@ -40,7 +40,7 @@ export class GroupRoots {
             state: d.state === 'pending' ? 'cancelled' : 'unknown',
             reasonCode: 'host-restarted',
           });
-        if (!terminal(t) || unresolved.some((d) => d.state !== 'pending'))
+        if (!terminal(t) || t.state === 'paused' || unresolved.some((d) => d.state !== 'pending'))
           await this.state.putTurn({ ...t, state: 'recovery_needed' });
       }
       if (g.state === 'creating') {

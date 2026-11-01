@@ -6,7 +6,7 @@ import type { DshBotRegistry } from '../registry.js';
 import { unknownLabel } from './labels.js';
 import type { ManagedOutlets } from './outlets.js';
 import { nativePolicy } from './native-policy.js';
-import { isOwnedGroupTool } from '../groups/worker-tool.js';
+import { isOwnedGroupTool, isAdmittedGroupInput } from '../groups/worker-tool.js';
 
 /** Missing real Host infrastructure fails closed; older isolated unit fixtures have no memory kernel. */
 export function outlets(registry: DshBotRegistry): ManagedOutlets | undefined {
@@ -55,6 +55,8 @@ export function protectDataFlow(agent: Agent, bot: BotKey, registry: DshBotRegis
           else await flow.inherit(agent.session.id, unknownLabel());
         } else if ((message.source as { kind: string }).kind === 'schedule') {
           if (!await inheritOwnSchedule(agent, bot, registry, flow)) await flow.inherit(agent.session.id, unknownLabel());
+        } else if (isAdmittedGroupInput(agent, message)) {
+          // Already inherited by the exact-content parent bridge before native delivery.
         } else if (!['user', 'runtime-context', 'dsh-bot-message', 'dsh-bot-message-sent',
           'dsh-bot-message-wake', 'dsh-bot-group', 'dsh-bot-delegate'].includes(message.source.kind)) {
           await flow.inherit(agent.session.id, unknownLabel());

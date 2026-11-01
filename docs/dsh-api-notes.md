@@ -1383,3 +1383,14 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 - 群选中状态与一次性打开请求分离：请求序号消费后清除，目录刷新不重新触发导航。视图选中身份同时包含 ID 和 createdAt，避免误开同 ID 重建对象。
 - 一级页、群身份、列表搜索和滚动只保存在客户端插件生命周期内，ctx.effect 卸载时清空；未提交设置和凭据不写浏览器存储。插件内离开设置及管理页切换 Bot 使用已有 Modal 确认；不拦截宿主级侧栏切换或浏览器前后退。
 - 原生面板重挂载恢复一级页位置；当前设置表单不承诺跨宿主面板卸载、进程重启恢复。真实模型、运行中群成员和新的并发机制没有在本阶段浏览器用例中执行。
+
+### 2026-11-01 — A–D 群聊并发与原生执行面板
+
+- 当前约定的参考源码目录不存在；本次以已安装公开 rc.2 npm 包的声明/README 和隔离 Host 运行收据核实，不把发布包查阅写成源码 tag 验证。
+- `subagents.startActivation` 的 `result` / `dispose` 仅绑定一次激活。`sendMessage(parent, childId, content, { signal })` 支持 busy Steer 和 idle/cold 同 childId 续聊，后续结果必须匹配新的公开 `subagent/start` / `subagent/end` 的 `runId`；结束事件提供 `lastAssistantMessage`。旧 handle 的 disposer 不影响后续激活。
+- Native `sendMessage` 保留真实 parent `agent-message` 来源。rc.2/rc.5 的公开消息事件在内容前添加 `Agent <sender-id> sent a message: ` 文本块。群桥接先持久准入并继承标签，再登记包含该原生头的精确内容 hash；pre-step 同时检查当前 worker reservation、parent id、内容 hash。未知来源/改写内容不扩展共享权限。该表示若在未来版本改变会保守拒绝，不能用宽泛 source 白名单绕过。
+- `interrupt(childId, { kind: 'ancestor', agent: root })` 只发停止信号，未消费 inbox 可能保留；取消结束后对该 child 使用公开 `drainChildren` 清理驻留执行。只读 `listChildren(root.id)` 不启动模型。全部注册和 session 引用受 `ctx.effect` 生命周期管理。
+- `conversation.content` 工厂不能在自身内递归，即便更换 SessionProvider。采用同屏公开 `sidebarRightTabs.register` + `sidebar.right.pane.tab`，在父 entry 的 `children` 声明后注册自定义 session slot，再通过 `sessions.retain` 和 SessionProvider 展示实际 child。公开 `conversation.blocks` 与 composer chain 保证没有绕过群调度的直接发送框。
+- A 的原始空 preset API fixture 与真实 Bot preset 的 B/C 集成验证分开；原始 API 成功不能替代群权限、结果归属和数据流检查。
+
+详见 [A 实测说明](verification/group-collaboration/native-api.md)及 [实现与验收](verification/group-collaboration/report.md)。

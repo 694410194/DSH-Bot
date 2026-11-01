@@ -11,6 +11,9 @@ export interface Config extends MessagingConfig, ShadowConfig {
   nativeToolPolicy: 'native' | 'restricted';
   groupMaxContinuations: number;
   groupConcurrentTurns: number;
+  groupConcurrentMembers: number;
+  groupMemberTimeoutMs: number;
+  groupTaskTimeoutMs: number;
   memoryGrantTtlMs: number;
   autoShareEnabled: boolean;
   autoShareBotDaily: number;
@@ -62,6 +65,12 @@ const baseConfig = Schema.object({
     return value;
   }).default(200),
   nativeToolPolicy: Schema.union(['native', 'restricted']).default('native'),
+  groupConcurrentMembers: Schema.transform(Schema.number().min(1).max(16), value => {
+    if (!Number.isSafeInteger(value)) throw new TypeError('groupConcurrentMembers must be an integer');
+    return value;
+  }).default(4),
+  groupTaskTimeoutMs: Schema.number().min(0).max(3600000).step(1).default(0),
+  groupMemberTimeoutMs: Schema.number().min(0).max(3600000).step(1).default(0),
   groupConcurrentTurns: Schema.transform(Schema.number().min(1).max(16), value => {
     if (!Number.isSafeInteger(value)) throw new TypeError('groupConcurrentTurns must be an integer');
     return value;
@@ -69,7 +78,7 @@ const baseConfig = Schema.object({
   groupMaxContinuations: Schema.transform(Schema.number().min(0).max(64), value => {
     if (!Number.isInteger(value)) throw new TypeError('groupMaxContinuations must be an integer');
     return value;
-  }).default(8),
+  }).default(32),
   ...messagingConfigFields,
   ...shadowConfigFields,
   memoryGrantTtlMs: Schema.number().min(1000).max(3600000).step(1).default(300000),

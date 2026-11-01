@@ -304,8 +304,8 @@ describe('built bundle contract', () => {
         'dshBot.collaboration/board', 'dshBot.collaboration/createTask', 'dshBot.collaboration/ensure', 'dshBot.collaboration/updateTask',
         'dshBot.connectors/applyIdle', 'dshBot.connectors/catalog', 'dshBot.connectors/importLegacy', 'dshBot.connectors/saveAssignment',
           'dshBot.connectors/saveDefinition',
-        'dshBot.groups/archive', 'dshBot.groups/cancel', 'dshBot.groups/create', 'dshBot.groups/edit', 'dshBot.groups/list', 'dshBot.groups/markRead',
-          'dshBot.groups/open', 'dshBot.groups/openAttachment', 'dshBot.groups/send', 'dshBot.groups/setModel', 'dshBot.groups/view',
+        'dshBot.groups/archive', 'dshBot.groups/cancel', 'dshBot.groups/continueTurn', 'dshBot.groups/create', 'dshBot.groups/edit', 'dshBot.groups/list', 'dshBot.groups/markRead',
+          'dshBot.groups/open', 'dshBot.groups/openAttachment', 'dshBot.groups/send', 'dshBot.groups/setModel', 'dshBot.groups/stopMember', 'dshBot.groups/view',
         'dshBot.im/status', 'dshBot.memory/count', 'dshBot.memory/delete', 'dshBot.memory/list', 'dshBot.memory/quarantineCount', 'dshBot.memory/save',
           'dshBot.memory/search', 'dshBot.memory/update', 'dshBot.messaging/request',
         'dshBot.nativeSchedule/aggregate', 'dshBot.nativeSchedule/deleteLegacy', 'dshBot.nativeSchedule/runNow', 'dshBot.notifications/markRead',
@@ -331,6 +331,8 @@ describe('built bundle contract', () => {
         ['conversation.chat.node:dsh-bot-group', 'conversation.chat.node:dsh-bot-message', 'conversation.chat.node:dsh-bot-onboarding-notice'] :
         mode === 'missing-registry' ? ['conversation.chat.node:dsh-bot-onboarding-notice'] : [];
       expect(releases.sort()).toEqual([...resources, ...rolledBack,
+        // The read-only execution view adds a separate composer chain entry.
+        'conversation.composer',
         // Bot badge, first-chat guidance and group badge each own a header slot.
         'conversation.session.header.utilities', 'conversation.session.header.utilities',
         'sidebar.session.row.leading', 'sidebar.session.row.hover'].sort());

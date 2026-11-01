@@ -321,6 +321,7 @@ function GroupEditor({
 }
 export function GroupConversation({
   workspace = false,
+  onOpenExecution,
   models,
   permissionState,
   expandedTurns,
@@ -332,6 +333,7 @@ export function GroupConversation({
   t,
 }: {
   workspace?: boolean;
+  onOpenExecution?(childId: string): void;
   models?: ModelActions;
   permissionState?: GroupPermissionState;
   expandedTurns: Record<string, boolean>;
@@ -592,8 +594,21 @@ export function GroupConversation({
         t={t}
       />
       </>}
+      {workspace && onOpenExecution && <section className={styles.executions} aria-label={t('groups.executionDetails')}>
+        {view.turns.map(turn => <details key={turn.id} open={['accepted', 'running', 'paused'].includes(turn.state)}>
+          <summary>{t(`groups.${turn.state}`)} · {groupMessagePreview(messages.find(message => message.id === turn.inputMessageId)?.text, 80)}</summary>
+          {turn.protocol === 2 && <p>{t('execution.allowance')} · {turn.automaticExecutions ?? 0} / {turn.continuationAllowance ?? 0}</p>}
+          {turn.state === 'paused' && <p role="status">{t('execution.budgetPaused')} <button type="button" disabled={busy} onClick={() => { void perform(async () => unwrapGroup(await actions.remote().continueTurn(groupKey(view.group), turn.id, turn.revision))); }}>{t('execution.continue')}</button></p>}
+          {view.deliveries.filter(delivery => delivery.turnId === turn.id && delivery.reasonCode !== 'message-published' && !delivery.joinedDeliveryId).map(delivery => <div key={delivery.id} className={styles.delivery} data-group-execution-card={delivery.id}>
+            <span>{lookup(delivery.memberId)?.name ?? delivery.bot.botId} · {t(`groups.${delivery.state}`)}</span>
+            {delivery.reasonCode && <span>{t(delivery.reasonCode === 'configured-timeout' ? 'execution.timeout' : delivery.reasonCode === 'user-member-stop' ? 'execution.memberStopped' : delivery.reasonCode === 'user-task-stop' ? 'execution.taskStopped' : delivery.state === 'unknown' ? 'execution.unknown' : 'execution.failed')}</span>}
+            {delivery.childSessionId && <button type="button" onClick={() => { if (delivery.childSessionId) onOpenExecution(delivery.childSessionId); }}>{t('groups.executionDetails')}</button>}
+            {turn.protocol === 2 && ['starting', 'running', 'pending'].includes(delivery.state) && <button type="button" disabled={busy} onClick={() => { void perform(async () => unwrapGroup(await actions.remote().stopMember(groupKey(view.group), turn.id, delivery.memberId, turn.revision))); }}>{t('execution.stopMember')}</button>}
+          </div>)}
+        </details>)}
+      </section>}
       {workspace && <section className={styles.working} aria-label={t('groups.working')}>
-        {view.turns.filter(turn => ['accepted', 'running'].includes(turn.state)).map(turn => <div key={turn.id} className={styles.bar} data-group-working={turn.id}>
+        {view.turns.filter(turn => ['accepted', 'running', 'paused'].includes(turn.state)).map(turn => <div key={turn.id} className={styles.bar} data-group-working={turn.id}>
           <span>{view.deliveries.filter(delivery => delivery.turnId === turn.id && delivery.state === 'running').map(delivery => lookup(delivery.memberId)?.name ?? delivery.bot.botId).join(' · ')} {t(view.deliveries.some(delivery => delivery.turnId === turn.id && delivery.state === 'running') ? 'groups.running' : 'groups.queued')} · {groupMessagePreview(messages.find(message => message.id === turn.inputMessageId)?.text, 120) || messages.find(message => message.id === turn.inputMessageId)?.attachments?.[0]?.attachment.name || t('groups.working')}</span>
           {view.deliveries.filter(delivery => delivery.turnId === turn.id && delivery.state === 'running').map(delivery => <button type="button" key={delivery.id} onClick={() => { actions.patchDraft(rootId, value => ({ ...value, followup: { turnId: turn.id, deliveryId: delivery.id }, replyTo: undefined, mentions: [], mentionBindings: [] })); composer.current?.focus(); }}>{t('groups.supplement')} · {lookup(delivery.memberId)?.name ?? delivery.bot.botId}</button>)}
           <button type="button" disabled={busy} onClick={() => { void perform(async () => unwrapGroup(await actions.remote().cancel(groupKey(view.group), turn.id, turn.revision))); }}>{t('groups.cancelTurn')}</button>
