@@ -12,6 +12,7 @@ import type { ModelActions } from './model-catalog-state.js';
 import { createGroupPermissionState, type GroupPermissionState } from './group-permission-state.js';
 import { GroupConversation } from './components/GroupsPanel.js';
 import { GroupMessageCard } from './components/GroupTimeline.js';
+import { GroupTurnExecution } from './components/GroupTurnExecution.js';
 import { registerGroupExecution, type ExecutionBridge } from './group-execution.js';
 import css from './styles/groups.module.css?inline';
 import styles from './styles/groups.module.css';
@@ -50,8 +51,8 @@ export function selectGroupComposer(owner: Pick<ComposerChainProps, 'sessionId'>
   return actions.catalog.getSnapshot().groups.some(row => row.group.rootSessionId === id) ||
     /^group-root-[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id) ? { sessionId: id } : null;
 }
-export function WorkspaceGroupComposer({ matched, actions, bots, models, createPermissionState, onOpenSession, executionBridge, t }: {
-  matched: { sessionId: string }; actions: GroupActions; bots: BotCatalog; models?: ModelActions; executionBridge?: ExecutionBridge;
+export function WorkspaceGroupComposer({ matched, actions, bots, models, createPermissionState, onOpenSession, t }: {
+  matched: { sessionId: string }; actions: GroupActions; bots: BotCatalog; models?: ModelActions;
   createPermissionState?(rootSessionId: string): GroupPermissionState; onOpenSession(id: string): Promise<void>;
 } & PropsLocale<'dsh-bot'>) {
   const state = useSyncExternalStore(actions.catalog.subscribe, actions.catalog.getSnapshot);
@@ -68,14 +69,15 @@ export function WorkspaceGroupComposer({ matched, actions, bots, models, createP
   if (!group) return <section><p role="status">{t(state.error ? 'groups.disconnected' : 'groups.loading')}</p>
     <textarea disabled aria-label={t('groups.message')} /><button type="button" disabled>{t('groups.send')}</button></section>;
   return <GroupConversation key={matched.sessionId} workspace summary={group} actions={actions} models={models}
-    onOpenExecution={executionBridge?.open}
     permissionState={permissionState?.rootSessionId === matched.sessionId ? permissionState : undefined}
     bots={botState.entries.map(row => row.bot)} expandedTurns={{}} onExpandTurn={() => {}} onOpenSession={onOpenSession} t={t} />;
 }
-export function WorkspaceMessage({ node, actions, onOpenSession, t }: { node: ChatNode<'dsh-bot-group'>; actions: GroupActions;
-  onOpenSession(id: string): Promise<void> } & PropsLocale<'dsh-bot'>) {
-  const [catalog] = useState(() => actions.messageView(node.data.group));
+export function WorkspaceMessage({ node, actions, bots, executionBridge, onOpenSession, t }: { node: ChatNode<'dsh-bot-group'>; actions: GroupActions;
+  bots?: BotCatalog; executionBridge?: ExecutionBridge; onOpenSession(id: string): Promise<void> } & PropsLocale<'dsh-bot'>) {
+  const catalog = useMemo(() => actions.messageView({ groupId: node.data.group.groupId, groupCreatedAt: node.data.group.groupCreatedAt }),
+    [actions, node.data.group.groupId, node.data.group.groupCreatedAt]);
   const snapshot = useSyncExternalStore(catalog.subscribe, catalog.getSnapshot);
+  const turn = snapshot.view?.turns.find(row => row.id === node.data.message.turnId && row.inputMessageId === node.data.message.id);
   const [historicQuote, setHistoricQuote] = useState<GroupMessage>();
   const [quoteResolvedId, setQuoteResolvedId] = useState<string>();
   const quoted = snapshot.view?.messages.find(message => message.id === node.data.message.replyTo) ?? (historicQuote?.id === node.data.message.replyTo ? historicQuote : undefined);
@@ -100,19 +102,22 @@ export function WorkspaceMessage({ node, actions, onOpenSession, t }: { node: Ch
     onOpenSession={onOpenSession} onReply={message => { const row = actions.catalog.getSnapshot().groups.find(group =>
       group.group.id === node.data.group.groupId && group.group.createdAt === node.data.group.groupCreatedAt);
       if (row) actions.reply(row.group.rootSessionId, message);
-    }} onOpenAttachment={async (messageId, attachmentId) => { const result = await actions.remote().openAttachment(node.data.group, messageId, attachmentId); if (!result.ok) throw result.error; }} />{jumpUnavailable && <p role="status">{t('groups.quoteUnavailable')}</p>}</div>;
+    }} onOpenAttachment={async (messageId, attachmentId) => { const result = await actions.remote().openAttachment(node.data.group, messageId, attachmentId); if (!result.ok) throw result.error; }} />{jumpUnavailable && <p role="status">{t('groups.quoteUnavailable')}</p>}
+    {node.data.message.authorKind === 'user' && turn && snapshot.view && bots && executionBridge && <GroupTurnExecution
+      key={JSON.stringify([node.data.group.groupId, node.data.group.groupCreatedAt, turn.id])} view={snapshot.view} turn={turn} actions={actions} bots={bots} onOpenExecution={executionBridge.open} t={t} />}
+  </div>;
 }
 export function registerWorkspaceGroups(ctx: Context, actions: GroupActions, bots: BotCatalog, onOpenSession: (id: string) => Promise<void>, models?: ModelActions) {
   const executionBridge = registerGroupExecution(ctx);
   const createPermissionState = (rootSessionId: string) => createGroupPermissionState(ctx, rootSessionId);
   ctx.effect(() => ctx.slots.inject('conversation.composer', () => ctx.slots.register({ name: 'conversation.composer',
     priority: -20, locale: 'dsh-bot', select: owner => selectGroupComposer(owner, actions),
-  }, (props: { matched: { sessionId: string } } & PropsLocale<'dsh-bot'>) => <WorkspaceGroupComposer {...props} executionBridge={executionBridge} actions={actions} bots={bots} models={models} createPermissionState={createPermissionState} onOpenSession={onOpenSession} />)), 'dsh-bot: group workspace composer');
+  }, (props: { matched: { sessionId: string } } & PropsLocale<'dsh-bot'>) => <WorkspaceGroupComposer {...props} actions={actions} bots={bots} models={models} createPermissionState={createPermissionState} onOpenSession={onOpenSession} />)), 'dsh-bot: group workspace composer');
   ctx.inject(['uiConversation'], scope => {
     if (typeof scope.uiConversation.events?.register !== 'function') return;
     scope.effect(() => scope.slots.inject('conversation.chat.node', () => scope.effect(function* () {
       yield scope.slots.register({ name: 'conversation.chat.node', key: 'dsh-bot-group', locale: 'dsh-bot' },
-        (props: { node: ChatNode<'dsh-bot-group'> } & PropsLocale<'dsh-bot'>) => <WorkspaceMessage {...props} actions={actions} onOpenSession={onOpenSession} />);
+        (props: { node: ChatNode<'dsh-bot-group'> } & PropsLocale<'dsh-bot'>) => <WorkspaceMessage {...props} actions={actions} bots={bots} executionBridge={executionBridge} onOpenSession={onOpenSession} />);
       yield scope.uiConversation.events.register(groupMessageDefinition);
     }, 'dsh-bot: group message projection')), 'dsh-bot: group renderer');
   });

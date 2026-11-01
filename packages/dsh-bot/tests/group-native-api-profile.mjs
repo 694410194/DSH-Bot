@@ -124,7 +124,10 @@ export function apply(ctx, config) {
         const view = await wait(async () => { const v = await groups.view(key); return v.turns.find(t => t.id === turn.id && !['accepted', 'running'].includes(t.state)) && v; });
         const delivery = view.deliveries.find(d => d.turnId === turn.id);
         assert.ok(delivery.childSessionId);
-        await save('ui-fixture', { rootId: g.rootSessionId, childId: delivery.childSessionId, groupName: g.name, modelRequests: adapter.calls.length });
+        const second = await groups.send(key, { operationId: 'ui-trace-second', text: 'UI_TRACE_SECOND', memberIds: [members[1].id], expectedMembershipRevision: 1 });
+        await wait(async () => (await groups.view(key)).turns.find(t => t.id === second.id && !['accepted', 'running'].includes(t.state)));
+        await save('ui-fixture', { rootId: g.rootSessionId, childId: delivery.childSessionId, groupName: g.name,
+          inputMessageId: turn.inputMessageId, turnId: turn.id, secondInputMessageId: second.inputMessageId, secondTurnId: second.id, modelRequests: adapter.calls.length });
         clearTimeout(timer); console.log('B4_WEB_READY');
       }
     })().catch(async error => { await save('result', { status: 'FAIL', phase, assertions, error: String(error), stack: error.stack,

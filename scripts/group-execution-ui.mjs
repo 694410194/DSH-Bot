@@ -16,7 +16,7 @@ const { chromium } = require('playwright-core');
 let host, browser, page, phase = 'host'; const errors = [], checks = [];
 const check = (name, condition) => { assert.ok(condition, name); checks.push(name); };
 try {
-  host = await webHost(dir, 'group-api', undefined, resolve(root, 'packages/dsh-bot/tests/group-native-api-profile.mjs'), ['- id: agent-default-model', '  config:', '    provider: dp-b6b', '    model: fixture']);
+  host = await webHost(dir, 'group-api', process.env.DSH_BOT_ARTIFACT && resolve(process.env.DSH_BOT_ARTIFACT), resolve(root, 'packages/dsh-bot/tests/group-native-api-profile.mjs'), ['- id: agent-default-model', '  config:', '    provider: dp-b6b', '    model: fixture']);
   const fixture = JSON.parse(await readFile(resolve(dir, 'ui-fixture.json'), 'utf8'));
   const cache = resolve(homedir(), 'Library/Caches/ms-playwright');
   const candidates = (await readdir(cache).catch(() => [])).filter(name => /^chromium_headless_shell-\d+$/.test(name)).sort().reverse()
@@ -40,9 +40,25 @@ try {
     await page.setViewportSize({ width, height: 1000 });
     const composer = page.locator('[data-workspace-group-composer]');
     const draft = composer.locator('textarea:visible'); await draft.fill(`draft-${id}`);
-    const card = composer.locator('[data-group-execution-card]').filter({ hasText: 'api-alpha' }).last();
+    const question = page.locator(`[data-workspace-group-message="${fixture.inputMessageId}"]`);
+    const secondQuestion = page.locator(`[data-workspace-group-message="${fixture.secondInputMessageId}"]`);
+    const execution = question.locator(`[data-group-turn="${fixture.turnId}"]`);
+    const disclosure = execution.locator('button[aria-expanded]');
+    await disclosure.waitFor();
+    await secondQuestion.locator(`[data-group-turn="${fixture.secondTurnId}"]`).waitFor();
+    check(`${id}: each question owns exactly its execution`, await question.locator('[data-group-turn]').count() === 1 && await secondQuestion.locator('[data-group-turn]').count() === 1);
+    check(`${id}: composer contains no task list or status bars`, await composer.locator('[data-group-turn],[data-group-execution-card],[data-group-working]').count() === 0);
+    check(`${id}: execution defaults to a collapsed line`, await disclosure.getAttribute('aria-expanded') === 'false');
+    const composerHeight = (await composer.boundingBox()).height;
+    const card = execution.locator('[data-group-execution-card]').filter({ hasText: 'api-alpha' }).last();
     const count = host.requests();
-    phase = `${id}:expand`; await composer.locator('details > summary').last().click(); await card.getByRole('button', { name: t['groups.executionDetails'], exact: true }).click();
+    phase = `${id}:expand`; await disclosure.click();
+    check(`${id}: disclosure does not grow the composer`, Math.abs((await composer.boundingBox()).height - composerHeight) < 2);
+    await page.screenshot({ path: resolve(dir, `${id}-inline.png`), fullPage: true });
+    await disclosure.click(); check(`${id}: user can collapse execution`, await disclosure.getAttribute('aria-expanded') === 'false');
+    await disclosure.focus(); await disclosure.press('Enter');
+    check(`${id}: keyboard can expand execution`, await disclosure.getAttribute('aria-expanded') === 'true');
+    await card.getByRole('button', { name: t['groups.executionDetails'], exact: true }).click();
     const embedded = page.locator(`[data-group-execution="${fixture.childId}"]`);
     await embedded.locator(`[data-conversation-content][data-conversation-session="${fixture.childId}"]`).waitFor();
     check(`${id}: native factory bound to exact child`, await embedded.getAttribute('data-group-execution') === fixture.childId);

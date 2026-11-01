@@ -405,26 +405,6 @@
   gap: 6px;
   font-size: 13px;
 }
-.workspace .working {
-  padding: 0 4px;
-  background: none;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 12px;
-  font-size: 12px;
-  color: var(--dsw-alias-label-secondary);
-}
-.workspace .working > span {
-  flex: 1 1 auto;
-}
-.workspace .working > .bar,
-.workspace .working > p {
-  flex-basis: 100%;
-}
-.workspace .working summary {
-  cursor: pointer;
-}
 .workspace .composer {
   padding: 12px;
   gap: 8px;
@@ -530,8 +510,27 @@
 .modelMemberDetail { color: var(--dsw-alias-label-secondary); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .modelMemberSource { color: var(--dsw-alias-label-tertiary); font-size: 11px; }
 
-.workspace .executions {
-  max-height: min(32svh, 320px);
-  overflow-y: auto;
-  flex: 0 1 auto;
+/* The disclosure participates in the native message scroll, never the input dock. */
+.inlineExecution {
+  margin-block: 8px 4px;
+  min-width: 0;
+  font-size: 12px;
+}
+.panel .inlineExecution .turnSummary {
+  width: auto;
+  max-width: 100%;
+  padding: 4px 0;
+  text-align: start;
+  background: transparent;
+}
+.inlineExecution > div {
+  padding: 4px 0 8px 16px;
+  border-inline-start: 1px solid var(--dsw-alias-border-l3);
+}
+.inlineExecution .delivery {
+  padding: 6px 0;
+}
+.inlineExecution .executionMeta {
+  margin: 4px 0;
+  color: var(--dsw-alias-label-tertiary);
 }

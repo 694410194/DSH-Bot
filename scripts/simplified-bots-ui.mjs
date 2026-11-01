@@ -331,7 +331,7 @@ try {
       check('group composer has no second timeline', await groupComposer.locator('[role="log"]').count() === 0);
       // Both deterministic fixture members return text; wait for their actual native nodes before checking quotes.
       await botCards.nth(1).waitFor();
-      await groupComposer.locator('[data-group-working]').first().waitFor({ state: 'hidden' });
+      await page.waitForFunction(rootId => document.querySelector(`[data-conversation-content][data-conversation-session="${rootId}"]`)?.querySelectorAll('[data-group-turn-state="accepted"],[data-group-turn-state="running"]').length === 0, groupRoot);
       const modelCalls = await readModelCalls(), firstModelReceipt = await permissionProbe(groupRoot, 'member-model-worker-routes');
       const expectedMemberRoutes = { [alphaId]: { provider: modelFixture.provider, model: modelFixture.models[0].id, reasoningEffort: chosenEffort.id },
         [betaId]: { provider: modelFixture.memberProvider, model: modelFixture.memberModels[1].id, reasoningEffort: modelFixture.efforts[0].id } };
@@ -404,8 +404,10 @@ try {
       await quotedUser.locator('blockquote button').click(); await page.waitForFunction(() => document.activeElement?.hasAttribute('data-workspace-group-message')); check('sent user quote jumps through native history');
       await unlink(resolve(dir, 'release-work')).catch(() => {});
       await composer.fill(`V060_HOLD_WORK ${id}`); await groupComposer.getByRole('button', { name: t['groups.send'], exact: true }).click();
-      const supplement = groupComposer.getByRole('button', { name: new RegExp(t['groups.supplement']) }).first(); await supplement.waitFor();
-      check('work status follows a running native worker', await groupComposer.locator('[data-group-working]').count() > 0);
+      const currentWork = page.locator('[data-workspace-group-message]').filter({ has: page.locator('[data-group-message]', { hasText: `V060_HOLD_WORK ${id}` }) }).last().locator('[data-group-turn]');
+      await currentWork.locator('button[aria-expanded]').click();
+      const supplement = currentWork.getByRole('button', { name: t['groups.supplement'], exact: true }).first(); await supplement.waitFor();
+      check('work status belongs to its question, outside the composer', await currentWork.locator('[data-group-execution-card]').count() > 0 && await groupComposer.locator('[data-group-execution-card]').count() === 0);
       await supplement.click(); await composer.fill(`V060 worker supplement ${id}`);
       await groupComposer.getByRole('button', { name: t['groups.send'], exact: true }).click(); await composer.waitFor();
       await page.waitForFunction(rootId => document.querySelector(`[data-workspace-group-composer="${rootId}"] textarea`)?.value === '', groupRoot);

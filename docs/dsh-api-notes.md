@@ -1394,3 +1394,7 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 - A 的原始空 preset API fixture 与真实 Bot preset 的 B/C 集成验证分开；原始 API 成功不能替代群权限、结果归属和数据流检查。
 
 详见 [A 实测说明](verification/group-collaboration/native-api.md)及 [实现与验收](verification/group-collaboration/report.md)。
+
+### 2026-11-01 — 执行状态随问题展示
+
+复用已注册的公开 `conversation.chat.node` 和原始群用户消息 metadata，在匹配 `turnId` 与 `inputMessageId` 的节点下方放置执行折叠行。与输入框共享现有群 view 订阅；按钮继续调用既有 Remote 的 stopMember/cancel/continueTurn，完整原生过程仍复用右侧面板。没有新增 API、依赖或内部导入，也没有尝试递归嵌入 conversation.content。实际验收见[记录](verification/group-inline-execution/report.md)。
