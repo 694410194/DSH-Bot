@@ -19,3 +19,15 @@
 5. `scripts/pnpm check`、文档/格式检查、真实浏览器中英亮暗宽窄验证；CI 单列。
 
 仅写本仓库，使用 `.dsh-dev` 隔离环境。不得修改正式桌面、`~/.dsh` 或运行真实模型。并发与执行过程属于后续 A–D 阶段。
+
+## 实施状态（2026-11-01）
+
+U 代码与本地验收已完成，见[验收记录](../docs/acceptance/U-bots-navigation.md)。跟踪 [Issue #8](https://github.com/MJ-CJM/DSH-Bot/issues/8)，提交至 [Draft PR #9](https://github.com/MJ-CJM/DSH-Bot/pull/9)。PR 保持 Draft，A–D 尚未实施。
+
+- PASS：Bot 全集、三个固定入口、群成员资料及原群返回。
+- PASS：来源、搜索、滚动、返回焦点、一次性导航请求与面板重挂载。
+- PASS：未保存设置确认、放弃/继续编辑、删除或同 ID 重建目标的处理。
+- PASS：145 个测试文件，1252 passed、3 expected fail；构建、类型、lint 通过。
+- PASS：隔离 rc.5 Host 的中英 × 亮暗 × 宽窄 8 种浏览器组合，32 张截图，0 次模型请求。
+- FAIL（本阶段未执行）：正式桌面安装与用户体验验收、rc.2 实际 Host 运行；不能以 rc.5 或静态类型结果替代。
+- CI：推送后以 PR 当前提交的 GitHub Actions 收据为准，不沿用之前提交的结果。

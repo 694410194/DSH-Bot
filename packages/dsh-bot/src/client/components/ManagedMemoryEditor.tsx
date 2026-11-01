@@ -2,12 +2,15 @@ import { useId, useState } from 'react';
 import { draftQualifiers, qualifierDraft, type ManagedDraft } from '../memory-drafts.js';
 import type { MemoryPanelProps } from './MemoryPanel.js';
 import styles from '../styles/bots.module.css';
+import { useSettingsDraft } from './SettingsNavigation.js';
 
 export function ManagedMemoryEditor({ draft, change, save, close, rebase, busy, t }: {
   draft: ManagedDraft; change(draft: ManagedDraft): void; save(): void; close(): void; rebase(): void;
   busy: boolean; t: MemoryPanelProps['t'];
 }) {
   const uid = useId(), [invalid, setInvalid] = useState(false);
+  // A managed draft is kept until its explicit save/cancel, including restored per-scope drafts.
+  useSettingsDraft(true);
   const field = (key: 'content' | 'subject' | 'factKey' | 'from' | 'to') => <label className={styles.field} htmlFor={`${uid}-${key}`}>
     {t(`shared.${key}`)}
     {key === 'content' ? <textarea id={`${uid}-${key}`} aria-label={t(`shared.${key}`)} value={draft[key]} disabled={busy}

@@ -2,6 +2,8 @@
 
 状态：**用户已批准，进入实施**。批准日期：2026-11-01。先完成 U 阶段的 Bot 展示与设置返回。
 
+实施进度：已创建 [Issue #8](https://github.com/MJ-CJM/DSH-Bot/issues/8) 与 [Draft PR #9](https://github.com/MJ-CJM/DSH-Bot/pull/9)。U 的页面修复和本地隔离验收已完成，详见 [U 验收记录](../acceptance/U-bots-navigation.md)；A–D 仍待实施。下文“当前实现”表和方案检查结果是审批时的基线，不代表 U 修复后的状态。
+
 方案分支：`codex/group-concurrent-discussion`，实施基线 `a2c3adf`（已同步包含社区准备 PR #7 的 main）。用户明确授权创建跟踪 Issue、Draft PR 和按方案开发，包含必要的提交与推送；正式安装、合并和发布仍不在本轮范围。
 
 ## 1. 要达到的体验
@@ -223,9 +225,9 @@ PR 拟题：`feat: improve Bots navigation and concurrent group collaboration`
 3. 先完成 U 的入口/返回修复，再开始 A 阶段，随后按 B–D 开发和提交验证结果；遇到影响产品语义的 API 阻塞时先修订方案。
 4. 所有必需门禁通过后将 PR 转为可审阅，提交候选包安装步骤。合并、正式安装和发布按后续明确指令执行。
 
-截至本方案编写：Issue/新 PR 未创建，产品改造、运行 spike 和新版本验收均未执行；此前 0.6.3 的 CI/Host 结果不替代本期验收。
+截至审批前方案编写：Issue/新 PR 未创建，产品改造、运行 spike 和新版本验收均未执行。后续实施状态见本文开头；此前 0.6.3 的 CI/Host 结果不替代本期验收。
 
-## 10. 本次待审批决策
+## 10. 本次已批准决策
 
 - 自然/定向讨论采用并发，保留显式串行接力。
 - 通过具体协作请求驱动多轮，普通发言不无条件唤醒全部空闲成员。

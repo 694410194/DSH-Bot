@@ -1375,3 +1375,11 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 - bot_manage 复用原生审批，ToolExecution.token 绑定准确审批草案与代际/版本，tools/result 及卸载清理快照。正式角色路径要求 get 后带 expectedCreatedAt/expectedUpdatedAt；旧调用只保护准备审批起的快照，不能声称保护未知早期读取。prefix 修改保留 suffix/complete；工具输出剔除 Host-owned onboarding 字段。
 - 当前职责按钮通过公开 ctx.conversation.input.requestDraftInitialization(binding,{prompt}) 写入草稿，ctx.sessions.using/ready 确认准确目标并释放引用；已有草稿保留，不发消息。没有 uiConversation.input API，也未使用私有 editor。
 - rc.2 ui-workspace rows/Rows.tsx 仅对非 blank 行调用 leading slot；blank conversation 同样无 header utilities。新 Bot 空态通过公开 conversation.input.dock 显示头像/姓名/恢复提示，保留原生 composer。非空私聊的 leading/header 使用主会话绑定，历史归属要求 ActivityRecord.botCreatedAt 精确匹配；旧记录不猜生日。群图标为主题 token 控制的组合鲸鱼 SVG，无图像生成和主题硬编码。
+
+## U：Bot 展示与设置返回（2026-11-01）
+
+本阶段没有新增宿主 API 或依赖；继续复用现有公开 main slot、layout/session 导航、Bot/group catalog、主题 token、Modal 与头像组件。原生跳转仍走现有 actions，插件的三级入口和设置来源只是客户端视图状态；不修改宿主 URL/history。开发类型仍为 rc.2，实际隔离 Web Host 为 rc.5，证据见 [U 验收](acceptance/U-bots-navigation.md)。
+
+- 群选中状态与一次性打开请求分离：请求序号消费后清除，目录刷新不重新触发导航。视图选中身份同时包含 ID 和 createdAt，避免误开同 ID 重建对象。
+- 一级页、群身份、列表搜索和滚动只保存在客户端插件生命周期内，ctx.effect 卸载时清空；未提交设置和凭据不写浏览器存储。插件内离开设置及管理页切换 Bot 使用已有 Modal 确认；不拦截宿主级侧栏切换或浏览器前后退。
+- 原生面板重挂载恢复一级页位置；当前设置表单不承诺跨宿主面板卸载、进程重启恢复。真实模型、运行中群成员和新的并发机制没有在本阶段浏览器用例中执行。

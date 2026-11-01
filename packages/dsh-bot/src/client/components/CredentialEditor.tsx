@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { IntegrationActions } from '../integrations-state.js';
+import { useSettingsDraft } from './SettingsNavigation.js';
 export function CredentialEditor({
   actions,
   credential,
@@ -16,6 +17,7 @@ export function CredentialEditor({
   perform(fn: () => Promise<unknown>): Promise<void>;
 }) {
   const [secret, setSecret] = useState('');
+  useSettingsDraft(Boolean(secret));
   const [credentialInfo, setCredentialInfo] = useState<'configured' | 'missing' | 'readonly'>();
   useEffect(() => {
     if (!active) {

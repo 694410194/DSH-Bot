@@ -27,6 +27,17 @@
   max-width: 960px;
   margin: 0 auto;
 }
+.sectionNavigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.sectionNavigation button[aria-current="page"] {
+  border-color: var(--dsw-alias-state-business-primary);
+  background: var(--dsw-alias-bg-layer-1);
+  font-weight: 600;
+}
 .header {
   display: flex;
   justify-content: space-between;
@@ -673,6 +684,9 @@
 .recentRow { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--dsw-alias-border-l3); min-width: 0; }
 .recentOpen { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; padding: 14px 8px; border: 0; background: transparent; color: var(--dsw-alias-label-primary); text-align: start; cursor: pointer; font: inherit; }
 .recentOpen > span { overflow-wrap: anywhere; }
+.recentBody { flex: 1; min-width: 0; }
+.listTools { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
+.listTools .field { min-width: 0; max-width: 100%; }
 .recentOpen:hover { background: var(--dsw-alias-interactive-bg-hover); }
 .recentOpen:focus-visible, .recentMore summary:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
 .recentMore { flex: 0 0 auto; max-width: 45%; }

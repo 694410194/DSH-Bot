@@ -1,5 +1,6 @@
 import { GroupsPanel } from '../components/GroupsPanel.js';
 import { ManagementWorkspace } from '../components/ManagementWorkspace.js';
+import { SettingsDrafts, useSettingsNavigation } from '../components/SettingsNavigation.js';
 import { useState } from 'react';
 import { RecentConversations } from './RecentConversations.js';
 import { Button, IconPlusOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives';
@@ -16,9 +17,12 @@ export function BotsPage(page: BotsPageProps) {
   const { management, groups, routines, integrations, collaboration, createMemoryPanel, onOpenSession, onRefresh, t } =
     page;
   const model = useBotsPage(page);
+  const settings = useSettingsNavigation(t);
   const [creatingGroup, setCreatingGroup] = useState(false);
   const text = (key: string) => t(key as Parameters<typeof t>[0]);
-  const { snapshot, pageElement, compact, tab, setTab, busy, open, entries, unavailable, toast, setToast } = model;
+  const { snapshot, pageElement, compact, tab, setTab, section, busy, open, entries, unavailable, toast, setToast } = model;
+  const selectedGroup = groups?.catalog.getSnapshot().groups.find(row => row.group.id === model.selectedGroup?.id && row.group.createdAt === model.selectedGroup.createdAt);
+  const sectionLabel = section === 'bots' ? t('navigation.myBots') : section === 'groups' ? (selectedGroup?.group.name ?? t('groups.title')) : t('chat.recent');
   return (
     <section
       ref={pageElement}
@@ -27,24 +31,33 @@ export function BotsPage(page: BotsPageProps) {
       aria-label={t('bots.title')}
     >
       <style data-dsh-bot-styles="">{css}</style>
-      <div className={styles.pageScroll}>
+      <div className={styles.pageScroll} ref={model.scrollElement} onScroll={event => model.rememberScroll(event.currentTarget.scrollTop)}>
         <div className={styles.pageContent}>
           <header className={styles.header}>
             <div className={styles.heading}>
-              <h1 className={styles.title}>{t('bots.title')}</h1>
-              <p className={styles.subtitle}>{t('bots.subtitle')}</p>
+              <h1 className={styles.title}>{t(tab === 'management' ? 'chat.settings' : 'bots.title')}</h1>
+              <p className={styles.subtitle}>{tab === 'management' ? t('navigation.settingsFrom', { name: sectionLabel }) : t('bots.subtitle')}</p>
             </div>
             <div className={styles.actions}>
-              <details><summary className={styles.button} aria-label={text('chat.new')}><IconPlusOutlineRegular size={16} /></summary>
+              {tab !== 'management' && <details><summary className={styles.button} aria-label={text('chat.new')}><IconPlusOutlineRegular size={16} /></summary>
                 <button type="button" className={styles.button} disabled={busy || !snapshot.loaded} onClick={() => open({ kind: 'create' })}>{t('bots.create')}</button>
                 {groups && <button type="button" className={styles.button} onClick={() => { setCreatingGroup(true); setTab('groups'); }}>{t('groups.create')}</button>}
-              </details>
-              <button type="button" className={styles.button} onClick={() => setTab(tab === 'management' ? 'bots' : 'management')}>{text(tab === 'management' ? 'chat.recent' : 'chat.settings')}</button>
+              </details>}
+              <button type="button" ref={model.settingsButton} className={styles.button} data-settings-navigation="" onClick={() => tab === 'management' ? settings.leave(model.returnFromSettings) : setTab('management')}>{tab === 'management' ? t('navigation.returnTo', { name: sectionLabel }) : text('chat.settings')}</button>
             </div>
           </header>
-          {tab === 'bots' && <RecentConversations page={page} model={model} />}
-          {tab === 'groups' && <button type="button" className={styles.button} onClick={() => { setTab('bots'); setCreatingGroup(false); }}>{text('chat.recent')}</button>}
+          <nav className={styles.sectionNavigation} aria-label={t('navigation.sections')}>
+            {(['bots', 'groups', 'recent'] as const).filter(key => key !== 'groups' || groups).map(key => <button
+              type="button" key={key} className={styles.button} aria-current={tab !== 'management' && section === key ? 'page' : undefined}
+              onClick={() => {
+                const go = () => { setTab(key); setCreatingGroup(false); model.setShowDetail(false); };
+                if (tab === 'management') settings.leave(go); else go();
+              }}>
+              {t(key === 'bots' ? 'navigation.myBots' : key === 'groups' ? 'groups.title' : 'chat.recent')}
+            </button>)}
+          </nav>
           {tab === 'management' && (
+            <SettingsDrafts.Provider value={settings.registry}>
             <ManagementWorkspace
               management={management}
               integrations={integrations}
@@ -55,11 +68,18 @@ export function BotsPage(page: BotsPageProps) {
               onOpenSession={onOpenSession}
               t={t}
             />
+            </SettingsDrafts.Provider>
           )}
-          {groups && tab === 'groups' && (
+          <div hidden={tab === 'management'}>
+          {(section === 'bots' || section === 'recent') && <RecentConversations key={section} page={page} model={model} mode={section} />}
+          {groups && section === 'groups' && (
             <GroupsPanel
               key={creatingGroup ? 'create' : 'manage'}
               initialCreate={creatingGroup}
+              selectedGroup={model.selectedGroup}
+              onSelectGroup={model.setSelectedGroup}
+              onOpenBot={model.showBot}
+              onCreateFinished={() => setCreatingGroup(false)}
               actions={groups}
               bots={entries.map((entry) => entry.bot)}
               t={t}
@@ -87,7 +107,7 @@ export function BotsPage(page: BotsPageProps) {
               {t('bots.loading')}
             </p>
           )}
-          {tab === 'bots' && snapshot.loaded && !snapshot.error && snapshot.entries.length === 0 && (
+          {section === 'bots' && snapshot.loaded && !snapshot.error && snapshot.entries.length === 0 && (
             <div className={styles.empty}>
               <h2>{t('bots.empty')}</h2>
               <p>{t('bots.emptyHint')}</p>
@@ -102,10 +122,12 @@ export function BotsPage(page: BotsPageProps) {
               </Button>
             </div>
           )}
+          </div>
           <BotsTab page={page} model={model} />
         </div>
       </div>
       <BotDialogs page={page} model={model} />
+      {settings.confirmation}
       {toast && (
         <div className={styles.toast} role={toast.error ? 'alert' : 'status'}>
           <span>{toast.text}</span>

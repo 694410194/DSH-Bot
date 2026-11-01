@@ -223,7 +223,7 @@ describe('Bots main page through the public Cordis and Slot registration contrac
     expect(app.remote.methods.list).toHaveBeenCalledTimes(3);
   });
 
-  it('renders a recent list with a New menu and settings; profile hides internal identifiers and empty work panels', async () => {
+  it('renders the Bot catalog with a New menu and settings; profile hides internal identifiers and empty work panels', async () => {
     const app = await mount([bot({ id: 'alpha-bot', name: 'Alpha Bot', description: 'A careful helper' })]);
     const page = app.container.querySelector('[data-bots-page]');
     const header = page?.querySelector('header');

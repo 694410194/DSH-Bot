@@ -1,9 +1,16 @@
+import { pageNavigation, type BotsSection, type PageIdentity } from './page-navigation.js';
 import { matchesCreation } from './recent-conversations.js';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { BotCreateInput, BotPatch } from '../../shared/schema.js';
 import { botSessionRows, sortBotEntries } from '../activity-view.js';
 
 import type { Dialog, BotsPageProps } from './bots-page-types.js';
+import type { GroupActions } from '../groups-state.js';
+const emptyGroups: ReturnType<GroupActions['catalog']['getSnapshot']> = { groups: [], loaded: false, loading: false, pollIntervalMs: 0 };
+const emptyRequest: ReturnType<GroupActions['selection']['getSnapshot']> = { loaded: true, loading: false, pollIntervalMs: 0 };
+const noSubscribe = () => () => {};
+const noGroups = () => emptyGroups;
+const noRequest = () => emptyRequest;
 function detail(error: unknown): string {
   if (typeof error === 'object' && error !== null && 'message' in error) return String(error.message);
   return typeof error === 'string' ? error : '';
@@ -11,6 +18,7 @@ function detail(error: unknown): string {
 
 export function useBotsPage({
   groups,
+  pageNavigation: providedNavigation,
   useCatalog,
   useActivity,
   useSessionCatalog,
@@ -35,16 +43,26 @@ export function useBotsPage({
   const workspaces = useWorkspaceCatalog((value) => value);
   const pageElement = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 760);
-  const [tab, setTab] = useState<'bots' | 'groups' | 'management'>('bots');
-  useEffect(() => {
-    if (!groups) return;
-    const update = () => {
-      if (groups.selection.getSnapshot().selectedId) setTab('groups');
-    };
-    update();
-    return groups.selection.observe(update);
-  }, [groups]);
+  const [pageState] = useState(() => providedNavigation ?? pageNavigation());
+  const [tab, updateTab] = useState<BotsSection | 'management'>(pageState.section);
+  const scrollElement = useRef<HTMLDivElement>(null);
+  const currentTab = useRef(tab);
+  const settingsButton = useRef<HTMLButtonElement>(null);
+  const [selectedGroup, updateGroup] = useState<PageIdentity | undefined>(pageState.group);
+  const setSelectedGroup = useCallback((value: PageIdentity | undefined) => {
+    pageState.group = value; updateGroup(value);
+  }, [pageState]);
+  const setTab = useCallback((next: BotsSection | 'management') => {
+    if (currentTab.current !== 'management' && scrollElement.current) pageState.scroll[currentTab.current] = scrollElement.current.scrollTop;
+    currentTab.current = next;
+    if (next !== 'management') pageState.section = next;
+    updateTab(next);
+  }, [pageState]);
+  const section = tab === 'management' ? pageState.section : tab;
+  const groupList = useSyncExternalStore(groups?.catalog.subscribe ?? noSubscribe, groups?.catalog.getSnapshot ?? noGroups);
+  const groupRequest = useSyncExternalStore(groups?.selection.subscribe ?? noSubscribe, groups?.selection.getSnapshot ?? noRequest);
   const [selectedId, setSelectedId] = useState<string>();
+  const [selectedCreatedAt, setSelectedCreatedAt] = useState<number>();
   const [showDetail, setShowDetail] = useState(false);
   const [more, setMore] = useState(false);
   const listElement = useRef<HTMLDivElement>(null);
@@ -53,7 +71,8 @@ export function useBotsPage({
   const listId = useId();
   const locale = t('activity.locale');
   const entries = sortBotEntries(snapshot.entries, activity.bots, locale);
-  const selected = entries.find(({ bot }) => bot.id === (requestedDetail?.botId ?? selectedId)) ??
+  const selected = entries.find(({ bot }) => bot.id === (requestedDetail?.botId ?? selectedId) &&
+    (requestedDetail || selectedCreatedAt === undefined || bot.createdAt === selectedCreatedAt)) ??
     (selectedId === undefined && requestedDetail === undefined ? entries[0] : undefined);
   const rows = selected
     ? botSessionRows(
@@ -85,13 +104,41 @@ export function useBotsPage({
   const [copyInvalid, setCopyInvalid] = useState(false);
   const copyInput = useId();
   const lifetime = useRef<AbortController>();
+  const showBot = (bot: { id: string; createdAt: number }) => {
+    setSelectedId(bot.id); setSelectedCreatedAt(bot.createdAt); setShowDetail(true);
+  };
+  useEffect(() => {
+    if (!groups || !('selectedId' in groupRequest) || !groupRequest.selectedId || !groupRequest.requestId || !groupList.loaded || groupList.error) return;
+    const found = groupList.groups.find(row => row.group.id === groupRequest.selectedId &&
+      (groupRequest.createdAt === undefined || row.group.createdAt === groupRequest.createdAt));
+    setSelectedGroup(found && !found.group.archived ? { id: found.group.id, createdAt: found.group.createdAt } : undefined);
+    setTab('groups'); setShowDetail(false); setDialog(undefined);
+    if (!found || found.group.archived) setToast({ text: t('navigation.targetMissing'), error: true });
+    groups.consumeSelection(groupRequest.requestId);
+  }, [groups, groupRequest, groupList, setSelectedGroup, setTab, t]);
+  useEffect(() => {
+    if (!selectedGroup || !groupList.loaded || groupList.error) return;
+    const found = groupList.groups.find(row => row.group.id === selectedGroup.id && row.group.createdAt === selectedGroup.createdAt && !row.group.archived);
+    if (!found) { setSelectedGroup(undefined); setToast({ text: t('navigation.targetMissing'), error: true }); }
+  }, [selectedGroup, groupList, setSelectedGroup, t]);
+  useEffect(() => {
+    if (showDetail && !busy && !dialog && !requestedDetail && snapshot.loaded && !snapshot.loading && !snapshot.error && !selected) {
+      setShowDetail(false); setToast({ text: t('errors.detailMissing'), error: true });
+    }
+  }, [showDetail, busy, dialog, requestedDetail, snapshot, selected, t]);
+  useLayoutEffect(() => {
+    if (tab !== 'management' && (!snapshot.loaded || (tab === 'groups' && !groupList.loaded))) return;
+    if (scrollElement.current) scrollElement.current.scrollTop = tab === 'management' ? 0 : pageState.scroll[tab];
+  }, [tab, pageState, snapshot.loaded, groupList.loaded]);
+  const returnFromSettings = () => { setTab(pageState.section); settingsButton.current?.focus({ preventScroll: true }); };
+
   useEffect(() => {
     // Lock the first complete ordering, then retain that Bot across activity polls.
     if (!snapshot.loaded || (!activity.loaded && !activity.error) || requestedDetail) return;
     // A synchronous detail-request consumption can schedule another render
     // before its explicit selection commits. Preserve the latest queued target.
-    setSelectedId(current => entries.some(({ bot }) => bot.id === current) ? current : entries[0]?.bot.id);
-  }, [snapshot.loaded, activity.loaded, activity.error, entries, requestedDetail]);
+    if (!showDetail) setSelectedId(current => entries.some(({ bot }) => bot.id === current) ? current : entries[0]?.bot.id);
+  }, [snapshot.loaded, activity.loaded, activity.error, entries, requestedDetail, showDetail]);
   useEffect(() => {
     if (!compact || dialog) return;
     if (showDetail) backElement.current?.focus();
@@ -132,13 +179,14 @@ export function useBotsPage({
     if (found) {
       setTab('bots');
       setSelectedId(found.bot.id);
+      setSelectedCreatedAt(found.bot.createdAt);
       setShowDetail(true);
       cancelNavigation();
       setDialog(undefined);
       setToast(undefined);
     } else setToast({ text: t('errors.detailMissing'), error: true });
     onDetailConsumed(requestedDetail.requestId);
-  }, [requestedDetail, snapshot, onDetailConsumed, t, cancelNavigation]);
+  }, [requestedDetail, snapshot, onDetailConsumed, t, cancelNavigation, setTab]);
   const deleteId = dialog?.kind === 'delete' ? dialog.bot.id : undefined;
   // biome-ignore lint/correctness/useExhaustiveDependencies: retry explicitly refreshes the same Bot.
   useEffect(() => {
@@ -197,6 +245,7 @@ export function useBotsPage({
     try {
       await action();
       if (alive()) {
+        if (errorKey === 'errors.delete') setShowDetail(false);
         if (successKey) setToast({ text: t(successKey), error: false });
         setDialog(undefined);
       }
@@ -278,6 +327,15 @@ export function useBotsPage({
     requestedDetail,
     workspaces,
     pageElement,
+    pageState,
+    scrollElement,
+    settingsButton,
+    rememberScroll: (top: number) => { if (currentTab.current !== 'management') pageState.scroll[currentTab.current] = top; },
+    section,
+    selectedGroup,
+    setSelectedGroup,
+    showBot,
+    returnFromSettings,
     compact,
     tab,
     setTab,

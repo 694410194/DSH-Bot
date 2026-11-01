@@ -3,6 +3,7 @@ import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import { CONNECTOR_TEMPLATES, type Connector } from '../../shared/integrations.js';
 import type { IntegrationActions } from '../integrations-state.js';
 import { CredentialEditor } from './CredentialEditor.js';
+import { useSettingsDraft } from './SettingsNavigation.js';
 export function ConnectorEditor({
   actions,
   definition,
@@ -29,6 +30,10 @@ export function ConnectorEditor({
   const [credential, setCredential] = useState('');
   const [envKey, setEnvKey] = useState('TOKEN');
   const [enabled, setEnabled] = useState(false);
+  useSettingsDraft(JSON.stringify([definitionId, label, template, serverName, transport, endpoint, transport === 'stdio' ? args : '', credential, transport === 'stdio' ? envKey : '', enabled]) !==
+    JSON.stringify([draft?.id ?? '', draft?.label ?? '', draft?.templateId ?? 'github', draft?.serverName ?? 'github',
+      draft?.transport ?? 'streamable-http', draft?.url ?? draft?.command ?? '', draft?.transport === 'stdio' ? draft.args.join('\n') : '',
+      draft?.credentialBindings[0]?.credentialRef ?? '', draft?.transport === 'stdio' ? (draft.credentialBindings[0]?.key ?? 'TOKEN') : '', draft?.enabled ?? false]));
   const edit = useCallback((d?: Connector) => {
     setCredentialEpoch((epoch) => epoch + 1);
     setDraft(d);

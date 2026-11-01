@@ -53,6 +53,7 @@ import { BotSessionsSidebar, type BotSessionsSidebarInjected } from './component
 import type { MemoryCatalog } from './memory-state.js';
 import { memoryPanelFactory } from './memory-panel.js';
 import { createBotDetailSource } from './detail-state.js';
+import { createPageNavigation } from './pages/page-navigation.js';
 import { createBotCatalog } from './state.js';
 import { createActivityCatalog } from './activity-state.js';
 
@@ -221,6 +222,7 @@ export async function apply(ctx: Context, options: Partial<Config> = {}): Promis
     collaboration,
     groups,
     management,
+    pageNavigation: createPageNavigation(ctx),
     hooks: {
       catalog,
       activity,
