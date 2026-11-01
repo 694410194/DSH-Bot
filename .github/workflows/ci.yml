@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check-and-pack:
+    name: Check and pack (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+          run_install: false
+      - name: Install locked dependencies
+        run: scripts/pnpm install --frozen-lockfile
+      - name: Check build and CLI portability fixtures
+        run: node --test scripts/community-build.test.mjs
+      - name: Check community documentation and source whitespace
+        run: |
+          scripts/pnpm check:docs
+          scripts/pnpm check:format
+      # Unit/fixture checks use local doubles; no DSH CLI/profile or model key is required.
+      - name: Build, test, typecheck and lint
+        run: scripts/pnpm check
+      - name: Pack release artifact
+        run: scripts/pnpm -C packages/dsh-bot pack --pack-destination ../../dist
+      - name: Verify actual tarball contents
+        run: |
+          set -- dist/dsh-bot-*.tgz
+          test "$#" -eq 1
+          node scripts/verify-package.mjs "$1"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsh-bot-${{ matrix.os }}
+          path: dist/dsh-bot-*.tgz
+          if-no-files-found: error

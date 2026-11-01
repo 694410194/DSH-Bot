@@ -146,4 +146,3 @@ export async function withFacility(run: (fixture: Fixture) => Promise<void>) {
   const fixture = await facility();
   try { await run(fixture); } finally { await fixture.close(); }
 }
-

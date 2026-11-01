@@ -41,7 +41,7 @@
 
 最终 Web 矩阵确认 source、packed、installed Client SHA-256 一致：`d19a7f3c` 开头，完整值见其 summary。全部 8 组 native-group 截图均经人工视觉复核，并复核窄屏候选、名称创建和删除对话框。新引用查找过程中显示加载状态，全部存在原文的夹具引用均成功解析，不把异步加载误报为不存在。导航侧栏操作在 1360px 完成，再在每组指定宽度执行聊天、候选和截图；不据此宣称验证了宿主移动端侧栏的全部行为。
 
-可查看 [中文亮色工作区](../../.dsh-dev/simplified-bots-ui/1793289707458-77453/zh-light-1360-native-group.png)、[中文暗色窄屏候选](../../.dsh-dev/simplified-bots-ui/1793289707458-77453/zh-dark-390-mention-candidates.png)、[名称创建](../../.dsh-dev/simplified-bots-ui/1793289707458-77453/zh-dark-390-name-only-create.png)。其他 69 张截图与 summary 同目录。
+可查看 中文亮色工作区（本地证据：`.dsh-dev/simplified-bots-ui/1793289707458-77453/zh-light-1360-native-group.png`）、中文暗色窄屏候选（本地证据：`.dsh-dev/simplified-bots-ui/1793289707458-77453/zh-dark-390-mention-candidates.png`）、名称创建（本地证据：`.dsh-dev/simplified-bots-ui/1793289707458-77453/zh-dark-390-name-only-create.png`）。其他 69 张截图与 summary 同目录。
 
 原生脚本统一带 `DSH_HOME="$PWD/.dsh-dev" DSH_BOT_ARTIFACT=dist/dsh-bot-0.6.0.tgz` 和 `--mock-only`。每个脚本都核对最终 tgz 与安装后的逐文件字节；没有用源目录安装代替最终包。汇总为 `.dsh-dev/v060-final-native-results.json`。
 

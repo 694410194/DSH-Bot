@@ -175,4 +175,3 @@ export function mutation(action: 'create' | 'update' | 'delete') {
   if (action === 'update') return { action, id: 'alpha', input: { name: 'Changed' } };
   return { action, id: 'alpha' };
 }
-

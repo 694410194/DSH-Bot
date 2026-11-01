@@ -38,7 +38,7 @@
 
 浏览器命令：`DSH_HOME="$PWD/.dsh-dev" DSH_BOT_ARTIFACT=dist/dsh-bot-0.6.1.tgz node scripts/simplified-bots-ui.mjs --mock-only`（未设置 FILTER）。PASS：`.dsh-dev/simplified-bots-ui/1793352373815-38250/summary.json`；中英 × 亮暗 × 1360/390 共 8/8 case，804 检查、112 截图，pageErrors=0。24 次 setModel 全部成功，专用模型版本每组 0→1→2，零 conflict、零重试。8 次安全权限切换实际执行；8 次风险确认取消没有新增原生命令，权限保持。真实 worker 接收到所选模型/推理等级；真实模型请求 0。
 
-已人工复核 [暗色窄屏工具栏](../../.dsh-dev/simplified-bots-ui/1793352373815-38250/zh-dark-390-model-reopened.png)、[暗色推理菜单](../../.dsh-dev/simplified-bots-ui/1793352373815-38250/zh-dark-390-reasoning-menu.png)、[亮色群聊](../../.dsh-dev/simplified-bots-ui/1793352373815-38250/zh-light-1360-native-group.png)。宽窄均使用真实 pointer click 发送；没有 force click。
+已人工复核 暗色窄屏工具栏（本地证据：`.dsh-dev/simplified-bots-ui/1793352373815-38250/zh-dark-390-model-reopened.png`）、暗色推理菜单（本地证据：`.dsh-dev/simplified-bots-ui/1793352373815-38250/zh-dark-390-reasoning-menu.png`）、亮色群聊（本地证据：`.dsh-dev/simplified-bots-ui/1793352373815-38250/zh-light-1360-native-group.png`）。宽窄均使用真实 pointer click 发送；没有 force click。
 
 ### 正式桌面安装与只读验证
 

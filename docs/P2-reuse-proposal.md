@@ -14,7 +14,7 @@
 | 起始改动 | 未跟踪 `.codex/`、`scripts/p2-e2e`，保留原状 |
 | 参考源码 | `~/ai-workspace/deepseek-harness`，HEAD 与 `dsh-v0.2.1-rc.2^{commit}` 均为 `687f282e8625c6b8d11ff58211a90524be2e4317`，工作树干净，只读 |
 | 已读设计 | [P2-design](P2-design.md)、[前次提案](P2-codex-proposal.md)、[T17 验收](acceptance/P2.md)、[API notes](dsh-api-notes.md)、[PLAN](PLAN.md) 的 P1–P4；旧文档保留为历史，本稿指出需修订之处 |
-| 本轮运行 | `scripts/pnpm check` 退出 0：45 个文件、643 项测试通过，build/typecheck/lint 通过；[日志](../.dsh-dev/p2-reuse-20261020/check.log) |
+| 本轮运行 | `scripts/pnpm check` 退出 0：45 个文件、643 项测试通过，build/typecheck/lint 通过；日志（本地证据：`.dsh-dev/p2-reuse-20261020/check.log`） |
 | 验证边界 | 未运行新桥接 mock 探针、桌面 UI 或真实模型会话；现有测试通过不证明新桥接可运行。T17 的 Host/mock 成功是既有验收记录，本轮未复跑其 profile/e2e |
 
 下文源码引用用 **H/** 表示锁定的 DSH 参考仓库，**B/** 表示本仓库。`路径:行号` 为本轮核实的定位；范围仅帮助阅读，不构成可深导入的许可。私有实现文件只用于说明行为，设计依赖只来自公开包入口、服务和事件。

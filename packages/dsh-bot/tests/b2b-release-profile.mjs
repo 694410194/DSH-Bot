@@ -117,7 +117,7 @@ export function apply(ctx, config) {
         }
         assert.equal(effects, 1);
         assert.ok(calls.some((c) => c.owner === beta.session.id && c.name === 'mcp__same__echo' && !c.isError && JSON.stringify(c.result).includes('MCP_beta_ONLY')));
-        assert.ok(!calls.some((c) => c.owner === alpha.session.id && c.name === 'mcp__same__echo')); 
+        assert.ok(!calls.some((c) => c.owner === alpha.session.id && c.name === 'mcp__same__echo'));
         assert.ok(approvals.some((r) => r.tool === 'b2b_effect' && r.outcome === 'rejected'));
         assert.ok(approvals.some((r) => r.tool === 'b2b_effect' && r.outcome === 'allowed-once'));
         const overview = await invoke({ action: 'list', botId: 'alpha' });

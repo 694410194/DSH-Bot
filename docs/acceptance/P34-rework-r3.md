@@ -18,12 +18,12 @@
 
 ## 2. 检查、打包与运行
 
-主 e2e 目录：`.dsh-dev/p34-u12-13/1792871158471-6631/`；[summary](../../.dsh-dev/p34-u12-13/1792871158471-6631/summary.json)。最终包审计记录在该目录与 `dist/artifact-manifest.json`。
+主 e2e 目录：`.dsh-dev/p34-u12-13/1792871158471-6631/`；summary（本地证据：`.dsh-dev/p34-u12-13/1792871158471-6631/summary.json`）。最终包审计记录在该目录与 `dist/artifact-manifest.json`。
 
-- [0.3.1 安装包](../../dist/dsh-bot-0.3.1.tgz)：590057 字节，270 文件；[SHA256 文件](../../dist/dsh-bot-0.3.1.tgz.sha256)。
+- 0.3.1 安装包（本地证据：`dist/dsh-bot-0.3.1.tgz`）：590057 字节，270 文件；SHA256 文件（本地证据：`dist/dsh-bot-0.3.1.tgz.sha256`）。
 - SHA256：`eec5e01097c6f1cd8543d55e8ce4b7df7fd6ff318f544b27ac04e16ca7f2b627`。
 - 保留 0.3.0 SHA256：`d037fcee07c1e7787b1e78b1e1a8dbd2e4b6028ac9291b6b486f7ba7ee135089`，与原交付记录相同。
-- [0.2.2 升级收据](../../.dsh-dev/p34-u12-13/1792871158471-6631/upgrade-0.2.2/result.json)、[0.3.0 升级收据](../../.dsh-dev/p34-u12-13/1792871158471-6631/upgrade-0.3.0/result.json)，升级模型请求各 0；旧新完整合成状态为各目录的 `old-state.json` / `new-state.json`。
+- 0.2.2 升级收据（本地证据：`.dsh-dev/p34-u12-13/1792871158471-6631/upgrade-0.2.2/result.json`）、0.3.0 升级收据（本地证据：`.dsh-dev/p34-u12-13/1792871158471-6631/upgrade-0.3.0/result.json`），升级模型请求各 0；旧新完整合成状态为各目录的 `old-state.json` / `new-state.json`。
 - e2e 共 25 次 loopback（连接器/通知 2、Team 2、群 9、图谱 3、定时 4、委派 5），真实模型 0。各领域独立 profile；不声称是一个浏览器连续流程。CLI 卸载重装验证 7 个存储文件哈希不变、重装 Host 正常启动。
 - 单独 fixture 回归 6 次 loopback，不混入 e2e 的 25 次统计。
 
@@ -44,9 +44,9 @@
 
 - 只读 rc.2 `packages/api/session-controller/src/list.ts:50-58`：blank 在真实 `turn/start` 才变为 false。
 - 只读 rc.2 `packages/client/ui-workspace/src/client/rows/Rows.tsx:47-50`：blank 行统一显示本地化新会话，即使原生 title 已有名字。
-- [原截图同一 run 的来源收据](../../.dsh-dev/p34-r3-sidebar-origin.json)：只读保存的 workspace 与 projection 文件，Bots 工作区恰好只有 fixture 的三个 mainSessionIds，三者原有非空 Bot 标题但 blank=true、lastPromptAt=null；不存在额外 Team/群根会话占用该工作区。此为历史落盘证据，不作本轮浏览器观察。
+- 原截图同一 run 的来源收据（本地证据：`.dsh-dev/p34-r3-sidebar-origin.json`）：只读保存的 workspace 与 projection 文件，Bots 工作区恰好只有 fixture 的三个 mainSessionIds，三者原有非空 Bot 标题但 blank=true、lastPromptAt=null；不存在额外 Team/群根会话占用该工作区。此为历史落盘证据，不作本轮浏览器观察。
 - 原 fixture `packages/dsh-bot/tests/screenshot-profile.mjs` 只调用 openConversation，未 prompt 三个主会话。当前实现仍由插件固定真实 title，fixture 才负责展示用 mock 活动。
-- [本轮三个主会话标题与 blank 收据](../../.dsh-dev/screenshots-v03/2026-10-24T19-47-28.517Z-9872/sidebar-main-identity.json)：Assistant / Research Assistant / Reviewer 标题保持，三个 beforeBlank=true，afterBlank=false；每个实际 assistant、turn/end 和 flush=true 都有运行断言。
+- 本轮三个主会话标题与 blank 收据（本地证据：`.dsh-dev/screenshots-v03/2026-10-24T19-47-28.517Z-9872/sidebar-main-identity.json`）：Assistant / Research Assistant / Reviewer 标题保持，三个 beforeBlank=true，afterBlank=false；每个实际 assistant、turn/end 和 flush=true 都有运行断言。
 - [fixture 矩阵收据](../screenshots/v03/2026-10-24T19-47-28.517Z-9872/result.json)：fixtureStatus=PASS，浏览器 status=FAIL / NOT_RUN。首次 fixture 新增断言漏列 `sessionController` 注入，失败收据在 `docs/screenshots/v03/2026-10-24T19-46-53.835Z-8821/`；补齐声明后重跑通过，不隐藏第一次失败。
 
 ## 3. 编排方截图复跑
@@ -78,7 +78,7 @@ node packages/dsh-bot/scripts/screenshot-v03.mjs
 
 ### 额外行的身份与来源
 
-本次指定的 `docs/screenshots/v03/2026-10-24T19-56-19.688Z-25397` 与 r3 §2 的两个历史 run 不同。只读其 workspace / main-session sidecar / group sidecar / projection / 压缩 session header；未启动、修改或清理该历史 profile。完整带输入 SHA256 的收据：[p34-r4-sidebar-origin.json](../../.dsh-dev/p34-r4-sidebar-origin.json)。
+本次指定的 `docs/screenshots/v03/2026-10-24T19-56-19.688Z-25397` 与 r3 §2 的两个历史 run 不同。只读其 workspace / main-session sidecar / group sidecar / projection / 压缩 session header；未启动、修改或清理该历史 profile。完整带输入 SHA256 的收据：p34-r4-sidebar-origin.json（本地证据：`.dsh-dev/p34-r4-sidebar-origin.json`）。
 
 | 身份 | sessionId | 原生记录 |
 | --- | --- | --- |
@@ -107,7 +107,7 @@ Bots workspace `90e3a744-8afe-42af-a429-bb6b57b1e951` 的 path 为 `.dsh-dev/dsh
 
 ### 命令与收据
 
-主 e2e：[summary.json](../../.dsh-dev/p34-u12-13/1792872044434-33009/summary.json)，全量命令日志 `.dsh-dev/p34-r4-e2e.log`。独立截图：[result.json](../screenshots/v03/2026-10-24T20-01-21.442Z-34649/result.json)。
+主 e2e：summary.json（本地证据：`.dsh-dev/p34-u12-13/1792872044434-33009/summary.json`），全量命令日志 `.dsh-dev/p34-r4-e2e.log`。独立截图：[result.json](../screenshots/v03/2026-10-24T20-01-21.442Z-34649/result.json)。
 
 | 命令 | 实际结果 |
 | --- | --- |
@@ -117,11 +117,11 @@ Bots workspace `90e3a744-8afe-42af-a429-bb6b57b1e951` 的 path 为 `.dsh-dev/dsh
 | `DSH_HOME="$PWD/.dsh-dev" DSH_BOT_E2E_PACKAGE="$PWD/dist/dsh-bot-0.3.1.tgz" node packages/dsh-bot/scripts/screenshot-v03.mjs` | 退出 1；fixtureStatus=PASS，6 次 loopback，真实模型 0；Chromium 在启动阶段报 `bootstrap_check_in ... MachPortRendezvousServer: Permission denied (1100)`。60 张宽屏、16 项窄屏及新增侧栏断言均 FAIL / NOT_RUN，没有 PNG。 |
 | `node --check` 三个修改的 mjs 与 `git diff --check` | PASS；仅语法/差异检查。 |
 
-真实 screenshot fixture 的 [sidebar-after-group.json](../../.dsh-dev/screenshots-v03/2026-10-24T20-01-21.442Z-34649/sidebar-after-group.json) 验证三个 main 与 workspace 集合相同；完整群运行探针的 [first-sidebar-after-group.json](../../.dsh-dev/p34-u12-13/1792872044434-33009/groups/first-sidebar-after-group.json) 验证同一性质。两者不冒充浏览器行可见性证明。群冷启动收据 `groups/cold-cold.json` 确认 sameRoot/sameMessages/noReplayedTurn。
+真实 screenshot fixture 的 sidebar-after-group.json（本地证据：`.dsh-dev/screenshots-v03/2026-10-24T20-01-21.442Z-34649/sidebar-after-group.json`） 验证三个 main 与 workspace 集合相同；完整群运行探针的 first-sidebar-after-group.json（本地证据：`.dsh-dev/p34-u12-13/1792872044434-33009/groups/first-sidebar-after-group.json`） 验证同一性质。两者不冒充浏览器行可见性证明。群冷启动收据 `groups/cold-cold.json` 确认 sameRoot/sameMessages/noReplayedTurn。
 
-包 SHA256：`1a0c6dbe58b373c1429e917609f599d6635c0df7950aa1ffad3301a01b007445`，270 文件；[tgz](../../dist/dsh-bot-0.3.1.tgz) / [sha256](../../dist/dsh-bot-0.3.1.tgz.sha256)。最终 [artifact-manifest.json](../../.dsh-dev/p34-r4-final-audit/artifact-manifest.json) 再验 PASS：591260 字节、270 个打包文件与当前 source/lib 全字节相同，`shasum -a 256 -c dsh-bot-0.3.1.tgz.sha256` 为 OK。
+包 SHA256：`1a0c6dbe58b373c1429e917609f599d6635c0df7950aa1ffad3301a01b007445`，270 文件；tgz（本地证据：`dist/dsh-bot-0.3.1.tgz`） / sha256（本地证据：`dist/dsh-bot-0.3.1.tgz.sha256`）。最终 artifact-manifest.json（本地证据：`.dsh-dev/p34-r4-final-audit/artifact-manifest.json`） 再验 PASS：591260 字节、270 个打包文件与当前 source/lib 全字节相同，`shasum -a 256 -c dsh-bot-0.3.1.tgz.sha256` 为 OK。
 
-升级：[0.2.2→0.3.1](../../.dsh-dev/p34-u12-13/1792872044434-33009/upgrade-0.2.2/result.json)、[0.3.0→0.3.1](../../.dsh-dev/p34-u12-13/1792872044434-33009/upgrade-0.3.0/result.json) 均 PASS；旧/新完整 Host 分别启动，Bot、memory、main-session 身份保持，0.3.0 路径还比较群/成员、禁用连接器、通知策略和 Inbox，升级模型请求均 0。CLI 卸载重装保留 7 个存储文件字节，重装后真实 Host 启动 PASS；所有新装 profile 都对 270 个包内文件做逐文件 hash 审计。旧 0.3.0 包 SHA256 仍为 `d037fcee07c1e7787b1e78b1e1a8dbd2e4b6028ac9291b6b486f7ba7ee135089`。e2e summary 中 inherited 的浏览器说明仍引用 r3 host-only 交接；本 r4 已实际另跑截图命令，其启动失败以独立 result/error 收据为准。
+升级：0.2.2→0.3.1（本地证据：`.dsh-dev/p34-u12-13/1792872044434-33009/upgrade-0.2.2/result.json`）、0.3.0→0.3.1（本地证据：`.dsh-dev/p34-u12-13/1792872044434-33009/upgrade-0.3.0/result.json`） 均 PASS；旧/新完整 Host 分别启动，Bot、memory、main-session 身份保持，0.3.0 路径还比较群/成员、禁用连接器、通知策略和 Inbox，升级模型请求均 0。CLI 卸载重装保留 7 个存储文件字节，重装后真实 Host 启动 PASS；所有新装 profile 都对 270 个包内文件做逐文件 hash 审计。旧 0.3.0 包 SHA256 仍为 `d037fcee07c1e7787b1e78b1e1a8dbd2e4b6028ac9291b6b486f7ba7ee135089`。e2e summary 中 inherited 的浏览器说明仍引用 r3 host-only 交接；本 r4 已实际另跑截图命令，其启动失败以独立 result/error 收据为准。
 
 ### 本轮文件与遗留
 

@@ -33,7 +33,7 @@
 
 Host实际验证：三个同名成员、两种provider/model和不同effort；成员覆盖/群默认/Bot/DSH优先级；群默认更新不覆盖成员、单成员清除不改其他成员；队列与运行补充保留原配置；真实group_message A→B→A使用同轮全部成员快照；私聊/其他群/全局隔离；共享模型CAS与ABA；移除重加不继承旧memberId配置；新/旧记录冷恢复。没有使用mock Remote代替实际Host路由。
 
-Browser实际验证：同名成员通过稳定身份选择、逐个设置与重开持久、实际worker adapter收到各自路由、单成员reset/群默认scope、模型来源全文可见且无裁切/遮挡；使用真实pointer click，不force或错误重试。源码和包Client SHA256相等、安装文件已验。已目视复核[390亮色成员菜单](../../.dsh-dev/simplified-bots-ui/1793355901648-56777/en-light-390-member-model-sources.png)，中英亮暗完整图集和每步receipt与summary同目录。
+Browser实际验证：同名成员通过稳定身份选择、逐个设置与重开持久、实际worker adapter收到各自路由、单成员reset/群默认scope、模型来源全文可见且无裁切/遮挡；使用真实pointer click，不force或错误重试。源码和包Client SHA256相等、安装文件已验。已目视复核390亮色成员菜单（本地证据：`.dsh-dev/simplified-bots-ui/1793355901648-56777/en-light-390-member-model-sources.png`），中英亮暗完整图集和每步receipt与summary同目录。
 
 ## 桌面安装
 

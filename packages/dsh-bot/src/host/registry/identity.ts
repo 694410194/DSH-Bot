@@ -6,4 +6,3 @@ export function sameBotConfig(left: BotRecord, right: BotRecord): boolean {
   return isDeepStrictEqual(l, r);
 }
 export const messageOf = (error: unknown) => (error instanceof Error ? error.message : String(error));
-

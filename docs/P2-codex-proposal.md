@@ -15,7 +15,7 @@
 | 参考源码 | `/Users/youzihui/ai-workspace/deepseek-harness`，HEAD 与 `dsh-v0.2.1-rc.2^{commit}` 均为 `687f282e8625c6b8d11ff58211a90524be2e4317`，工作树干净；只读 |
 | 已安装版本 | `DSH_HOME="$PWD/.dsh-dev" scripts/dsh --version` 与应用 `Info.plist` 均为 `0.2.1-rc.2`；CLI 另输出 macOS codesign 诊断，退出码 0 |
 | 桌面 UI | Computer Use 能枚举正在运行的应用；读取已安装 DeepSeek Harness 界面时自动审批拒绝，消息为 `Computer Use was not approved to use DeepSeek Harness`，无更具体原因。没有成功读取“自动化任务”页，也没有更改应用/profile |
-| 当前项目检查 | `scripts/pnpm check` 退出 0：36 个测试文件、535 项测试通过，Host/Client build、strict typecheck、116 文件 lint 通过；[日志](../.dsh-dev/p2-proposal/check.log) |
+| 当前项目检查 | `scripts/pnpm check` 退出 0：36 个测试文件、535 项测试通过，Host/Client build、strict typecheck、116 文件 lint 通过；日志（本地证据：`.dsh-dev/p2-proposal/check.log`） |
 | P2 运行 | 本轮没有创建 Routine、委派、mock 会话或真实模型会话。后文标为“源码确认”的行为不能计作桌面或 P2 e2e 通过 |
 
 下文 `packages/...`、`apps/...`、`docs/...` 的源码引用默认相对 **DSH 参考仓库**；明确注明“本仓库”的引用才属于 DSH-Bot。行号固定在上述 commit。线上锁定 tag 页面读取未成功，结论以本地已验证的只读 tag 为依据。

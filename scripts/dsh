@@ -1,4 +1,31 @@
 #!/bin/sh
 set -eu
 
-exec "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" "$@"
+# An explicit executable wins over PATH and the optional macOS desktop runtime.
+# This wrapper selects a CLI only; it does not select or rewrite a DSH profile.
+if [ -n "${DSH_BOT_DSH_BIN:-}" ]; then
+  if ! command -v "$DSH_BOT_DSH_BIN" >/dev/null 2>&1; then
+    echo "DSH_BOT_DSH_BIN is not executable: $DSH_BOT_DSH_BIN" >&2
+    exit 127
+  fi
+  if [ "$(command -v "$DSH_BOT_DSH_BIN")" -ef "$0" ]; then
+    echo 'DSH_BOT_DSH_BIN points to scripts/dsh itself; choose the real CLI.' >&2
+    exit 127
+  fi
+  exec "$DSH_BOT_DSH_BIN" "$@"
+fi
+
+if command -v dsh >/dev/null 2>&1; then
+  dsh_bot_path_cli=$(command -v dsh)
+  if [ ! "$dsh_bot_path_cli" -ef "$0" ]; then
+    exec "$dsh_bot_path_cli" "$@"
+  fi
+fi
+
+dsh_bot_desktop_cli='/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh'
+if [ -x "$dsh_bot_desktop_cli" ]; then
+  exec "$dsh_bot_desktop_cli" "$@"
+fi
+
+echo 'DSH CLI not found. Set DSH_BOT_DSH_BIN to an executable or put dsh on PATH.' >&2
+exit 127

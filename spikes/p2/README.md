@@ -20,12 +20,12 @@ DSH_HOME="$PWD/.dsh-dev" node spikes/p2/lib/run.js
 
 - DSH-Bot：`phase/p2` / `93b1640d2e8d81e38cc30a0b98d4c6a87a2ed6e6`，产品 `0.1.6`。
 - 只读参考：`../deepseek-harness` HEAD = `dsh-v0.2.1-rc.2` = `687f282e8625c6b8d11ff58211a90524be2e4317`，检查时工作树干净。实际 CLI `0.2.1-rc.2`。
-- 最终运行目录：[1792504206833-48874](../../.dsh-dev/p2/t11/1792504206833-48874/)，profile `t11-1792504206834-48874`。
-- [汇总](../../.dsh-dev/p2/t11/1792504206833-48874/result.json)、[首进程结果](../../.dsh-dev/p2/t11/1792504206833-48874/first.json)、[重启结果](../../.dsh-dev/p2/t11/1792504206833-48874/cold.json)、[命令及退出码](../../.dsh-dev/p2/t11/1792504206833-48874/commands.json)。两个 Host 都 loaded、测试完成、effect disposed、退出 0。
-- [安装字节核对](../../.dsh-dev/p2/t11/1792504206833-48874/installed-package.json)：Host 按包名加载 profile 中已安装的 tarball；host/rules/lock 三个 JS 与本次构建逐字节相同。tgz SHA256 `6b5f27eba9e999990807edfac24a4839b7db027f049d213b76ce7c9943e82448`。
-- [mock 审计](../../.dsh-dev/p2/t11/1792504206833-48874/mock.json)：4 次 `/v1/messages`，均 `slow_success/completed`。唯一启用模型 provider 明确配置 `127.0.0.1` 动态端口及专用假 key；停用 account/pi-ai provider、标题模型、重试、遥测和远程会话日志。**真实模型请求 0**。这是受控 provider 路由和 mock 计数证据，不宣称 OS 级全进程网络抓包。
+- 最终运行目录：1792504206833-48874（本地证据：`.dsh-dev/p2/t11/1792504206833-48874`），profile `t11-1792504206834-48874`。
+- 汇总（本地证据：`.dsh-dev/p2/t11/1792504206833-48874/result.json`）、首进程结果（本地证据：`.dsh-dev/p2/t11/1792504206833-48874/first.json`）、重启结果（本地证据：`.dsh-dev/p2/t11/1792504206833-48874/cold.json`）、命令及退出码（本地证据：`.dsh-dev/p2/t11/1792504206833-48874/commands.json`）。两个 Host 都 loaded、测试完成、effect disposed、退出 0。
+- 安装字节核对（本地证据：`.dsh-dev/p2/t11/1792504206833-48874/installed-package.json`）：Host 按包名加载 profile 中已安装的 tarball；host/rules/lock 三个 JS 与本次构建逐字节相同。tgz SHA256 `6b5f27eba9e999990807edfac24a4839b7db027f049d213b76ce7c9943e82448`。
+- mock 审计（本地证据：`.dsh-dev/p2/t11/1792504206833-48874/mock.json`）：4 次 `/v1/messages`，均 `slow_success/completed`。唯一启用模型 provider 明确配置 `127.0.0.1` 动态端口及专用假 key；停用 account/pi-ai provider、标题模型、重试、遥测和远程会话日志。**真实模型请求 0**。这是受控 provider 路由和 mock 计数证据，不宣称 OS 级全进程网络抓包。
 - storage-json 与 session-persistence-jsonl 指向该 run 独立目录；`DSH_HOME` 固定仓库 `.dsh-dev`，未读写 `~/.dsh`。Bots cwd 按 P1 正式逻辑仍为 `.dsh-dev/dsh-bot/bots`，不是每轮独立 cwd，也不是安全隔离边界。
-- [hashes.json](../../.dsh-dev/p2/t11/1792504206833-48874/hashes.json) 包含日志、结果、tgz 和持久文件的 SHA256（不自包含）。证据为 gitignored 本机产物，需留存本目录才能继续访问以上链接。
+- hashes.json（本地证据：`.dsh-dev/p2/t11/1792504206833-48874/hashes.json`） 包含日志、结果、tgz 和持久文件的 SHA256（不自包含）。证据为 gitignored 本机产物，需留存本目录才能继续访问以上链接。
 
 ## 七项验收
 
@@ -36,7 +36,7 @@ DSH_HOME="$PWD/.dsh-dev" node spikes/p2/lib/run.js
 | ③ rename 标题 | **PASS** | 返回指定 `[Routine] T11 · 2026-10-20 09:00 UTC` 及 seq=3；`title-persisted` 在第二进程读取目标会话，原生日志仍有该标题 |
 | ④ request/turn、idle 与 owner 后台工作 | **PASS** | `request-turn-idle-jobs`：requestId → `user/message.source.rpcId` → turn 1 → completed，存在真实 step，whenIdle 后 flush=true；重复相同 requestId 不增加 turn。真实 jobs-local 中自有 running job 可查询，其他 owner 看不到，unowned 必须剔除。`subagent-owner-query`：spawn 子会话在父目录可查询、另一父目录为空，后代 activity 从 running 到 inactive；waitForChildren 与 activation.result 完成后父 idle、Inbox 空 |
 | ⑤ 向在线/已释放可恢复的另一会话回报一次 | **PASS** | `online-followup-once`、`cold-followup-once`：目标 Bot 会话回报给另一个 Bot 会话；公开 createUserMessage + 自定义来源 + followup。重启先断言原 Agent 不在 registry，resolveAgent 恢复后投递；每个消息 ID 恰好出现一个 user/message，分别只增加一轮 completed |
-| ⑥ 锁文件单 Host 所有权 | **PASS（本机互斥）** | [lock-processes.json](../../.dsh-dev/p2/t11/1792504206833-48874/lock-processes.json)：两个独立 Node 进程同时 `open(wx)`，恰一 owner；正常 release 后可接管；SIGKILL 后新进程拒绝接管。实际两个先后 Host 的 `host-lock` 均取得锁并由 effect 释放 |
+| ⑥ 锁文件单 Host 所有权 | **PASS（本机互斥）** | lock-processes.json（本地证据：`.dsh-dev/p2/t11/1792504206833-48874/lock-processes.json`）：两个独立 Node 进程同时 `open(wx)`，恰一 owner；正常 release 后可接管；SIGKILL 后新进程拒绝接管。实际两个先后 Host 的 `host-lock` 均取得锁并由 effect 释放 |
 | ⑦ Host timer 生命周期 | **PASS** | `timer-lifecycle`：真实 Host 内插件 mount/dispose 两代，累计 ticks>0，cleanup=2，卸载后无新增 tick；迟到异步回调两次均被关闭标记挡住（lateCommits=0）。父探针退出另写 `*-disposed.json`，无 Client 参与计时 |
 
 最终目标会话 `session-cf674c47-38d6-4b19-bc0a-ef264e9cd22c`；回报接收会话 `session-4e4090b3-2612-4464-8c5f-bd2a801697e8`；requestId `7763f48d-31e7-4859-b013-646d23418026`，input messageId `10e16aba-b6fd-4c57-a573-b4e18d6ee21a`，turn/start seq=5、user/message seq=9、turn/end seq=17。在线和冷恢复回报 messageId 分别为 `8bef7f09-d65a-4d96-b98a-18c3d86c8d95`、`14e6d8eb-d16e-435c-a333-983f9f5837d5`；完整事件另存 `first-session-*.json`、`cold-session-*.json`。
