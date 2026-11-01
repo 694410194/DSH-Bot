@@ -16,6 +16,8 @@ The current version is **0.6.3**. The prebuilt package is available in [GitHub R
 
 ## Install and upgrade
 
+Community installation URL: [latest stable dsh-bot.tgz](https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz). Download `dsh-bot.tgz.sha256` from the same Release and verify with `shasum -a 256 -c dsh-bot.tgz.sha256` (macOS) or `sha256sum -c dsh-bot.tgz.sha256` (Linux). The URL follows stable releases; existing installations still require an upgrade. The pinned-version instructions below remain available for reproducible installs.
+
 DeepSeek Harness is required. Development dependencies and the read-only API reference are pinned to **0.2.1-rc.2**. The release archive completed installation, reinstallation and cold recovery on **rc.2**, plus group UI checks on **rc.2 / rc.5**. See the [release record](docs/releases/v0.6.3.md) for results and the distinction from historical evidence. The declared range is `>=0.2.1-rc.2 <0.3.0`, which does not establish verified compatibility with every version in that range.
 
 1. Download the `dsh-bot-0.6.3.tgz` and `SHA256SUMS` assets from [GitHub Release v0.6.3](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3), not the automatically generated Source code archives. In the download directory, verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Developers can also build from this checkout as described below.

@@ -20,15 +20,19 @@ execFileSync(process.execPath, [resolve(root, 'scripts/verify-package.mjs'), art
 const bytes = await readFile(artifact);
 const sha256 = createHash('sha256').update(bytes).digest('hex');
 const asset = `${manifest.name}-${manifest.version}.tgz`;
+const stableAsset = 'dsh-bot.tgz';
+const stableChecksumAsset = `${stableAsset}.sha256`;
 const tag = `v${manifest.version}`;
 const repository = manifest.repository.url.replace(/^git\+/, '').replace(/\.git$/, '');
 assert.equal(repository, 'https://github.com/MJ-CJM/DSH-Bot');
 const download = `${repository}/releases/download/${tag}/${asset}`;
+const stableDownload = `${repository}/releases/latest/download/${stableAsset}`;
 const git = args => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
 const identity = {
   status: 'candidate', published: false, version: manifest.version, license: manifest.license,
   gitHead: git(['rev-parse', 'HEAD']), workingTreeDirty: Boolean(git(['status', '--porcelain'])),
   asset, bytes: bytes.length, sha256, tag, plannedDownloadUrl: download,
+  stableAsset, stableChecksumAsset, plannedStableDownloadUrl: stableDownload,
   runtimeAcceptance: 'NOT_RUN_BY_THIS_SCRIPT',
 };
 const parent = resolve(root, 'dist/release-candidates');
@@ -37,11 +41,14 @@ const destination = resolve(parent, `${tag}-${sha256.slice(0, 12)}`);
 // A repeated run refuses to overwrite an existing candidate and its evidence.
 await mkdir(destination);
 await copyFile(artifact, resolve(destination, asset), constants.COPYFILE_EXCL);
+await copyFile(artifact, resolve(destination, stableAsset), constants.COPYFILE_EXCL);
 const write = (name, value) => writeFile(resolve(destination, name), value, { flag: 'wx' });
 await write('SHA256SUMS', `${sha256}  ${asset}\n`);
+// Keep the original single-file checksum usable for versioned-only downloads.
+await write(stableChecksumAsset, `${sha256}  ${stableAsset}\n`);
 await write('release.json', `${JSON.stringify(identity, null, 2)}\n`);
 await write('MJ-CJM__DSH-Bot--packages-dsh-bot.yml', [
-  '# Submit only after the pinned GitHub Release URL below is publicly downloadable.',
+  '# Each latest stable Release must include the version-free dsh-bot.tgz asset.',
   `url: ${repository}/tree/main/packages/dsh-bot`,
   'name: MJ-CJM/DSH-Bot#dsh-bot',
   'category: workflow',
@@ -49,7 +56,7 @@ await write('MJ-CJM__DSH-Bot--packages-dsh-bot.yml', [
   '  en: Personal Bots with memory, workspace group chats and native background tasks for DeepSeek Harness.',
   '  zh: 在 DeepSeek Harness 中提供具备记忆的个人 Bot、工作区群聊和原生后台任务。',
   'icon: https://raw.githubusercontent.com/MJ-CJM/DSH-Bot/main/packages/dsh-bot/assets/icon-256.png',
-  `tarball: ${download}`, '',
+  `tarball: ${stableDownload}`, '',
 ].join('\n'));
 const notes = await readFile(resolve(root, 'docs/release-notes-template.md'), 'utf8');
 await write('RELEASE_NOTES.md', notes.replaceAll('{{VERSION}}', manifest.version)
@@ -61,10 +68,12 @@ await write('PUBLISH_CHECKLIST.md', [
   '- [ ] Run isolated Host/UI and applicable upgrade checks against this exact tgz; record DSH version and evidence.',
   '- [ ] Replace the release-notes validation checklist with actual results and limitations.',
   '- [ ] Confirm the eventual tag points at the reviewed source; explain any dirty working-tree provenance in release.json.',
-  '- [ ] Maintainer creates the Release and uploads this same tgz, SHA256SUMS and completed release notes.',
-  '- [ ] Independently download the public asset and verify SHA256SUMS; do not rebuild between validation and upload.',
+  '- [ ] Maintainer uploads both byte-identical tgz files, SHA256SUMS, dsh-bot.tgz.sha256, release.json and completed release notes to the same Release.',
+  '- [ ] Keep prereleases separate. Promote a stable Release to latest only after every asset is uploaded.',
+  '- [ ] Independently download the pinned and latest URLs and verify their matching hashes; do not rebuild between validation and upload.',
+  '- [ ] Verify latest resolves to the intended stable tag; never use a versioned filename after latest/download/.',
   '- [ ] Update README publication status and install links only when the Release is live.',
   '- [ ] Set repository topic dsh-plugin and description; confirm a private security-reporting channel.',
-  '- [ ] Submit the generated YAML under data/plugins/ in awesome-dsh-plugin; leave its generated READMEs alone.', '',
+  '- [ ] Submit the generated YAML once under data/plugins/ in awesome-dsh-plugin; later releases retaining this URL need no directory PR. Leave generated READMEs alone.', '',
 ].join('\n'));
 console.log(`Prepared candidate (NOT published or runtime-accepted): ${destination}`);

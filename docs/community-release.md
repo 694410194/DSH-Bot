@@ -37,7 +37,7 @@ shasum -a 256 dist/dsh-bot-0.6.3.tgz
 scripts/pnpm release:prepare dist/dsh-bot-0.6.3.tgz
 ```
 
-脚本先复用实际 tarball 审计，拒绝未确定的许可证、根/包许可不一致或包与源码字节不同。输出位于 `dist/release-candidates/v0.6.3-<hash前12位>/`：原样复制的 tgz、`SHA256SUMS`、如实记录工作树状态的 `release.json`、双语 Release notes 模板、审核清单，以及社区目录 YAML。同一路径重复生成会失败，不覆盖已有候选或其证据。它不启动模型、不创建 tag、不上传文件，不把构建结果写成 Host/UI 通过。运行验收后填写该候选目录中的结果，不重新打包。
+脚本先复用实际 tarball 审计，拒绝未确定的许可证、根/包许可不一致或包与源码字节不同。输出位于 `dist/release-candidates/v0.6.3-<hash前12位>/`：字节完全一致的版本包 `dsh-bot-0.6.3.tgz` 和固定名称包 `dsh-bot.tgz`，分别对应的 `SHA256SUMS` 和 `dsh-bot.tgz.sha256`，如实记录工作树状态及两种下载地址的 `release.json`、双语 Release notes 模板、审核清单，以及使用 `latest` 地址的社区目录 YAML。同一路径重复生成会失败，不覆盖已有候选或其证据。它不启动模型、不创建 tag、不上传文件，不把构建结果写成 Host/UI 通过。运行验收后填写该候选目录中的结果，不重新打包。
 
 GitHub Actions 的 **Release candidate** 工作流可由维护者手动触发。它只生成并上传候选 artifacts，权限为 `contents: read`，不会自动发布。必须对下载得到的同一 tgz 完成运行验收；本地另行构建的包不继承其 hash。工作流自身的新版本是否实跑，见本次验收记录。
 
@@ -89,7 +89,7 @@ DSH [官方贡献指南](https://github.com/deepseek-ai/deepseek-harness/blob/ma
 data/plugins/MJ-CJM__DSH-Bot--packages-dsh-bot.yml
 ```
 
-条目形状如下；此处仅为示例，`tarball` 必须在实际发布后填写真实 GitHub Release HTTPS `.tgz` 地址，不能直接提交占位值。
+条目形状如下；提交前必须确认 `latest` 地址可公开下载，并与目标稳定版本的安装包字节一致。
 
 ```yaml
 url: https://github.com/MJ-CJM/DSH-Bot/tree/main/packages/dsh-bot
@@ -98,7 +98,7 @@ category: workflow
 description:
   en: Personal Bots with memory, workspace group chats and native background tasks for DeepSeek Harness.
   zh: 在 DeepSeek Harness 中提供具备记忆的个人 Bot、工作区群聊和原生后台任务。
-tarball: <actual GitHub Release HTTPS tgz URL>
+tarball: https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz
 ```
 
 英文描述必填，中文可选；描述必须与实际交付功能一致。目录 README 由数据生成，不手工改它们。当前仓库不支持直接从 GitHub 根目录安装，因此使用预构建包路线。若以后支持 Git 源码安装，须按[官方打包文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.zh.md)提供自包含 `prepare` 与构建授权说明。
@@ -111,13 +111,15 @@ tarball: <actual GitHub Release HTTPS tgz URL>
 
 以下动作发生在 GitHub，不由本地分支自动完成：
 
-历史准备记录：2026-11-01 已补齐仓库简介和 `dsh-plugin`、`deepseek-harness`、`ai-agents`、`mcp` topics，并启用私密漏洞报告；API 回读确认成功。以下清单保留为后续版本维护流程。未创建 tag、Release 或社区 PR。
+2026-11-01 已补齐仓库简介和 `dsh-plugin`、`deepseek-harness`、`ai-agents`、`mcp` topics，并启用私密漏洞报告。v0.6.3 已发布，社区申请为 [PR #11201](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/11201)。以下清单用于后续版本维护。
 
 1. 审阅并合入准备改动，最终 tag 必须指向与候选包一致的源码；若 `release.json` 记录了 dirty 工作树，核对其改动确实包含在该提交中。
-2. 创建版本 Release，上传已通过验收的同一 `.tgz`、`SHA256SUMS` 和填写实际结果的发布说明。先保留草稿供审阅，确认后公开。不要把 Actions artifact 的页面当作插件下载地址。
-3. 从公开 Release 重新下载包，核对 SHA256；然后更新首页的“尚未发布”状态。目录条目使用固定 tag URL，避免 `latest/download/` 配合带版本文件名导致后续失效。
+2. 创建版本 Release，上传候选目录中的两个同字节 `.tgz`、`SHA256SUMS`、`dsh-bot.tgz.sha256`、`release.json` 和填写实际结果的发布说明。上传完成前保留草稿；审核后公开，稳定版本才设为 latest。预发布标记为 prerelease，不让它接管稳定入口。不要把 Actions artifact 的页面当作插件下载地址，也不要覆盖旧 tag 的安装包。
+3. 从公开固定版本 URL 和 `https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz` 重新下载包，确认 latest 对应预期 tag，并核对两包 SHA256 相同。版本包使用 `SHA256SUMS`；固定名称包使用同一 Release 的 `dsh-bot.tgz.sha256`，两份校验文件各只含对应的一个文件，单独下载任一包都可校验。发布过程中应从已解析的同一 tag 下载包与校验文件，避免跨版本混用。
 4. 仓库 About 增加 `dsh-plugin` topic。建议简介：`Personal agents with memory and workspace group chats for DeepSeek Harness.` 可另加 `deepseek-harness`、`ai-agents`、`mcp`；npm keywords 不能代替 GitHub topics。
 5. 确认 GitHub 私密漏洞报告或其他私密渠道实际可用后更新 SECURITY.md；不要把一个未确认可用的地址当作支持承诺。
-6. 将生成的 YAML 放进社区目录 `data/plugins/` 后单独开 PR。投稿前核对公开仓库、下载 URL、bundle 子目录和描述，不提交生成的目录 README。
+6. 首次将生成的 YAML 放进社区目录 `data/plugins/` 后单独开 PR；已有申请直接更新原 PR。采用固定 `latest/download/dsh-bot.tgz` 后，后续常规发版无需更新目录，只在描述、分类或仓库位置等条目信息变化时提 PR。不提交生成的目录 README。
+
+固定名称是每个 Release 都携带的附件，并不是在旧 Release 上替换安装包。每次稳定发版都必须上传它；`latest/download/` 后不能接带版本号的文件名。版本包和固定 tag URL 保留用于复现与回退。社区入口跟随最新版不表示现有安装自动升级；本地改代码也不会自动发布到社区。
 
 旧包回归材料仍由维护者提供，固定 hash 见 [testing.md](testing.md)。只有拿到原始文件后才能附加为单独测试资源；本任务不从当前源码重造历史包，也不将旧包加入正式安装附件。
