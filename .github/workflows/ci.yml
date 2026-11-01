@@ -28,7 +28,7 @@ jobs:
       - name: Install locked dependencies
         run: scripts/pnpm install --frozen-lockfile
       - name: Check build and CLI portability fixtures
-        run: node --test scripts/community-build.test.mjs
+        run: scripts/pnpm check:tooling
       - name: Check community documentation and source whitespace
         run: |
           scripts/pnpm check:docs

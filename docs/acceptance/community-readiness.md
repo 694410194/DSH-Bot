@@ -40,3 +40,7 @@
 原 `dist/dsh-bot-0.6.3.tgz` 未覆盖，SHA256 仍为 `8b911c6e643b53c9f4e5aad004772fdd8f17f35291eb11ab2ce5cc578fed705c`。原有未跟踪截图/审查笔记、正式桌面和用户数据保持原状。
 
 后续顺序：确认许可并同步文件 → 审查与推送本分支、观察真实 CI → 确定正式版本并验证最终包 → 发布下载附件与真实链接 → 单独提交社区目录 YAML。具体字段和限制见[社区发布准备](../community-release.md)。
+
+## 后续核实（2026-11-01）
+
+上述表格保留当时的结果。PR #6 已合入 main（`05634b9`）；PR head `35eb48c` 的 [CI #2](https://github.com/MJ-CJM/DSH-Bot/actions/runs/41282830471) 已实际完成：Ubuntu 24.04 与 macOS 15 均 PASS，包含冻结安装、工具夹具、文档/格式、整库检查、打包、真实 tarball 核对及 artifact 上传。该结果不包含完整 Host、浏览器或真实模型验收，也不覆盖之后的分支改动。

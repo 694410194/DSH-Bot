@@ -25,10 +25,17 @@ try {
   const result = JSON.parse(await readFile(resolve(dir, 'result.json')));
   assert.equal(result.status, 'PASS');
   await save('hot-result',result);
+  // Reinstall the exact candidate after the hot Host exits. This proves same-
+  // version installation/data retention, not migration from a historical tgz.
+  if (artifactPath) {
+    phase = 'reinstall';
+    await run.command(['plugin', '--profile', profile, 'add', artifactPath], 'reinstall');
+    await auditInstalled(home, profile, await auditArtifact(root, artifactPath, dir));
+  }
   phase='cold-host'; await writeFile(resolve(home,'profiles',profile,'cordis.patch.yml'),mockProfilePatch(dir,'packages/dsh-bot/tests/onboarding-native-profile.mjs',{outputDir:dir,cold:true}));
   await run.command(['--profile',profile,'--no-open','--host','127.0.0.1','--port','0'],'cold-host',true);
   const cold=JSON.parse(await readFile(resolve(dir,'cold-result.json'))); assert.equal(cold.status,'PASS');
-  await save('summary', { ...result, cliVersion: version, referenceTag: 'dsh-v0.2.1-rc.2', dir });
+  await save('summary', { ...result, reinstalledSameArtifact: Boolean(artifactPath), cliVersion: version, referenceTag: 'dsh-v0.2.1-rc.2', dir });
   console.log(JSON.stringify({ status: 'PASS', dir }));
 } catch (error) {
   await save('summary', { status: 'FAIL', phase, error: String(error), realModelRequests: 0 });

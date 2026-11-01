@@ -6,9 +6,9 @@ Bug reports, focused fixes, documentation and reproducible evidence are welcome 
 
 ## 当前许可 / License status
 
-当前为 `UNLICENSED`，维护者尚未选定社区许可证；开放仓库不等于授予使用、修改或再分发许可。请先确认拟贡献内容有权提交，不要将仓库描述为采用 MIT、Apache 或其他未选定许可证。许可确定前不要发布衍生包。
+本项目采用 [MIT 许可证](LICENSE)，署名 MJ-CJM。提交贡献前请确认你有权提供该内容；保留适用的第三方署名和许可告知。
 
-The project is currently `UNLICENSED`. A community license has not been selected; public visibility does not grant open-source rights. Only submit material you are entitled to contribute, and do not publish derivative packages while licensing remains unresolved.
+This project is licensed under [MIT](LICENSE), with copyright attributed to MJ-CJM. Only submit material you are entitled to contribute, and preserve applicable third-party attribution and notices.
 
 ## 环境与检查 / Setup and checks
 
@@ -31,6 +31,10 @@ scripts/pnpm check:tooling
 仓库的 `scripts/dsh` 查找顺序为 `DSH_BOT_DSH_BIN` → PATH 中的 `dsh` → macOS 已安装 DSH 内置 CLI。需要指定 CLI 时，设置 `DSH_BOT_DSH_BIN` 为已有可执行文件的绝对路径，不填写带参数的命令串。桌面 profile 仍须使用该桌面发行版支持的 CLI。参考源码仅只读查阅 `dsh-v0.2.1-rc.2`；实际使用的 CLI 版本须独立记录，不能因为依赖锁定 rc.2 就称 rc.2 运行通过。
 
 The DSH wrapper resolves `DSH_BOT_DSH_BIN`, then `dsh` on PATH, then the installed macOS bundled CLI. An override must name an existing executable, without command arguments. Desktop profiles require their supported bundled CLI. Record the actual CLI version separately from the rc.2 development/API reference.
+
+pnpm 的状态、数据、版本管理器与临时目录默认位于 `.dsh-dev`；确需保留调用方目录设置时才使用既有 `DSH_BOT_KEEP_USER_STATE=1`。完整单测默认最多两个 worker，避免大量真实 JSON/fsync 与子进程同时竞争磁盘；不要与完整 Host/UI 夹具并行执行。
+
+pnpm state, data, version-manager and temporary files default to `.dsh-dev`. The existing `DSH_BOT_KEEP_USER_STATE=1` opt-out preserves caller settings. Unit tests use at most two workers to bound durable-storage contention; run full Host/UI suites separately.
 
 ## 历史包回归 / Historical release fixtures
 

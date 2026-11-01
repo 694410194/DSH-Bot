@@ -4,7 +4,7 @@ English · [中文](README.md)
 
 Personal agents for DeepSeek Harness. Create Bots with their own personas, long-term memory, models, skills and tools, then chat and collaborate in the native workspace.
 
-The current version is **0.6.3**. Distribution currently means a locally built tgz. **No npm package, online plugin-market listing or GitHub Release download has been published.** The project is currently `UNLICENSED`; no open-source use or redistribution rights have been granted. See the [license](packages/dsh-bot/LICENSE).
+The current version is **0.6.3**. Distribution currently means a locally built tgz. **No npm package, online plugin-market listing or GitHub Release download has been published.** Licensed under [MIT](LICENSE), Copyright © 2026 MJ-CJM. Third-party notices are included in the package.
 
 ## Features
 
@@ -16,15 +16,23 @@ The current version is **0.6.3**. Distribution currently means a locally built t
 
 ## Install and upgrade
 
-DeepSeek Harness is required. Development dependencies and the read-only API reference are pinned to **0.2.1-rc.2**. Recorded full Host / Web runs used **0.2.1-rc.3**; the exact rc.2 binary has not been exercised. The declared range is `>=0.2.1-rc.2 <0.3.0`, which does not establish verified compatibility with every version in that range.
+DeepSeek Harness is required. Development dependencies and the read-only API reference are pinned to **0.2.1-rc.2**. The community candidate has completed the documented same-artifact Host/Web checks on **0.2.1-rc.2**; see the [community release acceptance](docs/acceptance/community-release-ready.md) for per-check results. Historical full Host / Web runs used **0.2.1-rc.3**. The declared range is `>=0.2.1-rc.2 <0.3.0`, which does not establish verified compatibility with every version in that range.
 
-1. Build `dist/dsh-bot-0.6.3.tgz` from this checkout (see below), and record that artifact's SHA256. `dist/` is ignored by Git; there is currently no public download URL.
+1. The first public release is being prepared. Once published, download the `dsh-bot-0.6.3.tgz` and `SHA256SUMS` assets from [GitHub Releases](https://github.com/MJ-CJM/DSH-Bot/releases), not the automatically generated Source code archives. In the download directory, verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. No public asset is available yet; developers can build from this checkout as described below.
 2. Open DSH **Plugins → Add plugin → Install third-party plugin** and select the tgz. Enter its absolute path if the dialog requests an installation source.
-3. Confirm that it is enabled, **fully quit with Cmd+Q and reopen**, then enter **Bots** from the sidebar. Two examples are created only when no Bot data exists on first activation.
+3. Confirm that it is enabled, **fully quit DSH and reopen** (Cmd+Q on macOS), then enter **Bots** from the sidebar. Two examples are created only when no Bot data exists on first activation.
 
 Before upgrading, back up the original profile and complete data. Keep the same `DSH_HOME`, profile and storage configuration; add the new package through the same installation flow and fully reopen DSH. An in-place 0.6.2 → 0.6.3 upgrade, installed-file audit and data retention are recorded in the [desktop acceptance report](docs/acceptance/V063-desktop-install.md). If your Host requires removing the old plugin first, plugin removal is separate from Bot deletion. Do not delete data directories or reset the profile.
 
 See the [community release guide](docs/community-release.md) for CLI installation, migration and release preparation. Memory migration from 0.4.0 writes a Migration Fence that old plugins reject. Do not downgrade and continue writing to that storage. Rollback requires a separate complete pre-upgrade backup and review of whether forgotten data could reappear from old copies.
+
+## Screenshots
+
+Actual current-version UI in an isolated Web Host with synthetic demo data. These screenshots do not establish real-model task quality.
+
+![Bot role and personal conversation](packages/dsh-bot/assets/current-role.png)
+
+![Group conversation empty state and composer in the dark theme](packages/dsh-bot/assets/group-chat.png)
 
 ## Usage and data boundaries
 

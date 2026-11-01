@@ -1,0 +1,38 @@
+name: Release candidate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+          run_install: false
+      - run: scripts/pnpm install --frozen-lockfile
+      - run: scripts/pnpm check:tooling
+      - run: scripts/pnpm check:docs
+      - run: scripts/pnpm check:format
+      - run: scripts/pnpm check
+      - run: scripts/pnpm pack:plugin
+      - name: Prepare exact candidate and review materials
+        run: |
+          set -- dist/dsh-bot-*.tgz
+          test "$#" -eq 1
+          scripts/pnpm release:prepare "$1"
+      # Artifacts only: no tag, Release, npm publish, repo settings or external PR.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsh-bot-release-candidate
+          path: dist/release-candidates/
+          if-no-files-found: error

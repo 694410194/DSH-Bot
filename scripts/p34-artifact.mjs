@@ -31,7 +31,8 @@ export async function auditArtifact(root, artifact, runDir) {
   assert.equal(listing.code, 0);
   for (const path of listing.output.trim().split('\n')) {
     assert.ok(path.startsWith('package/') && !path.split('/').includes('..'), `Unsafe entry ${path}`);
-    assert.ok(/^package\/(?:package\.json|README\.md|LICENSE|cordis\.patch\.yml|icon\.svg|locale\/(?:en|zh)\.json|lib\/.*)$/.test(path));
+    if (path === 'package/' || path === 'package/locale/') continue;
+    assert.ok(/^package\/(?:package\.json|README\.md|LICENSE|THIRD_PARTY_NOTICES\.txt|cordis\.patch\.yml|icon\.svg|locale\/(?:en|zh)\.json|lib\/.*)$/.test(path));
   }
   const unpacked = resolve(runDir, 'unpacked');
   await mkdir(unpacked, { recursive: true });
@@ -41,7 +42,7 @@ export async function auditArtifact(root, artifact, runDir) {
   assert.equal(manifest.name, 'dsh-bot');
   assert.equal(manifest.version, JSON.parse(await readFile(resolve(root, 'packages/dsh-bot/package.json'))).version);
   assert.equal(manifest.engines.dsh, '>=0.2.1-rc.2 <0.3.0');
-  assert.equal(manifest.license, 'UNLICENSED');
+  assert.equal(manifest.license, JSON.parse(await readFile(resolve(root, 'packages/dsh-bot/package.json'))).license);
   for (const [name, version] of Object.entries(manifest.devDependencies)) {
     if (name.startsWith('@deepseek-ai/dsh-')) assert.equal(version, '0.2.1-rc.2', name);
   }

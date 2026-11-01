@@ -19,6 +19,17 @@ test('Windows paths become the same URL-relative manifest keys as POSIX builds',
   assert.equal(moduleManifestKey('/项目 空格/lib', '/项目 空格/lib/host/registry.js'), 'host/registry.js');
 });
 
+test('pnpm wrapper contains version-manager data, state and temp files within its checkout', async () => fixture(async (directory) => {
+  await mkdir(`${directory}/scripts`);
+  await mkdir(`${directory}/bin`);
+  await copyFile(`${root}scripts/pnpm`, `${directory}/scripts/pnpm`);
+  await writeFile(`${directory}/bin/pnpm`, '#!/bin/sh\nprintf "%s\\n" "$PNPM_HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$TMPDIR"\n', { mode: 0o755 });
+  const output = execFileSync(`${directory}/scripts/pnpm`, ['--version'], {
+    env: { ...process.env, PATH: `${directory}/bin:${process.env.PATH}`, DSH_BOT_KEEP_USER_STATE: '' }, encoding: 'utf8',
+  }).trim().split('\n');
+  assert.deepEqual(output, ['pnpm-home', 'data', 'state', 'tmp'].map(name => `${directory}/.dsh-dev/${name}`));
+}));
+
 test('Host stamping works in a checkout containing Chinese, spaces and percent signs', async () => fixture(async (directory) => {
   await mkdir(`${directory}/build`);
   await mkdir(`${directory}/lib/shared`, { recursive: true });
