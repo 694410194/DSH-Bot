@@ -944,6 +944,8 @@
     "execution.timeout": "达到配置的时间限制",
     "execution.unknown": "执行结果不确定，不会自动重放",
     "execution.failed": "本次执行未能完成",
-    "execution.allowance": "自动后续执行次数"
+    "execution.allowance": "自动后续执行次数",
+    "execution.thinking": "思考过程",
+    "execution.noReasoning": "暂无已提供的思考内容。"
   }
 }

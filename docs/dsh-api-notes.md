@@ -1394,3 +1394,18 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 - A 的原始空 preset API fixture 与真实 Bot preset 的 B/C 集成验证分开；原始 API 成功不能替代群权限、结果归属和数据流检查。
 
 详见 [A 实测说明](verification/group-collaboration/native-api.md)及 [实现与验收](verification/group-collaboration/report.md)。
+
+### 2026-11-01 — 执行状态随问题展示
+
+复用已注册的公开 `conversation.chat.node` 和原始群用户消息 metadata，在匹配 `turnId` 与 `inputMessageId` 的节点下方放置执行折叠行。与输入框共享现有群 view 订阅；按钮继续调用既有 Remote 的 stopMember/cancel/continueTurn，完整原生过程仍复用右侧面板。没有新增 API、依赖或内部导入，也没有尝试递归嵌入 conversation.content。实际验收见[记录](verification/group-inline-execution/report.md)。
+
+### 2026-11-01 — 单成员思考与用户消息对齐
+
+参考源码目录仍不存在；本轮查阅锁定 rc.2 公开 npm 包的声明与发布代码，实际 rc.2/rc.5 浏览器结果另见[验收](verification/group-member-process/report.md)。没有新增依赖或内部导入。
+
+- `@deepseek-ai/dsh-client-ui-chat/client` 公开声明 `conversation.chat.reasoning.content`（root scope，输入原文 `text` 与 `running`），原生单聊 reasoning body 本身也调用此 Factory。使用已有 `renderFactorySlot` 调用，保留原生紧凑 Markdown 和本地化控件；不复制内部 `ReasoningRow` / `TurnProcessNodeView`。
+- 折叠行与图标直接使用公开 primitives `DisclosureRow` / `IconThinkOutlineRegular`。群的姓名、头像、调度状态、停止入口由插件提供，因为原生单聊组件没有群成员身份。工具及完整历史仍在现有原生详情面板呈现。
+- `sessions.retain` 公开接收 `SubagentAddress { parentSessionId, childSessionId, mode: 'unknown' }`。新 worker 可能尚未被全局目录发现，不能仅按字符串 ID retain。地址来自准确的群 root 和 delivery；模式交由原生读取解析，不猜测单次/持续模式。
+- `starting` 阶段只有预留 child ID；等 `startActivation` 已返回、delivery 进入 running 后才读取。原生 `SessionReference.ready` 可能在读取失败时也 resolve，必须再检查公开 `SessionFace.getSnapshot().openState`，不能把空投影当成没有思考。
+- `uiConversation.binding(reference.binding).target('chat')` 是公开可观察投影；读取 `ChatSnapshot.nodes` 的 `assistant-step` 数据，不解析底层日志或调用模型。引用、异步 readiness 和 React 订阅在收起、卸载、切换时释放或忽略迟到结果。
+- 完整 `conversation.content` 不能在自身内递归。本次只嵌入公开的 root reasoning Factory，不新增聊天容器、发送入口或 SessionProvider 嵌套。用户气泡布局使用插件自己的主题 alias；原生完整用户 row 没有独立的公开 Factory。

@@ -19,7 +19,7 @@ export function GroupMessageCard({ message: m, quoted, quotedLoading = false, la
 } & PropsLocale<'dsh-bot'>) {
   const [opening, setOpening] = useState(false), [openError, setOpenError] = useState(false);
   return (
-    <div className={styles.message} data-group-message={m.id}>
+    <div className={`${styles.message} ${m.authorKind === 'user' ? styles.userMessage : styles.botMessage}`} data-group-message={m.id} data-group-author={m.authorKind}>
       <div className={styles.bar}>
         {m.speaker && <BotAvatar bot={{ id: m.speaker.bot.botId, avatar: m.speaker.avatar,
           avatarColor: m.speaker.avatarColor, avatarVariant: m.speaker.avatarVariant }} size={28} label={m.speaker.name} />}
@@ -27,6 +27,7 @@ export function GroupMessageCard({ message: m, quoted, quotedLoading = false, la
         <time dateTime={new Date(m.at).toISOString()}>{new Date(m.at).toLocaleTimeString()}</time>
         <button type="button" className={styles.replyAction} onClick={() => onReply(m)}>{t('groups.reply')}</button>
       </div>
+      <div className={styles.messageContent}>
       {quoted && <blockquote className={styles.quote}><button type="button" onClick={() => onJump?.(quoted.id)}>
         <strong>{quoted.speaker?.name ?? t('groups.you')}</strong> {groupMessagePreview(quoted.text)}</button>
       </blockquote>}
@@ -48,6 +49,7 @@ export function GroupMessageCard({ message: m, quoted, quotedLoading = false, la
       {m.hasNonText && <p>{t('groups.nonText')}</p>}
       {m.stopReason && ['error', 'aborted', 'max-tokens', 'refusal'].includes(m.stopReason) &&
         <p role="status">{t('groups.partial')} · {m.stopReason}</p>}
+      </div>
     </div>
   );
 }

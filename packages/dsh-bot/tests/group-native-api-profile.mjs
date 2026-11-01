@@ -17,13 +17,21 @@ class NativeAdapter extends LlmAdapter {
     try {
       if (this.endpoint) await fetch(this.endpoint, { method: 'POST', body: JSON.stringify({ sessionId: options.sessionId }) });
       options.signal?.throwIfAborted();
+      const live = this.ui && call.input.includes('UI_LIVE_TRACE');
+      let reasoning = live ? `Live reasoning ${options.sessionId}` : 'Synthetic native reasoning';
       yield { type: 'block-start', index: 0, blockType: 'reasoning' };
-      yield { type: 'reasoning-delta', index: 0, text: 'Synthetic native reasoning' };
-      yield { type: 'block-end', index: 0, block: { type: 'reasoning', text: 'Synthetic native reasoning' } };
+      yield { type: 'reasoning-delta', index: 0, text: reasoning };
+      if (live) {
+        await delay(4500, undefined, { signal: options.signal });
+        reasoning += ' — streamed update';
+        yield { type: 'reasoning-delta', index: 0, text: ' — streamed update' };
+        await delay(60000, undefined, { signal: options.signal });
+      }
+      yield { type: 'block-end', index: 0, block: { type: 'reasoning', text: reasoning } };
       if (!this.ui) await new Promise(resolve => { call.release = resolve; options.signal?.addEventListener('abort', resolve, { once: true }); });
       options.signal?.throwIfAborted();
       if (this.ui && this.calls.filter(c => c.sessionId === options.sessionId).length === 1) {
-        const id = 'native-ui-skip', args = JSON.stringify({ action: 'skip' });
+        const id = 'native-ui-reply', args = JSON.stringify({ action: 'send', text: 'Published native Bot reply', requestReply: false });
         yield { type: 'block-start', index: 1, blockType: 'tool-call' };
         yield { type: 'tool-call-delta', index: 1, id, name: 'group_message', argumentsDelta: args };
         yield { type: 'block-end', index: 1, block: { type: 'tool-call', id, name: 'group_message', arguments: args } };
@@ -124,7 +132,10 @@ export function apply(ctx, config) {
         const view = await wait(async () => { const v = await groups.view(key); return v.turns.find(t => t.id === turn.id && !['accepted', 'running'].includes(t.state)) && v; });
         const delivery = view.deliveries.find(d => d.turnId === turn.id);
         assert.ok(delivery.childSessionId);
-        await save('ui-fixture', { rootId: g.rootSessionId, childId: delivery.childSessionId, groupName: g.name, modelRequests: adapter.calls.length });
+        const second = await groups.send(key, { operationId: 'ui-trace-second', text: 'UI_TRACE_SECOND', memberIds: [members[1].id], expectedMembershipRevision: 1 });
+        await wait(async () => (await groups.view(key)).turns.find(t => t.id === second.id && !['accepted', 'running'].includes(t.state)));
+        await save('ui-fixture', { rootId: g.rootSessionId, childId: delivery.childSessionId, groupName: g.name,
+          inputMessageId: turn.inputMessageId, turnId: turn.id, secondInputMessageId: second.inputMessageId, secondTurnId: second.id, modelRequests: adapter.calls.length });
         clearTimeout(timer); console.log('B4_WEB_READY');
       }
     })().catch(async error => { await save('result', { status: 'FAIL', phase, assertions, error: String(error), stack: error.stack,

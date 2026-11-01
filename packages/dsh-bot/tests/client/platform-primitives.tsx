@@ -21,6 +21,14 @@ export const IconDataOutlineRegular = Icon;
 export const IconChevronDownOutlineRegular = Icon;
 export const IconPaperclipOutlineRegular = Icon;
 export const IconSendOutlineRegular = Icon;
+export const IconThinkOutlineRegular = Icon;
+
+export function DisclosureRow({ title, open, onToggle, collapsedContent, children, running }: {
+  title: string; open: boolean; onToggle(): void; collapsedContent?: ReactNode; children?: ReactNode; running?: boolean;
+}) {
+  return <div data-disclosure-row="" data-running={running}><button type="button" aria-expanded={open} onClick={onToggle}>{title}</button>
+    {!open && collapsedContent}{open && children}</div>;
+}
 
 /** Provider double: verifies MarkdownText props/ownership, not the native parser's HTML output. */
 export function MarkdownText({ text }: { text: string; labels: unknown; variant?: string }) {

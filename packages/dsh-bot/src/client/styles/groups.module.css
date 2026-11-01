@@ -141,7 +141,28 @@
   border-radius: 0;
   padding: 12px 4px;
   margin-block: 4px;
+  min-width: 0;
+  max-width: 100%;
 }
+.userMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: fit-content;
+  max-width: 85%;
+  margin-inline-start: auto;
+}
+.userMessage .messageContent {
+  order: 0;
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.userMessage .messageContent p:first-child { margin-top: 0; }
+.userMessage .bar { order: 1; justify-content: flex-end; margin-top: 8px; }
+.userMessage .bar > strong { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.botMessage { margin-inline-start: 0; width: 100%; }
+@media (max-width: 440px) { .userMessage { max-width: 92%; } }
 .message p {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -390,6 +411,7 @@
 .mentionMenu button[aria-selected="true"] { background: var(--dsw-alias-interactive-bg-hover); }
 .mentionMenu small { color: var(--dsw-alias-label-secondary); }
 @media (hover: none) { .message .replyAction { opacity: 1; } }
+.userMessage .bar .replyAction { margin-inline-start: 0; }
 .composerFooter { flex-wrap: nowrap; min-width: 0; }
 .composerFooter .keyboardHint { color: var(--dsw-alias-label-tertiary); font-size: 11px; margin-inline: 4px; }
 .sendActions { display: flex; gap: 6px; align-items: center; margin-inline-start: auto; flex: none; }
@@ -404,26 +426,6 @@
   padding: 8px 12px 12px;
   gap: 6px;
   font-size: 13px;
-}
-.workspace .working {
-  padding: 0 4px;
-  background: none;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 12px;
-  font-size: 12px;
-  color: var(--dsw-alias-label-secondary);
-}
-.workspace .working > span {
-  flex: 1 1 auto;
-}
-.workspace .working > .bar,
-.workspace .working > p {
-  flex-basis: 100%;
-}
-.workspace .working summary {
-  cursor: pointer;
 }
 .workspace .composer {
   padding: 12px;
@@ -530,8 +532,34 @@
 .modelMemberDetail { color: var(--dsw-alias-label-secondary); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .modelMemberSource { color: var(--dsw-alias-label-tertiary); font-size: 11px; }
 
-.workspace .executions {
-  max-height: min(32svh, 320px);
-  overflow-y: auto;
-  flex: 0 1 auto;
+/* The disclosure participates in the native message scroll, never the input dock. */
+.inlineExecution {
+  margin-block: 8px 4px;
+  min-width: 0;
+  font-size: 12px;
 }
+.panel .inlineExecution .turnSummary {
+  width: auto;
+  max-width: 100%;
+  padding: 4px 0;
+  text-align: start;
+  background: transparent;
+}
+.inlineExecution > div {
+  padding: 4px 0 8px 16px;
+  border-inline-start: 1px solid var(--dsw-alias-border-l3);
+}
+.inlineExecution .delivery {
+  padding: 6px 0;
+}
+.inlineExecution .executionMeta {
+  margin: 4px 0;
+  color: var(--dsw-alias-label-tertiary);
+}
+.memberExecution { min-width: 0; padding-block: 6px; }
+.memberExecution .delivery strong { color: var(--dsw-alias-label-primary); }
+.panel .memberExecution .delivery button { padding: 2px 6px; font-size: 12px; background: transparent; }
+.nativeProcess { min-width: 0; font-size: 13px; color: var(--dsw-alias-label-secondary); }
+.reasoningPreview { display: block; margin-inline-start: 8px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.reasoningBody { max-height: 18rem; overflow: auto; overscroll-behavior: contain; padding: 8px 0 8px 22px; }
+.reasoningBody > div + div { margin-top: 12px; }
