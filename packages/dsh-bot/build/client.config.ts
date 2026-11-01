@@ -11,6 +11,8 @@ const { cssModules }: typeof import('./css-modules.js') =
   await import(new URL('./css-modules.ts', import.meta.url).href);
 const { checkClientThemeTokens }: typeof import('./theme-tokens.js') =
   await import(new URL('./theme-tokens.ts', import.meta.url).href);
+const { thirdPartyNotices }: typeof import('./third-party-notices.js') =
+  await import(new URL('./third-party-notices.ts', import.meta.url).href);
 
 const packageRoot = fileURLToPath(new URL('../', import.meta.url));
 await checkClientThemeTokens(packageRoot);
@@ -65,6 +67,7 @@ const result = await build({
   // DSH's combo-map route reads the adjacent client.js.map on its first GET.
   sourcemap: 'linked',
   sourcesContent: true,
+  // Full dependency license texts are distributed in THIRD_PARTY_NOTICES.txt.
   legalComments: 'none',
   banner: {
     js: 'window.__ModuleLoader__.load({ id: "dsh-bot", factory(require) {\nvar module = { exports: {} }; var exports = module.exports;',
@@ -74,9 +77,12 @@ const result = await build({
 
 // Fail the build if a future import accidentally embeds a shared runtime,
 // or leaves a require that the platform's injected module table cannot serve.
+const canonicalInputs: string[] = [];
 for (const input of Object.keys(result.metafile.inputs)) {
   const file = input.replace(/^component-css:/, '').replace(/\?inline$/, '');
-  assertClientInput(await realpath(resolve(packageRoot, file)), packageRoot, bundledDependencies);
+  const canonical = await realpath(resolve(packageRoot, file));
+  assertClientInput(canonical, packageRoot, bundledDependencies);
+  canonicalInputs.push(canonical);
 }
 for (const output of Object.values(result.metafile.outputs)) {
   for (const dependency of output.imports) {
@@ -91,6 +97,7 @@ if (!artifact?.text.startsWith('window.__ModuleLoader__.load(')) {
   throw new Error('Client build did not produce a DSH closure-factory artifact');
 }
 await mkdir(dirname(outfile), { recursive: true });
+await writeFile(resolve(packageRoot, 'THIRD_PARTY_NOTICES.txt'), await thirdPartyNotices(canonicalInputs));
 for (const file of result.outputFiles) {
   await writeFile(file.path, file.contents);
 }

@@ -9,5 +9,7 @@ export default defineConfig({
     // rc.2 primitives Node entry has undeclared browser-only dependencies.
     setupFiles: ['./tests/client/platform.setup.ts'],
     include: ['{src,tests}/**/*.{test,spec}.{ts,tsx}'],
+    // Historical artifact checks have strict fixture prerequisites; never silently skip them.
+    exclude: ['**/*.release.spec.{ts,tsx}', '**/node_modules/**'],
   },
 });

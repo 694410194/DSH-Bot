@@ -49,7 +49,7 @@ DSH_HOME="$PWD/.dsh-dev" DSH_BOT_ARTIFACT=dist/dsh-bot-0.6.3.tgz node scripts/on
 
 最终安装包 `dist/dsh-bot-0.6.3.tgz` SHA256：`8b911c6e643b53c9f4e5aad004772fdd8f17f35291eb11ab2ce5cc578fed705c`。同目录 `.sha256` 可独立校验。整库检查含最后的详情选择与布局修复。真实群 worker 夹具另行通过 `node --check`、Biome 和同包 runtime；整库单测与实际原生执行证据分别记录。
 
-已目视复核最终包的[中文暗色空白私聊](../../.dsh-dev/onboarding-ui/1793419230316-63161/zh-dark-390-empty-bot-avatar.png)、[中文暗色窄屏职责](../../.dsh-dev/onboarding-ui/1793419230316-63161/zh-dark-390-current-role.png)、[亮色工作区组合群头像](../../.dsh-dev/onboarding-ui/1793419230316-63161/zh-light-1360-group-whales.png)。空态身份、专属头像、自定义 emoji、群图标、职责草稿与保留已有内容、名称创建、原生 notice 展开、切换和重载不重复开场、直接继续任务均有截图及 Host 输入/请求回执。全部详情操作按钮另有位于弹窗内的几何断言。
+已目视复核最终包的中文暗色空白私聊（本地证据：`.dsh-dev/onboarding-ui/1793419230316-63161/zh-dark-390-empty-bot-avatar.png`）、中文暗色窄屏职责（本地证据：`.dsh-dev/onboarding-ui/1793419230316-63161/zh-dark-390-current-role.png`）、亮色工作区组合群头像（本地证据：`.dsh-dev/onboarding-ui/1793419230316-63161/zh-light-1360-group-whales.png`）。空态身份、专属头像、自定义 emoji、群图标、职责草稿与保留已有内容、名称创建、原生 notice 展开、切换和重载不重复开场、直接继续任务均有截图及 Host 输入/请求回执。全部详情操作按钮另有位于弹窗内的几何断言。
 
 ## 过程问题与修复
 

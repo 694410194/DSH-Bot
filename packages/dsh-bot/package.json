@@ -34,7 +34,8 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.txt"
   ],
   "dsh": {
     "bundle": {

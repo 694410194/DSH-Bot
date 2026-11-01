@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { readFileSync, existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,7 +38,8 @@ export async function discover() {
   await walk('tasks');
   const excluded = (await readdir(inside('docs/acceptance'))).filter(p => !p.endsWith('.md'))
     .map(path => ({ path: `docs/acceptance/${path}`, reason: 'File inventory, not an acceptance narrative' }));
-  return { paths: [...acceptance, ...reviews, '.codex/runs/PROGRESS.md'].sort(), excluded };
+  const progress = '.codex/runs/PROGRESS.md';
+  return { paths: [...acceptance, ...reviews, ...(existsSync(inside(progress)) ? [progress] : [])].sort(), excluded };
 }
 export function extract(sources, texts) {
   const rows = [];
@@ -52,13 +54,17 @@ export function extract(sources, texts) {
   }
   return rows;
 }
-// Git objects are immutable. Cache only revision-qualified blobs, never working files/snapshots.
-const blobs = new Map();
+// Original tracked blobs are committed as a fixture so source archives and shallow clones work.
+// Their digests remain anchored by failures.json and the case manifest, never by live files.
+let frozen;
 export function frozenBlob(revision, path) {
   if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error('Expected frozen full Git SHA');
   const key = `${revision}:${path}`;
-  if (!blobs.has(key)) blobs.set(key, git('show', key));
-  return blobs.get(key);
+  frozen ??= JSON.parse(readFileSync(new URL('../../evals/inputs/failure-sources.json', import.meta.url), 'utf8'));
+  if (frozen.schemaVersion !== 1) throw new Error('Invalid frozen source snapshot version');
+  if (!Object.hasOwn(frozen.blobs, key) || typeof frozen.blobs[key] !== 'string')
+    throw new Error(`Missing frozen source snapshot: ${key}`);
+  return frozen.blobs[key];
 }
 export async function frozenTexts(input) {
   const texts = new Map();

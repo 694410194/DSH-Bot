@@ -86,7 +86,7 @@ DSH 复用：Session/Inbox、native spawn/caller、subagent catalog/prompt/inter
 
 ## 安装包与用户验证
 
-产物：[dsh-bot-0.5.0.tgz](../../dist/dsh-bot-0.5.0.tgz)，校验：[sha256](../../dist/dsh-bot-0.5.0.tgz.sha256)。
+产物：dsh-bot-0.5.0.tgz（本地证据：`dist/dsh-bot-0.5.0.tgz`），校验：sha256（本地证据：`dist/dsh-bot-0.5.0.tgz.sha256`）。
 SHA256：934bebd4c9f823aa64b4632b5f80b8a4f1499ccd1e3258ff6842ca66a7c4599c。
 
 本轮仅安装到仓库隔离 profile。按照项目 AGENTS.md“禁止修改 ~/.dsh、桌面版应用及其安装内容”，没有安装到正式桌面或清理真实用户数据。

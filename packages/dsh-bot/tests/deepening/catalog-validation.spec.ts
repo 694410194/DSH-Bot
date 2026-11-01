@@ -1,3 +1,6 @@
+import { execFile } from 'node:child_process';
+import { cp, mkdir, mkdtemp, readFile, rm, symlink } from 'node:fs/promises';
+import { promisify } from 'node:util';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -77,4 +80,31 @@ describe('M1 failure catalog validates frozen coverage, schema and OPEN inventor
     bundle.cases[0].source.lines = [999999, 999999];
     await expect(validateBundle(bundle)).rejects.toThrow('contents differ');
   });
+});
+
+// Exercise a source-only tree with no .git, ignored progress log, or Git executable.
+it('validates committed snapshots in a source archive without Git history or local progress logs', async () => {
+  const original = resolve('../..'), base = resolve(original, '.dsh-dev/catalog-clean');
+  await mkdir(base, { recursive: true });
+  const directory = await mkdtemp(resolve(base, 'source-'));
+  try {
+    for (const path of ['docs/acceptance', 'tasks', 'scripts/deepening', 'packages/dsh-bot'])
+      await mkdir(resolve(directory, path), { recursive: true });
+    await cp(resolve(original, 'evals'), resolve(directory, 'evals'), { recursive: true });
+    const manifest = JSON.parse(await readFile(resolve(original, 'evals/manifests/failures.json'), 'utf8'));
+    const cases = await Promise.all(manifest.cases.map((entry: { path: string }) =>
+      readFile(resolve(original, entry.path), 'utf8').then(JSON.parse)));
+    const files = new Set<string>(cases.flatMap(row => row.regressions.map((entry: { testFile: string }) => entry.testFile)));
+    for (const file of ['scripts/deepening/catalog-lib.mjs', 'scripts/deepening/validate-cases.mjs',
+      'packages/dsh-bot/package.json', ...files]) {
+      await mkdir(resolve(directory, file, '..'), { recursive: true });
+      await cp(resolve(original, file), resolve(directory, file));
+    }
+    await symlink(resolve(original, 'packages/dsh-bot/node_modules'), resolve(directory, 'packages/dsh-bot/node_modules'), 'dir');
+    const source = "import { validateBundle } from './scripts/deepening/validate-cases.mjs'; console.log(JSON.stringify(await validateBundle()));";
+    const { stdout } = await promisify(execFile)(process.execPath, ['--input-type=module', '-e', source],
+      { cwd: directory, env: { PATH: '' } });
+    expect(JSON.parse(stdout)).toMatchObject({ status: 'PASS', runtimeReceiptsChecked: false,
+      inventory: { sources: 46, candidates: 310 } });
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });
