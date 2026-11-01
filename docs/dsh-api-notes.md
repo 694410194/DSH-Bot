@@ -1418,3 +1418,7 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 - `@deepseek-ai/dsh-client-ui-settings/client` 的类型增强仅列入精确锁定 devDependency。`settings.section` 的 owner.close 可返回原页，`settings.plugins.tab` 由 Plugins owner 声明；两个 slot 均实测挂载成功，注册进入 `ctx.effect`。
 - `SettingsForm` 在卸载时 discard。`SettingsFormModel` 为配置 namespace 的 revision-fenced staged form；fixture scope 实测保存/拒绝/卸载，不等于生产配置写入验证。Bot、记忆、连接器、通知 CRUD 保留现有 owner/revision 与业务确认，不强行映射为配置文档。
 - 完整运行边界和命令见 [U0/U1 验证记录](verification/native-settings/README.md)。
+
+## U2：页内详情与共享身份（2026-11-01）
+
+继续复用 U0 已验证的公开 Button、Input、Menu、SegmentedTabs、Modal；新增公开 `Toast` 用于短暂成功反馈，错误仍保留在编辑表单中。其声明 `text/onDone` 从 ui-primitives 根入口核实；不导入内部详情或模型选择器。真实 rc.5 页内导航、Modal 草稿确认、50 Bot 列表、84 个主题/语言/尺寸页面已运行，见 [U2 验证](verification/ui-completion/U2.md)。完整 rc.2 与最终产物组合验证留到 U4。

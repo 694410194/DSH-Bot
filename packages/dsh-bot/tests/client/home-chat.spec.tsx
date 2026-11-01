@@ -1,4 +1,5 @@
 import { requireValue } from './test-required.js';
+import { openEditor, openProfile } from './bot-ui-helpers.js';
 // @vitest-environment jsdom
 import { act } from 'react';
 import { RemoteError } from '@deepseek-ai/dsh-typert-protocol';
@@ -58,21 +59,22 @@ describe('single main conversation launch', () => {
     }));
     await click(button(app.container, 'Alpha Bot'));
     expect(button(app.container, 'Alpha Bot').disabled).toBe(true);
+    await openProfile(app);
     const edit = button(app.container, en.ui['card.edit']);
     expect(edit.disabled).toBe(false);
     await click(edit);
-    const dialog = required(app.container.querySelector('dialog'));
+    const dialog = required(app.container.querySelector('[data-bot-detail]'));
     const name = field(dialog, en.ui['editor.name']) as HTMLInputElement;
     expect(name.disabled).toBe(false);
     await fill(name, 'Edited while loading');
     await act(async () => finish());
     expect(app.openSession).not.toHaveBeenCalled();
-    expect(app.container.querySelector('dialog')).toBe(dialog);
+    expect(app.container.querySelector('[data-bot-detail]')).toBe(dialog);
     expect(name.value).toBe('Edited while loading');
     expect(app.container.textContent).not.toContain('Late migration failure');
     await submit(dialog);
     expect(app.remote.methods.update).toHaveBeenCalledExactlyOnceWith('alpha-bot', expect.objectContaining({ name: 'Edited while loading' }));
-    await click(button(app.container, 'Edited while loading'));
+    await click(button(app.container, en.ui['chat.openChat']));
     expect(app.openSession).toHaveBeenCalledExactlyOnceWith('test-created-session');
   });
   it('does not let cancelled navigation completion unlock an in-flight save', async () => {
@@ -82,7 +84,7 @@ describe('single main conversation launch', () => {
       finishOpen = () => resolve({ ok: true, value: { sessionId: 'late-main' } });
     }));
     await click(button(app.container, 'Alpha Bot'));
-    await click(button(app.container, en.ui['card.edit']));
+    await openEditor(app);
     const update = app.remote.methods.update.getMockImplementation();
     let finishSave!: () => void;
     app.remote.methods.update.mockImplementationOnce(async (...args) => {
@@ -90,7 +92,7 @@ describe('single main conversation launch', () => {
       if (!update) throw new Error('Missing update fixture');
       return update(...args);
     });
-    const dialog = required(app.container.querySelector('dialog'));
+    const dialog = required(app.container.querySelector('[data-bot-detail]'));
     await submit(dialog);
     await act(async () => finishOpen());
     expect((field(dialog, en.ui['editor.name']) as HTMLInputElement).disabled).toBe(true);
@@ -114,24 +116,24 @@ describe('single main conversation launch', () => {
     const reads = app.remote.methods.list.mock.calls.length;
     await act(async () => { void (requireValue(app.main.inject)() as unknown as { onRefresh(): Promise<void> }).onRefresh(); });
     expect(app.remote.methods.list).toHaveBeenCalledTimes(reads + 1);
+    await openProfile(app);
     expect(button(app.container, en.ui['card.edit']).disabled).toBe(false);
-    await click(button(app.container, en.ui['card.edit']));
-    const dialog = required(app.container.querySelector('dialog'));
+    await openEditor(app);
+    const dialog = required(app.container.querySelector('[data-bot-detail]'));
     await fill(field(dialog, en.ui['editor.name']), 'Preserved draft');
     await act(async () => finish());
-    expect(app.container.querySelector('dialog')).toBe(dialog);
+    expect(app.container.querySelector('[data-bot-detail]')).toBe(dialog);
     expect((field(dialog, en.ui['editor.name']) as HTMLInputElement).value).toBe('Preserved draft');
     expect((field(dialog, en.ui['editor.name']) as HTMLInputElement).disabled).toBe(false);
   });
   it('opens profile management without opening a main conversation', async () => {
     const app = await mount('zh');
     const row = required(app.container.querySelector<HTMLElement>('li'));
-    await click(requireValue(row.querySelector('summary')));
     await click(button(row, zh.ui['chat.profile']));
     expect(app.container.querySelector('[data-bot-detail="alpha-bot"]')).not.toBeNull();
     expect(app.remote.methods.openConversation).not.toHaveBeenCalled();
     await click(button(app.container, zh.ui['card.edit']));
-    expect(app.container.querySelector('dialog')).not.toBeNull();
+    expect(app.container.querySelector('[data-bot-detail] form')).not.toBeNull();
     expect(app.openSession).not.toHaveBeenCalled();
   });
   it('clicking a Bot row opens its existing main conversation directly', async () => {

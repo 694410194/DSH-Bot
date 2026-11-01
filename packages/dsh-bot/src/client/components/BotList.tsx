@@ -3,8 +3,9 @@ import { type RefObject, useEffect, useId, useRef } from 'react';
 import type { BotActivity } from '../../shared/activity.js';
 import { previewText, relativeTime } from '../activity-view.js';
 import type { BotCatalogEntry } from '../state.js';
+import identityCss from '../styles/identity.module.css?inline';
 import styles from '../styles/bots.module.css';
-import { BotAvatar } from './BotAvatar.js';
+import { BotIdentity } from './BotIdentity.js';
 
 export interface BotListProps {
   /** Callers own ordering and selection so activity refreshes retain identity. */
@@ -74,7 +75,7 @@ export function BotList({
         if (id) onSelect(id);
       }}
     >
-      {entries.map(({ bot }) => {
+      <style>{identityCss}</style>{entries.map(({ bot }) => {
         const latest = activityByBot.get(bot.id);
         const preview = latest?.latest
           ? previewText(latest.latest.preview, t)
@@ -99,32 +100,10 @@ export function BotList({
               if (!disabled) onActivate(bot.id);
             }}
           >
-            <BotAvatar bot={bot} size={compact ? 32 : 40} />
-            <span className={styles.botOptionBody}>
-              <span className={styles.rowHeading}>
-                <span className={styles.rowName}>{bot.name}</span>
-                {!!latest?.lastActivityAt && (
-                  <time className={styles.relativeTime} dateTime={new Date(latest.lastActivityAt).toISOString()}>
-                    {relativeTime(latest.lastActivityAt, locale)}
-                  </time>
-                )}
-              </span>
-              <span className={styles.rowHeading}>
-                {preview && (
-                  <span className={styles.activityPreview} data-activity-preview="" title={preview}>
-                    {preview}
-                  </span>
-                )}
-                {!!latest?.unreadCount && (
-                  <span
-                    className={styles.unreadDot}
-                    data-unread=""
-                    role="img"
-                    aria-label={t('activity.unreadCount', { count: latest.unreadCount })}
-                  />
-                )}
-              </span>
-            </span>
+            <BotIdentity bot={bot} size={compact ? 32 : 40} preview={preview}
+              disambiguate={entries.filter(entry => entry.bot.name === bot.name).length > 1}
+              trailing={<>{!!latest?.lastActivityAt && <time className={styles.relativeTime} dateTime={new Date(latest.lastActivityAt).toISOString()}>{relativeTime(latest.lastActivityAt, locale)}</time>}
+                {!!latest?.unreadCount && <span className={styles.unreadDot} data-unread="" role="img" aria-label={t('activity.unreadCount', { count: latest.unreadCount })} />}</>} />
           </button>
         );
       })}

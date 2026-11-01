@@ -1,5 +1,5 @@
 import { requireValue } from './test-required.js';
-import { openProfile, openHistory, refreshBots } from './bot-ui-helpers.js';
+import { openEditor, openProfile, openHistory, refreshBots } from './bot-ui-helpers.js';
 // @vitest-environment jsdom
 import { act } from 'react';
 import { readFileSync } from 'node:fs';
@@ -123,11 +123,10 @@ describe('Bots main page through the public Cordis and Slot registration contrac
       expect(button(article, t['chat.openChat'])).toBeDefined();
       expect(button(article, t['card.edit'])).toBeDefined();
       expect(article.textContent).not.toContain(t['bots.emptySessionsHint']);
-      await click(requireValue(article.querySelector('summary')));
-      await click(button(article, t['memory.title']));
-      expect(app.container.querySelector('dialog')?.textContent).toContain(t['memory.empty']);
-      await click(button(requireValue(app.container.querySelector('dialog')), t['actions.close']));
-      await click(button(requireValue(app.container.querySelector('dialog')), t['actions.close']));
+      await click(button(article, t['detail.memory']));
+      expect(article.textContent).toContain(t['memory.empty']);
+      expect(app.container.querySelector('dialog')).toBeNull();
+      await click(button(article, 'Back to My Bots'));
       expect(app.container.querySelector('[data-bot-detail]')).toBeNull();
       expect(app.container.querySelector('li > button[data-bot-id]')).not.toBeNull();
     } finally { vi.unstubAllGlobals(); }
@@ -145,12 +144,11 @@ describe('Bots main page through the public Cordis and Slot registration contrac
     const app = await mount([bot()], 'en', (remote) => {
       remote.data.statuses = [{ id: 'alpha-bot', presetId: 'custom-alpha', preset: { state: 'ok' }, warnings: ['avatar/invalid'] }];
     });
-    await click(button(app.container, t['card.edit']));
+    await openEditor(app);
     expect(app.container.textContent).toContain(t['avatar.invalidStored']);
     expect(app.container.querySelector('img')).toBeNull();
     expect(app.container.querySelector<HTMLButtonElement>('li > button[data-bot-id]')?.disabled).toBe(false);
-    await click(button(app.container, t['card.edit']));
-    expect(app.container.querySelector('dialog')?.textContent).toContain(t['avatar.invalidStored']);
+    expect(app.container.querySelector('[data-bot-detail] form')?.textContent).toContain(t['avatar.invalidStored']);
   });
 
   it('defaults to 5 seconds and validates the inclusive 1000–60000 ms Client configuration range', () => {
@@ -171,7 +169,7 @@ describe('Bots main page through the public Cordis and Slot registration contrac
     const app = await mount([bot()], 'en', (remote) => {
       remote.methods.memory.count.mockResolvedValueOnce({ ok: false, error: new RemoteError('store/unavailable', 'offline', {}) });
     });
-    await click(requireValue(app.container.querySelector('li summary')));
+    await click(button(app.container, `${t['card.more']} Alpha Bot`));
     await click(button(app.container, t['actions.delete']));
     const dialog = app.container.querySelector('dialog');
     if (!dialog) throw new Error('No delete dialog');
@@ -223,18 +221,20 @@ describe('Bots main page through the public Cordis and Slot registration contrac
     expect(app.remote.methods.list).toHaveBeenCalledTimes(3);
   });
 
-  it('renders the Bot catalog with a New menu and settings; profile hides internal identifiers and empty work panels', async () => {
+  it('renders the Bot catalog with one create action and settings; profile folds identifiers and defers work panels', async () => {
     const app = await mount([bot({ id: 'alpha-bot', name: 'Alpha Bot', description: 'A careful helper' })]);
     const page = app.container.querySelector('[data-bots-page]');
     const header = page?.querySelector('header');
     expect(header?.querySelector('h1')?.textContent).toBe(t['bots.title']);
-    expect(header?.querySelector('summary')?.getAttribute('aria-label')).toBe(t['chat.new']);
+    expect(header?.querySelector('summary')).toBeNull();
+    expect([...app.container.querySelectorAll('button')].filter(node => node.textContent === t['bots.create'])).toHaveLength(1);
     expect(button(requireValue(header), t['chat.settings'])).toBeDefined();
     expect(page?.querySelector('article')).toBeNull();
     await openProfile(app);
     const article = page?.querySelector('article');
     expect(article?.getAttribute('data-bot-detail')).toBe('alpha-bot');
-    expect(article?.textContent).not.toContain('alpha-bot');
+    expect(article?.querySelector('details')?.open).toBe(false);
+    expect(article?.querySelector('details code')?.textContent).toBe('alpha-bot');
     expect(article?.textContent).toContain('A careful helper');
     expect(article?.querySelector('[data-session-id]')).toBeNull();
     expect(article?.querySelector('[data-background-work]')).toBeNull();

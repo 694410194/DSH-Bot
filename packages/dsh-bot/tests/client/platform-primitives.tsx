@@ -78,3 +78,5 @@ export function Modal({ open, title, onClose, children, className }: { open: boo
     }
   }}>{children}</dialog> : null;
 }
+
+export function Toast({ text, onDone }: { text: string; onDone(): void }) { return <div role="status">{text}<button type="button" onClick={onDone}>Dismiss</button></div>; }

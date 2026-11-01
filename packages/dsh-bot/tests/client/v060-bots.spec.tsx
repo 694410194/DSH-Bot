@@ -102,12 +102,13 @@ it('combines native Bot/group opens, search, pin, hide and recover without stopp
   expect(start).toHaveBeenCalledWith('research', expect.any(AbortSignal));
   expect(open).toHaveBeenCalledWith({ groupId: 'team', groupCreatedAt: 2 }, expect.any(AbortSignal));
   const pin = container.querySelector('li button:nth-of-type(1)'); expect(pin).toBeTruthy();
-  const researchRow = requireValue([...container.querySelectorAll('li')].find(node => node.textContent?.includes('Researcher')));
-  await act(async () => requireValue([...researchRow.querySelectorAll('button')].find(node => node.textContent === additions.en['chat.pin'])).click());
+  await clickText('More Researcher');
+  await clickText(additions.en['chat.pin']);
   expect(container.querySelector('li')?.textContent).toContain('Researcher');
-  await act(async () => requireValue([...researchRow.querySelectorAll('button')].find(node => node.textContent === additions.en['chat.hide'])).click());
+  await clickText('More Researcher');
+  await clickText(additions.en['chat.hide']);
   expect(container.querySelector('ul')?.textContent).not.toContain('Researcher');
-  await clickText(additions.en['chat.hidden']); await clickText(additions.en['chat.restore']); await clickText(additions.en['chat.recent']);
+  await clickText(additions.en['chat.hidden']); await clickText('More Researcher'); await clickText(additions.en['chat.restore']); await clickText(additions.en['chat.recent']);
   expect(container.querySelector('ul')?.textContent).toContain('Researcher');
   const input = requireValue(container.querySelector('input'));
   await act(async () => { requireValue(requireValue(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')).set).call(input, 'team'); input.dispatchEvent(new Event('input', { bubbles: true })); });

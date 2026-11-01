@@ -1,3 +1,4 @@
+import { useSettingsDraft } from './SettingsNavigation.js';
 import { platformSchema } from '../../shared/capabilities-contract.js';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../shared/schema.js';
@@ -5,7 +6,7 @@ import type { ModelActions } from '../model-catalog-state.js';
 import styles from '../styles/capabilities.module.css';
 import css from '../styles/capabilities.module.css?inline';
 export type CapabilityKey = `capabilities.${'title' | 'refresh' | 'online' | 'offline' | 'loadedSkills' | 'ownSkills' | 'configuredDirs' | 'tools' | 'toolsHint' | 'unavailable' | 'empty' | 'new' | 'edit' | 'remove' | 'removeConfirm' | 'name' | 'content' | 'save' | 'cancel' | 'error' | 'saved' | 'modelCatalog' | 'modelManual' | 'modelUnavailable' | 'modelUnknown' | 'modelLoaded' | 'modelDefault' | 'chooseDirectory' | 'catalogModel' | 'reasoningDefault' | 'skillHint' | 'skillDescription' | 'browser' | 'browserBlocked' | 'browserConnector' | 'voice' | 'voiceSetup' | 'voiceReady' | 'voiceNotReady' | 'dataFlow' | 'flowRestricted' | 'flowScoped' | 'flowUnavailable' | 'freshConversation' | 'freshConfirm' | 'freshHint' | 'freshError'}`;
-export function CapabilitiesPanel({ bot, actions, t }: { bot: BotRecord; actions: ModelActions; t: (key: CapabilityKey) => string }) {
+export function CapabilitiesPanel({ bot, actions, t, expanded = false }: { expanded?: boolean; bot: BotRecord; actions: ModelActions; t: (key: CapabilityKey) => string }) {
   const identity = `${bot.id}/${bot.createdAt}`;
   const epoch = useMemo(() => ({ live: true, identity }), [identity]);
   useEffect(() => { epoch.live = true; return () => { epoch.live = false; }; }, [epoch]);
@@ -14,6 +15,7 @@ export function CapabilitiesPanel({ bot, actions, t }: { bot: BotRecord; actions
   const [busy, setBusy] = useState(false), [error, setError] = useState(false), [saved, setSaved] = useState(false);
   const [freshError, setFreshError] = useState(false);
   const [edit, setEdit] = useState<{ name: string; content: string; hash: string | null }>();
+  useSettingsDraft(!!edit || busy);
   useEffect(() => { if (!epoch.live) return; setData(undefined); setEdit(undefined); setError(false); setBusy(false); setSaved(false); setFreshError(false); }, [epoch]);
   useEffect(() => { let active = true;
     void actions.inspect({ id: bot.id, createdAt: bot.createdAt }).then(value => { if (active) setData(value); }, () => { if (active) setError(true); });
@@ -22,7 +24,7 @@ export function CapabilitiesPanel({ bot, actions, t }: { bot: BotRecord; actions
   const platform = platformSchema.parse(data?.platform);
   const run = async (action: () => Promise<void>) => { setError(false); setSaved(false); setBusy(true);
     try { await action(); } catch { if (isCurrent()) setError(true); } finally { if (isCurrent()) setBusy(false); } };
-  return <details className={styles.panel}>
+  return <details className={styles.panel} open={expanded || undefined}>
     <summary>{t('capabilities.title')}</summary>
     <style>{css}</style><section aria-label={t('capabilities.title')}>
     <button type="button" disabled={busy} onClick={() => { void run(async () => { const value = await actions.inspect(bot); if (isCurrent()) setData(value); }); }}>{t('capabilities.refresh')}</button>

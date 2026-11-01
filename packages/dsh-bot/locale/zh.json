@@ -957,6 +957,22 @@
     "connectors.sharedDefinitions": "服务定义为全局共享，连接状态与绑定操作属于当前 Bot。",
     "notifications.emptyPolicies": "此 Bot 暂无通知策略。",
     "editor.cwdWorkspaceOnCreate": "创建时使用共享 Bots 工作区",
-    "memory.behavior": "记忆如何生效"
+    "memory.behavior": "记忆如何生效",
+    "detail.navigation": "Bot 资料",
+    "detail.overview": "概览",
+    "detail.work": "任务与消息",
+    "detail.memory": "记忆",
+    "detail.settings": "设置",
+    "detail.history": "历史对话",
+    "detail.profile": "基本资料与模型",
+    "detail.capabilities": "工具与技能",
+    "detail.connectors": "连接器",
+    "detail.notifications": "通知",
+    "detail.identity": "Bot 标识",
+    "detail.createTask": "去对话创建任务",
+    "detail.memoryEnabled": "已开启",
+    "detail.modelAndWorkspace": "资料、模型与工作目录",
+    "detail.advancedMigration": "高级与迁移",
+    "detail.clearSearch": "清空搜索"
   }
 }

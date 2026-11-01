@@ -1,3 +1,4 @@
+import { useSettingsDraft } from './SettingsNavigation.js';
 import styles from '../styles/background-work.module.css';
 import css from '../styles/background-work.module.css?inline';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
@@ -14,6 +15,7 @@ export function BackgroundTasksPanel({ bot, actions, t }: {
   const [selected, setSelected] = useState<BackgroundTask>();
   const [text, setText] = useState('');
   const [delivery, setDelivery] = useState<'queue' | 'steer'>('queue');
+  useSettingsDraft(!!text.trim() || busy);
   useEffect(() => { void source.catalog.refresh(); return () => source.dispose(); }, [source]);
   const perform = async (action: () => Promise<void>) => {
     setError(false); setBusy(true);

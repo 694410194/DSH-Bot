@@ -1,4 +1,3 @@
-import { requireValue } from './test-required.js';
 import { refreshBots } from './bot-ui-helpers.js';
 // @vitest-environment jsdom
 import { RemoteError } from '@deepseek-ai/dsh-typert-protocol';
@@ -21,13 +20,13 @@ describe('discoverable Bot deletion with the existing confirmation and Host meth
     const t = language === 'en' ? en.ui : zh.ui;
     const app = await mount([{ ...bot(), createdAt: 13, updatedAt: 29 }, bot({ id: 'beta-bot', name: 'Beta Bot' })], language);
     const detail = app.container.querySelector('li') as HTMLElement;
-    await click(requireValue(detail.querySelector('summary')));
+    await click(button(detail, `${t['card.more']} Alpha Bot`));
     await click(button(detail, t['actions.delete']));
     let dialog = app.container.querySelector('dialog') as HTMLDialogElement;
     expect(dialog.textContent).toContain(additions[language]['delete.workspaceRetained']);
     expect(app.remote.methods.delete).not.toHaveBeenCalled();
     await click(button(dialog, t['actions.cancel'])); expect(app.remote.methods.delete).not.toHaveBeenCalled();
-    await click(button(detail, t['actions.delete'])); dialog = app.container.querySelector('dialog') as HTMLDialogElement;
+    await click(button(detail, `${t['card.more']} Alpha Bot`)); await click(button(detail, t['actions.delete'])); dialog = app.container.querySelector('dialog') as HTMLDialogElement;
     await click(field(dialog, t['delete.memories'])); await click(field(dialog, t['delete.home']));
     await click(button(dialog, t['actions.delete']));
     expect(app.remote.methods.delete).toHaveBeenCalledExactlyOnceWith('alpha-bot', { deleteMemories: false, deleteHome: true, expectedCreatedAt: 13, expectedUpdatedAt: 29 });
@@ -35,7 +34,7 @@ describe('discoverable Bot deletion with the existing confirmation and Host meth
     expect(app.createSession).not.toHaveBeenCalled();
   });
   it('retains confirmation and chosen options on a Host conflict, displays the failure inside the dialog, and retries', async () => {
-    const app = await mount([bot()]); await click(button(app.container, en.ui['actions.delete']));
+    const app = await mount([bot()]); await click(button(app.container, `${en.ui['card.more']} Alpha Bot`)); await click(button(app.container, en.ui['actions.delete']));
     const dialog = app.container.querySelector('dialog') as HTMLDialogElement;
     await click(field(dialog, en.ui['delete.memories']));
     app.remote.methods.delete.mockResolvedValueOnce({ ok: false, error: new RemoteError('bot/conflict', 'Synthetic conflict', {}) });
@@ -46,7 +45,7 @@ describe('discoverable Bot deletion with the existing confirmation and Host meth
     expect(app.remote.methods.delete).toHaveBeenCalledTimes(2); expect(app.container.querySelector('dialog')).toBeNull();
   });
   it('handles a committed delete with home-cleanup failure by clearing the removed selection and reporting remaining files', async () => {
-    const app = await mount([bot()]); await click(button(app.container, en.ui['actions.delete']));
+    const app = await mount([bot()]); await click(button(app.container, `${en.ui['card.more']} Alpha Bot`)); await click(button(app.container, en.ui['actions.delete']));
     const dialog = app.container.querySelector('dialog') as HTMLDialogElement;
     await click(field(dialog, en.ui['delete.home']));
     app.remote.methods.delete.mockImplementationOnce(async id => {
@@ -58,7 +57,7 @@ describe('discoverable Bot deletion with the existing confirmation and Host meth
     expect(app.container.textContent).toContain(en.ui['delete.homeCleanupFailed']);
   });
   it('invalidates a confirmation when a different Bot incarnation arrives under the same ID', async () => {
-    const app = await mount([bot()]); await click(button(app.container, en.ui['actions.delete']));
+    const app = await mount([bot()]); await click(button(app.container, `${en.ui['card.more']} Alpha Bot`)); await click(button(app.container, en.ui['actions.delete']));
     app.remote.data.records = app.remote.data.records.map(record => ({ ...record, createdAt: record.createdAt + 1 }));
     await refreshBots(app);
     const dialog = app.container.querySelector('dialog') as HTMLDialogElement;
@@ -68,7 +67,7 @@ describe('discoverable Bot deletion with the existing confirmation and Host meth
   it('blocks deletion of a known running main until it stops and retains the existing conversation', async () => {
     const running = summary(true);
     const app = await mount([bot()], 'en', remote => { remote.data.sessionRows = [running]; }, {}, undefined, false, { ids: [running.id], byId: { [running.id]: running } });
-    await click(button(app.container, en.ui['actions.delete'])); let dialog = app.container.querySelector('dialog') as HTMLDialogElement;
+    await click(button(app.container, `${en.ui['card.more']} Alpha Bot`)); await click(button(app.container, en.ui['actions.delete'])); let dialog = app.container.querySelector('dialog') as HTMLDialogElement;
     expect(button(dialog, en.ui['actions.delete']).disabled).toBe(true); expect(dialog.textContent).toContain(additions.en['delete.running']);
     await app.setSessions({ ids: [running.id], byId: { [running.id]: summary(false) } });
     dialog = app.container.querySelector('dialog') as HTMLDialogElement;

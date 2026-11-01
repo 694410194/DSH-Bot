@@ -1,7 +1,8 @@
 import { previewText, relativeTime } from '../activity-view.js';
-import { useState, useSyncExternalStore } from 'react';
+import { useId, useState, useSyncExternalStore } from 'react';
 import { GroupAvatar } from '../components/GroupAvatar.js';
-import { BotAvatar } from '../components/BotAvatar.js';
+import { BotIdentity } from '../components/BotIdentity.js';
+import { Button, Input, Menu } from '@deepseek-ai/dsh-client-ui-primitives';
 import { conversationKey, recentPreferences, setRecentPreference } from './recent-conversations.js';
 import type { BotsPageProps } from './bots-page-types.js';
 import type { BotsPageModel } from './use-bots-page.js';
@@ -10,6 +11,7 @@ const emptyGroups = { groups: [], loading: false, loaded: true, pollIntervalMs: 
 const noSubscribe = () => () => {};
 export function RecentConversations({ page, model, mode = 'recent' }: { page: BotsPageProps; model: BotsPageModel; mode?: 'bots' | 'recent' }) {
   const { groups, t } = page;
+  const searchId = useId();
   const text = (key: string) => t(key as Parameters<typeof t>[0]);
   const snapshot = useSyncExternalStore(groups?.catalog.subscribe ?? noSubscribe, groups?.catalog.getSnapshot ?? (() => emptyGroups));
   const saved = model.pageState?.lists[mode];
@@ -18,6 +20,7 @@ export function RecentConversations({ page, model, mode = 'recent' }: { page: Bo
   const setQuery = (value: string) => { if (saved) saved.query = value; updateQuery(value); };
   const setHidden = (value: boolean) => { if (saved) saved.hidden = value; updateHidden(value); };
   const [, setRevision] = useState(0);
+  const [menu, setMenu] = useState<string>();
   const update = (key: string, field: 'hidden' | 'pinned') => {
     setRecentPreference(key, field); setRevision(value => value + 1);
   };
@@ -26,7 +29,7 @@ export function RecentConversations({ page, model, mode = 'recent' }: { page: Bo
       at: model.activity.bots.find(row => row.botId === entry.bot.id)?.lastActivityAt ?? entry.bot.updatedAt,
       preview: previewText(model.activity.bots.find(row => row.botId === entry.bot.id)?.latest?.preview, t) || entry.bot.description || t('bots.noSessions'),
       unread: model.activity.bots.find(row => row.botId === entry.bot.id)?.unreadCount ?? 0,
-      avatar: <BotAvatar bot={entry.bot} size={36} />, bot: entry.bot, groupId: undefined, groupCreatedAt: undefined, status: entry.status?.preset.state ?? 'unknown',
+      avatar: undefined, bot: entry.bot, groupId: undefined, groupCreatedAt: undefined, status: entry.status?.preset.state ?? 'unknown',
       open: () => model.navigate(signal => page.onStart(entry.bot.id, signal), 'errors.start') })),
     ...(mode === 'recent' ? snapshot.groups : []).map(group => ({ key: conversationKey('group', group.group.id, group.group.createdAt), name: group.group.name,
       at: group.latest?.at ?? group.group.updatedAt, preview: group.running ? t('groups.running') : '', unread: group.unread ? 1 : 0, avatar: <GroupAvatar size={36} />, bot: undefined, groupId: group.group.id, groupCreatedAt: group.group.createdAt, status: undefined,
@@ -36,31 +39,36 @@ export function RecentConversations({ page, model, mode = 'recent' }: { page: Bo
   return <section aria-label={text(mode === 'bots' ? 'navigation.myBots' : 'chat.recent')} data-bots-list={mode}>
     <div className={styles.listTools}>
       {mode === 'bots' && model.entries.length > 0 && <button type="button" className={styles.button} disabled={model.busy || !model.snapshot.loaded} onClick={() => model.open({ kind: 'create' })}>{t('bots.create')}</button>}
-      <label className={styles.field}>{text(mode === 'bots' ? 'navigation.searchBots' : 'chat.search')}<input type="search" value={query} onChange={event => setQuery(event.target.value)} /></label>
+      <label className={styles.field} htmlFor={searchId}>{text(mode === 'bots' ? 'navigation.searchBots' : 'chat.search')}<Input id={searchId} type="search" value={query} onChange={event => setQuery(event.target.value)} /></label>
       {mode === 'recent' && <button type="button" className={styles.button} aria-pressed={hidden} onClick={() => setHidden(!hidden)}>{text(hidden ? 'chat.recent' : 'chat.hidden')}</button>}
     </div>
     <ul className={styles.recentList}>
       {rows.map(row => <li key={row.key} className={styles.recentRow}>
         <button type="button" data-bot-id={row.bot?.id} aria-label={row.name} className={styles.recentOpen} disabled={model.busy || model.navigating} onClick={() => { void row.open(); }}>
-          {row.avatar}<span className={styles.recentBody}>{mode === 'recent' && recentPreferences.get(row.key)?.pinned && <span role="img" aria-label={text('chat.pinned')}>⌖ </span>}{row.name}
-            <span className={styles.activityPreview} data-activity-preview="">{row.preview}</span>
-            {mode === 'bots' && <span className={styles.hint}>{text(row.status === 'ok' ? 'navigation.available' : row.status === 'broken' ? 'card.statusBroken' : row.status === 'missing' ? 'card.statusMissing' : 'card.statusUnknown')}</span>}
-          </span>
+          {row.bot ? <BotIdentity bot={row.bot} size={36} preview={row.preview} disambiguate={model.entries.filter(entry => entry.bot.name === row.name).length > 1} /> : <>{row.avatar}<span className={styles.recentBody}>{row.name}<span className={styles.activityPreview}>{row.preview}</span></span></>}
+          {mode === 'recent' && recentPreferences.get(row.key)?.pinned && <span role="img" aria-label={text('chat.pinned')}>⌖</span>}
+          {mode === 'bots' && row.status !== 'ok' && <span className={styles.hint}>{text(row.status === 'broken' ? 'card.statusBroken' : row.status === 'missing' ? 'card.statusMissing' : 'card.statusUnknown')}</span>}
           {!!row.unread && <span data-unread="" role="img" aria-label={t('activity.unreadCount', { count: row.unread })}>●</span>}
           {!!row.at && <time className={styles.relativeTime} dateTime={new Date(row.at).toISOString()}>{relativeTime(row.at, t('activity.locale'))}</time>}
         </button>
-        <details className={styles.recentMore}><summary aria-label={`${t('card.more')} ${row.name}`}>···</summary>
-          {mode === 'recent' && <>
-          <button type="button" className={styles.button} onClick={() => update(row.key, 'pinned')}>{text(recentPreferences.get(row.key)?.pinned ? 'chat.unpin' : 'chat.pin')}</button>
-          <button type="button" className={styles.button} onClick={() => update(row.key, 'hidden')}>{text(hidden ? 'chat.restore' : 'chat.hide')}</button></>}
-          {row.bot ? <>
-            <button type="button" className={styles.button} onClick={() => { if (row.bot) model.showBot(row.bot); }}>{text('chat.profile')}</button>
-            <button type="button" className={styles.button} onClick={() => { if (row.bot) model.open({ kind: 'edit', bot: row.bot }); }}>{t('card.edit')}</button>
-            <button type="button" className={styles.button} onClick={() => { if (row.bot) model.open({ kind: 'delete', bot: row.bot }); }}>{t('actions.delete')}</button>
-          </> : <button type="button" className={styles.button} onClick={() => { if (row.groupId) groups?.select(row.groupId, row.groupCreatedAt); model.setTab('groups'); }}>{text('chat.profile')}</button>}
-        </details>
+        <Button variant="ghost" aria-label={`${text('chat.profile')} · ${row.name}`} onClick={() => { if (row.bot) model.showBot(row.bot); else if (row.groupId) { groups?.select(row.groupId, row.groupCreatedAt); model.setTab('groups'); } }}>{text('chat.profile')}</Button>
+        <Menu open={menu === row.key} onClose={() => setMenu(undefined)} align="end"
+          anchor={<Button variant="ghost" aria-label={`${t('card.more')} ${row.name}`} aria-haspopup="menu" aria-expanded={menu === row.key} onClick={() => setMenu(menu === row.key ? undefined : row.key)}>···</Button>}
+          items={[
+            ...(mode === 'recent' ? [{ id: 'pinned', label: text(recentPreferences.get(row.key)?.pinned ? 'chat.unpin' : 'chat.pin') }, { id: 'hidden', label: text(hidden ? 'chat.restore' : 'chat.hide') }] : []),
+            { id: 'profile', label: text('chat.profile') },
+            ...(row.bot ? [{ id: 'delete', label: t('actions.delete') }] : []),
+          ]}
+          onSelect={id => { setMenu(undefined);
+            if (id === 'pinned' || id === 'hidden') update(row.key, id);
+            else if (id === 'delete' && row.bot) model.open({ kind: 'delete', bot: row.bot });
+            else if (row.bot) model.showBot(row.bot);
+            else if (row.groupId) { groups?.select(row.groupId, row.groupCreatedAt); model.setTab('groups'); }
+          }} />
+
       </li>)}
     </ul>
+    {rows.length === 0 && query && <Button variant="ghost" onClick={() => setQuery('')}>{t('detail.clearSearch')}</Button>}
     {rows.length === 0 && (mode !== 'bots' || Boolean(query)) && !model.snapshot?.error && <p className={styles.hint}>{text(query ? mode === 'bots' ? 'navigation.noBotsMatch' : 'chat.noMatches' : mode === 'bots' ? 'bots.empty' : hidden ? 'navigation.noHidden' : 'navigation.noRecent')}</p>}
   </section>;
 }

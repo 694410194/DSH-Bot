@@ -1,3 +1,5 @@
+import { useSettingsDraft } from './SettingsNavigation.js';
+import { Input } from '@deepseek-ai/dsh-client-ui-primitives';
 import type { ModelActions, ModelCatalogData } from '../model-catalog-state.js';
 import type { CapabilityKey } from './CapabilitiesPanel.js';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
@@ -16,6 +18,7 @@ import { Modal } from './Modal.js';
 
 export interface BotEditorProps {
   bot?: BotRecord;
+  embedded?: boolean;
   models?: ModelActions;
   memoryPanel?: ReactNode;
   avatarWarning?: boolean;
@@ -32,6 +35,7 @@ export interface BotEditorProps {
 
 export function BotEditor({
   bot,
+  embedded = false,
   models,
   memoryPanel,
   avatarWarning,
@@ -96,6 +100,9 @@ export function BotEditor({
   const [failure, setFailure] = useState(false);
   const [saving, setSaving] = useState(false);
   const disabled = busy || saving || picking;
+  const draftValue = JSON.stringify([name, avatar, avatarColor, avatarVariant, description, defaultCwd, persona, suffix, complete, template, modelEnabled, provider, modelId, reasoning, extraDirs, memory, injectLimit, deny]);
+  const initialDraft = useRef(draftValue);
+  useSettingsDraft(embedded && (draftValue !== initialDraft.current || disabled));
 
   useEffect(() => {
     mounted.current = true;
@@ -287,10 +294,10 @@ export function BotEditor({
             ))}
           </div>
         )}
-        <div className={styles.formRow}>
-          <label className={styles.field}>
+        <div className={styles.identityEditor}>
+          <label className={styles.field} htmlFor={`${uid}-name`}>
             {t('editor.name')}
-            <input
+            <Input id={`${uid}-name`}
               data-modal-autofocus
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -300,11 +307,11 @@ export function BotEditor({
               aria-describedby={errors.name ? `${uid}-name-error` : undefined}
             />
           </label>
-        </div>
         {avatarWarning && <p className={styles.warning}>{t('avatar.invalidStored')}</p>}
         <button type="button" className={styles.button} aria-label={t('editor.avatar')} aria-expanded={avatarOpen} disabled={disabled} onClick={() => setAvatarOpen(!avatarOpen)}>
           <BotAvatar bot={{ id, avatar, avatarColor, avatarVariant }} size={48} />
         </button>
+        </div>
         {avatarOpen && <AvatarPicker
           id={id}
           value={avatar}
@@ -317,7 +324,7 @@ export function BotEditor({
           t={t}
         />}
         {!editing && <p className={styles.hint}>{text('chat.firstMessage')}</p>}
-        <details data-compatibility-settings=""><summary>{text('chat.compatibility')}</summary>
+        <details data-compatibility-settings="" open={editing}><summary>{t('detail.modelAndWorkspace')}</summary>
         <label className={styles.field}>
           {t('editor.description')}
           <textarea
@@ -327,7 +334,7 @@ export function BotEditor({
             disabled={disabled}
           />
         </label>
-        <details><summary>{text('chat.advanced')}</summary>
+        <details><summary>{t('detail.advancedMigration')}</summary>
         <label className={styles.field}>
           {t('editor.persona')}
           <textarea
@@ -502,7 +509,7 @@ export function BotEditor({
             {t('editor.cwdPermissions')}
           </p>
         </section>
-        <details><summary>{text('chat.advanced')}</summary>
+        <details><summary>{t('detail.advancedMigration')}</summary>
         <div className={styles.formRow}>
           <label className={styles.checkboxField}>
             <input
@@ -560,6 +567,7 @@ export function BotEditor({
       </footer>
     </form>
   );
+  if (embedded) return form;
   return (
     <Modal title={title} description={editing ? t('bots.newSessionsNotice') : undefined} busy={disabled} onClose={onCancel} t={t}>
       {editing && memoryPanel && (
