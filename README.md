@@ -4,7 +4,7 @@
 
 DeepSeek Harness 的个人智能体插件。创建拥有各自人设、长期记忆、模型、技能和工具的 Bot，在原生工作区里私聊、群聊和协作。
 
-当前版本 **0.6.3**。目前交付方式为本地构建的 tgz；**尚未发布 npm、在线插件市场或 GitHub Release 下载包**。采用 [MIT 许可证](LICENSE)，Copyright © 2026 MJ-CJM；第三方告知随包提供。
+当前版本 **0.6.3**。预构建安装包已发布于 [GitHub Release v0.6.3](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3)。社区目录收录申请进行中，尚未发布 npm 包。采用 [MIT 许可证](LICENSE)，Copyright © 2026 MJ-CJM；第三方告知随包提供。
 
 ## 可以做什么
 
@@ -16,9 +16,9 @@ DeepSeek Harness 的个人智能体插件。创建拥有各自人设、长期记
 
 ## 安装与升级
 
-需要 DeepSeek Harness。开发依赖与只读 API 参考锁定 **0.2.1-rc.2**；社区候选版已在该版本完成下述同包 Host/Web 验证，逐项结果见[社区首发验收](docs/acceptance/community-release-ready.md)。历史 Host / Web 记录来自 **0.2.1-rc.3**。包声明范围为 `>=0.2.1-rc.2 <0.3.0`，不代表范围内所有版本均已验收。
+需要 DeepSeek Harness。开发依赖与只读 API 参考锁定 **0.2.1-rc.2**；首发安装包在 **rc.2** 完成安装、重装和冷恢复，并在 **rc.2 / rc.5** 完成群聊界面复验；逐项结果及历史证据区别见[首发记录](docs/releases/v0.6.3.md)。包声明范围为 `>=0.2.1-rc.2 <0.3.0`，不代表范围内所有版本均已验收。
 
-1. 首发准备中。正式发布后，从 [GitHub Releases](https://github.com/MJ-CJM/DSH-Bot/releases) 下载附件 `dsh-bot-0.6.3.tgz` 和 `SHA256SUMS`；不要选择自动生成的 Source code 压缩包。在下载目录用 `shasum -a 256 -c SHA256SUMS`（macOS）或 `sha256sum -c SHA256SUMS`（Linux）核对。目前尚无公开附件，开发者可按下文自行构建。
+1. 从 [GitHub Release v0.6.3](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3) 下载附件 `dsh-bot-0.6.3.tgz` 和 `SHA256SUMS`；不要选择自动生成的 Source code 压缩包。在下载目录用 `shasum -a 256 -c SHA256SUMS`（macOS）或 `sha256sum -c SHA256SUMS`（Linux）核对。开发者也可按下文自行构建。
 2. 在 DSH 打开 **插件 → 添加插件 → 安装第三方插件**，选择 tgz（需要来源时填写其绝对路径）。
 3. 确认启用后**完全退出 DSH 并重开**（macOS 使用 Cmd+Q），在侧栏进入 **Bots**。首次启用且没有既有 Bot 数据时会创建两个示例。
 
