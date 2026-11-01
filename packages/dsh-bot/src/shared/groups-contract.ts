@@ -83,6 +83,14 @@ export const groupsSpec = {
       ],
       result: codec('Turn', groupTurnSchema),
     },
+    'dshBot.groups/continueTurn': {
+      ...base, parameters: [param('group', groupKeySchema), param('turnId', z.string().min(1)), param('expectedRevision', z.number().int().positive())],
+      result: codec('Turn', groupTurnSchema),
+    },
+    'dshBot.groups/stopMember': {
+      ...base, parameters: [param('group', groupKeySchema), param('turnId', z.string().min(1)), param('memberId', z.string().min(1)), param('expectedRevision', z.number().int().positive())],
+      result: codec('Turn', groupTurnSchema),
+    },
     'dshBot.groups/archive': {
       ...base,
       parameters: [param('group', groupKeySchema), param('expectedRevision', z.number().int().positive())],

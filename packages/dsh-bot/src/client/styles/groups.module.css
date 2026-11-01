@@ -529,3 +529,9 @@
 .modelMemberName small { flex: none; color: var(--dsw-alias-label-tertiary); font-size: 11px; }
 .modelMemberDetail { color: var(--dsw-alias-label-secondary); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .modelMemberSource { color: var(--dsw-alias-label-tertiary); font-size: 11px; }
+
+.workspace .executions {
+  max-height: min(32svh, 320px);
+  overflow-y: auto;
+  flex: 0 1 auto;
+}

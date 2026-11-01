@@ -17,7 +17,7 @@ import { groupKey, type GroupRecord } from '../src/shared/groups.js';
 import { isOwnedGroupTool, getGroupWorkerBinding } from '../src/host/groups/worker-tool.js';
 async function fixture(f: Parameters<Parameters<typeof withIntegrations>[0]>[0], groupRoundTimeoutMs = 1000) {
   const roots = new Map<string, AgentHandle>(); const persisted = new Map<string, AgentHandle>(); const sequence: string[] = [];
-  const config = Config({ dataDir: f.root, seedExamples: false, groupRoundTimeoutMs });
+  const config = Config({ dataDir: f.root, seedExamples: false, groupRoundTimeoutMs, groupTaskTimeoutMs: groupRoundTimeoutMs });
   Object.assign(f.registry, { config, status: async () => [...f.bots.keys()].map(id => ({ id, presetId: `bot-${id}`, preset: { state: 'ok' } })) });
   const workspaces = new Map<string, { id: string; path: string; sessionIds: SessionId[]; attachSession(id: SessionId): Promise<void> }>();
   const workspaceRegistry = { create: vi.fn(async (path: string) => {
@@ -64,18 +64,29 @@ async function fixture(f: Parameters<Parameters<typeof withIntegrations>[0]>[0],
   let behavior: 'success' | 'hold' | 'partial' | 'throw' = 'success';
   const calls: { preset: string; prompt: string; signal: AbortSignal; route?: AgentOptions }[] = [];
   let onStart: ((input: { childId: SessionId; request: { parent: Agent; agentPreset: string; agentOptions?: AgentOptions; prompt: { text: string }[] } }, index: number) => Promise<SubagentResult>) | undefined;
+  const priorInputs = new Map<string, { childId: SessionId; signal: AbortSignal; request: { parent: Agent; agentPreset: string; agentOptions?: AgentOptions; prompt: { text: string }[] } }>();
   const start = vi.fn(async (input: { childId: SessionId; signal: AbortSignal; request: { parent: Agent; agentPreset: string; agentOptions?: AgentOptions; prompt: { text: string }[] } }) => {
+    priorInputs.set(input.childId, input);
     if (behavior === 'throw') throw new Error('sensitive-native-error');
     calls.push({ preset: input.request.agentPreset, prompt: input.request.prompt[0]?.text ?? '', signal: input.signal, route: input.request.agentOptions });
     let finish!: (r: SubagentResult) => void;
     const result = new Promise<SubagentResult>(r => { finish = r; });
-    if (onStart) void onStart(input, calls.length).then(finish, error => { errors.push(error); finish(answer('fixture-error')); });
+    if (onStart) void onStart(input, calls.length).then(finish, error => { errors.push(error instanceof Error ? error.stack : error); finish(answer('fixture-error')); });
     else if (behavior !== 'hold') finish({ output: [{ type: 'text', text: `reply-${calls.length}` }], stopReason: behavior === 'partial' ? 'max-tokens' : 'completed' });
     return { childId: input.childId, result, dispose: vi.fn(async () => { sequence.push('child-dispose'); finish({ output: [], stopReason: 'aborted' }); }) };
   });
-  f.ctx.provide('subagents', { getProvider: () => ({ inheritsParentContext: false, capabilities: { agentPreset: true, agentOptions: true, depthLimit: true } }), startActivation: start } as unknown as typeof f.ctx.subagents);
+  f.ctx.provide('subagents', { listChildren: async () => [], drainChildren: async () => {}, getProvider: () => ({ inheritsParentContext: false, capabilities: { agentPreset: true, agentOptions: true, depthLimit: true } }), startActivation: start,
+    sendMessage: async (_parent: Agent, childId: SessionId, content: { text: string }[]) => {
+      const prior = need(priorInputs.get(childId));
+      const runId = `fixture-${calls.length}` as import('@deepseek-ai/dsh-subagent').SubagentRunId;
+      f.ctx.emit('subagent/start', { id: childId, runId, provider: 'spawn', local: true });
+      const handle = await start({ ...prior, request: { ...prior.request, prompt: content } });
+      void handle.result.then(result => f.ctx.emit('subagent/end', { id: childId, runId, provider: 'spawn', local: true, stopReason: result.stopReason, lastAssistantMessage: result.output }));
+      return 'fixture-message';
+    },
+  } as unknown as typeof f.ctx.subagents);
   let domain = await f.ctx.storageDomain.open(groupsDomain); let groups = new Groups(f.ctx, f.registry, domain, () => {}); await groups.start();
-  const createGroup = (op = 'create-1', mode: 'natural' | 'mention' = 'natural') => groups.create({ operationId: op, name: 'Same name', members: [alpha, beta], mode, historyConfirmed: true });
+  const createGroup = (op = 'create-1', mode: 'natural' | 'mention' | 'round-robin' = 'natural') => groups.create({ operationId: op, name: 'Same name', members: [alpha, beta], mode, historyConfirmed: true });
   const settle = async (g: GroupRecord) => { await vi.waitFor(async () => expect((await groups.view(groupKey(g))).turns.every(t => !['running', 'accepted'].includes(t.state))).toBe(true)); expect(errors).toEqual([]); return groups.view(groupKey(g)); };
   return { get domain() { return domain; }, setOnStart(fn: NonNullable<typeof onStart>) { onStart = fn; }, get groups() { return groups; }, createGroup, settle, calls, resolveCallConfig, create, resume, flush, rename, roots, workspaces, sequence, start, setBehavior(b: typeof behavior) { behavior = b; },
     async seedUncertain(turnId: string) {
@@ -128,7 +139,7 @@ describe('natural groups — real ToolRuntime and persistent JSON, native activa
           await s.groups.setModel(groupKey(g), { expectedModelRevision: (latest.modelRevision ?? 0) + 1, memberId: need(members[0]).id, modelSelection: selected });
           return answer('Waiting for B');
         }
-        if (index === 2) { expect(input.request.prompt[0]?.text).toContain('B, verify the number'); return answer('Verified: 42'); }
+        if (index === 2) { expect(input.request.prompt[0]?.text).toContain('B, verify the number'); await vi.waitFor(async () => expect((await s.groups.view(groupKey(g))).deliveries.some(d => d.memberId === members[0]?.id && d.state === 'completed')).toBe(true)); return answer('Verified: 42'); }
         expect(index).toBe(3); expect(input.request.prompt[0]?.text).toContain('Verified: 42');
         expect(JSON.parse(need(need(input.request.prompt[0]).text.split('\n').at(-1))).questionSource.authorKind).toBe('bot');
         return answer('Using B result: 42');
@@ -141,13 +152,13 @@ describe('natural groups — real ToolRuntime and persistent JSON, native activa
       expect(v.messages.filter(m => m.text === 'B, verify the number')).toHaveLength(1);
       expect(v.messages.filter(m => m.authorKind === 'user')).toHaveLength(1);
       expect(v.messages.at(-1)?.speaker?.bot).toEqual(alpha);
-      expect(v.turns[0]?.state).toBe('completed');
+      expect(v.turns[0]?.state).toBe('idle');
     } finally { await s.close(); for (const scope of scopes) scope.dispose(); }
   }));
   it('queued input sees predecessor output, while the predecessor cannot see future queued input', () => withIntegrations(async f => {
     const s = await fixture(f); let resolve!: (v: SubagentResult) => void;
     try {
-      const g = await s.createGroup('legacy-queue', 'mention'), members = (await s.groups.view(groupKey(g))).members;
+      const g = await s.createGroup('legacy-queue', 'round-robin'), members = (await s.groups.view(groupKey(g))).members;
       s.setOnStart(async (_input, index) => index === 1 ? new Promise<SubagentResult>(r => { resolve = r; }) : answer('second'));
       await s.groups.send(groupKey(g), { operationId: 'first', text: 'first', memberIds: [need(members[0]).id], expectedMembershipRevision: 1 });
       await vi.waitFor(() => expect(s.calls).toHaveLength(1));
@@ -176,7 +187,7 @@ describe('natural group safety and bounded continuation', () => {
       });
       await s.groups.send(groupKey(g), { operationId: 'skip', text: 'optional question', expectedMembershipRevision: 1 });
       const v = await s.settle(g);
-      expect(v.turns[0]?.state).toBe('completed'); expect(v.deliveries.map(d => d.state)).toEqual(['skipped', 'skipped']);
+      expect(v.turns[0]?.state).toBe('idle'); expect(v.deliveries.map(d => d.state)).toEqual(['skipped', 'skipped']);
       expect(v.messages.map(m => m.text)).toEqual(['optional question']);
     } finally { await s.close(); for (const scope of scopes) scope.dispose(); }
   }));
@@ -194,7 +205,7 @@ describe('natural group safety and bounded continuation', () => {
           arguments: { action: 'send', to, text: 'question', requestReply: true }, callId: ToolCallId(call), signal: new AbortController().signal });
         expect((await send('foreign-member', 'foreign')).isError).toBe(true);
         const next = await send(need(members.find(m => `bot-${m.bot.botId}` !== input.request.agentPreset)).id, 'next');
-        expect(Boolean(next.isError), JSON.stringify({ index, next })).toBe(index === 3);
+        expect(Boolean(next.isError), JSON.stringify({ index, next })).toBe(false);
         return answer(`answer-${index}`);
       });
       await s.groups.send(groupKey(g), { operationId: 'bounded', text: 'start', memberIds: [need(members[0]).id], expectedMembershipRevision: 1 });
@@ -203,7 +214,7 @@ describe('natural group safety and bounded continuation', () => {
     } finally { await s.close(); for (const worker of workers) worker.scope.dispose(); }
   }));
   it('stop cancels a durable pending handoff and a late result cannot revive it', () => withIntegrations(async f => {
-    const s = await fixture(f); const workers: ReturnType<typeof f.createAgent>[] = [];
+    const s = await fixture(f); f.registry.config.groupConcurrentMembers = 1; const workers: ReturnType<typeof f.createAgent>[] = [];
     let sent = false;
     try {
       const g = await s.createGroup(), members = (await s.groups.view(groupKey(g))).members;
@@ -222,7 +233,7 @@ describe('natural group safety and bounded continuation', () => {
       const turn = need((await s.groups.view(groupKey(g))).turns[0]);
       await s.groups.cancel(groupKey(g), turn.id, turn.revision);
       const v = await s.settle(g); expect(v.turns[0]?.state).toBe('cancelled'); expect(s.calls).toHaveLength(1);
-      expect(v.deliveries.every(d => d.state === 'cancelled')).toBe(true);
+      expect(v.deliveries.filter(d => d.reasonCode !== 'message-published').every(d => d.state === 'cancelled')).toBe(true);
     } finally { await s.close(); for (const worker of workers) worker.scope.dispose(); }
   }));
 });
@@ -243,7 +254,7 @@ describe('native group attachment references', () => {
       await s.groups.send(groupKey(g), { operationId: 'artifacts', text: 'Create artifacts', expectedMembershipRevision: 1 });
       const v = await s.settle(g), result = need(v.messages.find(m => m.speaker?.bot.botId === 'alpha'));
       expect(result.attachments).toEqual(attachments);
-      expect(prompts[1]?.slice(1)).toEqual(attachments);
+      expect(prompts[1]?.slice(1)).toEqual([]); // First-wave peers share the admitted snapshot.
       await s.groups.send(groupKey(g), { operationId: 'artifact-reply', text: 'Use these', replyTo: result.id, expectedMembershipRevision: 1 });
       await s.settle(g); expect(prompts[2]?.slice(1)).toEqual(attachments);
       const native = need(s.roots.get(g.rootSessionId)).agent.session.snapshotEvents().find(e => e.type === 'user/message' && e.data.id === result.id);
@@ -397,7 +408,7 @@ describe('root title persistence failure ownership cleanup', () => {
 describe('bounded independent natural work and exact supplements', () => {
   it('runs two independent turns, queues a third, supplements exactly once and cancels only the selected chain', () => withIntegrations(async f => {
     // This asserts targeted cancellation, not deadline expiry. Full-suite JSON I/O can exceed one second.
-    const s = await fixture(f, 30_000); const prompt = vi.fn(async () => ({ messageId: 'native-followup' }));
+    const s = await fixture(f, 30_000); f.registry.config.groupConcurrentMembers = 2; const prompt = vi.fn(async () => ({ messageId: 'native-followup' }));
     Object.assign(f.ctx.subagents, { prompt });
     try {
       s.setBehavior('hold'); const g = await s.createGroup(), key = groupKey(g), members = (await s.groups.view(key)).members;
@@ -479,7 +490,7 @@ describe('supplement admission closes independently of result persistence', () =
       release();
       expect(await pending).toMatchObject({ error: { code: phase === 'validation' ? 'dsh-bot/unavailable' : 'dsh-bot/recovery-needed' } });
       const view = await s.settle(g), current = need(view.turns.find(t => t.id === turn.id));
-      expect(current.state).toBe('completed');
+      expect(current.state).toBe('idle');
       expect(view.deliveries[0]?.state).toBe('completed');
       expect(view.messages.some(m => m.text === 'original work completed')).toBe(true);
       expect(current.followups?.find(row => row.operationId === input.operationId)?.state).toBe(phase === 'validation' ? undefined : 'unknown');
@@ -567,6 +578,7 @@ describe('group-local model selection and admission snapshots', () => {
     let release!: () => void;
     const gate = new Promise<void>(resolve => { release = resolve; });
     try {
+      f.registry.config.groupConcurrentMembers = 1;
       const g = await s.createGroup('snapshot', 'mention'), key = groupKey(g);
       const selection = { provider: 'alternate', model: 'second', reasoningEffort: 'high' };
       await s.groups.setModel(key, { expectedModelRevision: 0, modelSelection: selection });
@@ -690,6 +702,7 @@ describe('per-member group model overrides', () => {
   it('freezes every member override at admission for queued work while active workers keep their route', () => withIntegrations(async f => {
     const s = await fixture(f, 30_000); let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
     try {
+      f.registry.config.groupConcurrentMembers = 1;
       const g = await s.createGroup('member-snapshot', 'mention'), key = groupKey(g), members = (await s.groups.view(key)).members;
       const alphaId = need(members[0]).id, betaId = need(members[1]).id;
       await s.groups.setModel(key, { expectedModelRevision: 0, memberId: alphaId, modelSelection: a });

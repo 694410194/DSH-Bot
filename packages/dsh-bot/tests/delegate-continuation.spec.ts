@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import { createUserMessage } from '@deepseek-ai/dsh-llm';
+import { SessionId } from '@deepseek-ai/dsh-session';
 import type { Agent } from '@deepseek-ai/dsh-agent';
 import { bindings } from '../src/host/data-flow/agent-binding.js';
 import { protectDelegateContinuation, reserveDelegate } from '../src/host/delegate/continuation.js';
-import { workerReservations } from '../src/host/groups/worker-tool.js';
+import { workerReservations, admitGroupInput, isAdmittedGroupInput } from '../src/host/groups/worker-tool.js';
 const alpha = { botId: 'alpha', botCreatedAt: 1 }, beta = { botId: 'beta', botCreatedAt: 2 };
 function fixture() {
   const live = new Map<string, Agent>();
@@ -52,4 +54,24 @@ describe('checked caller activation lease', () => {
       active = false; expect(await group.step()).toMatchObject({ kind: 'reject' });
     } finally { workerReservations.delete('group-child'); bindings.delete(f.owner.agent); }
   });
+  it('requires a fresh group resume reservation and exact native relay content', async () => {
+    const f = fixture(), group = f.create('resume-child', 'group-root', 'bot-beta');
+    const binding = { childId: 'resume-child', rootId: 'group-root', presetId: 'bot-beta', turnId: 'task', deliveryId: 'delivery',
+      agent: group.agent, audience: [alpha, beta], isActive: () => true, resumeAllowed: true };
+    workerReservations.set(binding.childId, binding);
+    try {
+      protectDelegateContinuation(group.agent, beta, 'resume');
+      expect(await group.step()).toEqual({ kind: 'continue' });
+      const content = [{ type: 'text' as const, text: 'checked request' }]; admitGroupInput(binding, content);
+      const relay = createUserMessage({ source: { kind: 'agent-message', form: 'relay', senderSessionId: SessionId('group-root') },
+        content: [{ type: 'text', text: 'Agent group-root sent a message: ' }, ...content] });
+      expect(isAdmittedGroupInput(group.agent, relay)).toBe(true);
+      expect(isAdmittedGroupInput(group.agent, { ...relay, content: [{ type: 'text', text: 'unadmitted request' }] })).toBe(false);
+      expect(isAdmittedGroupInput(group.agent, { ...relay, source: { kind: 'agent-message', form: 'relay', senderSessionId: SessionId('other') } })).toBe(false);
+      workerReservations.delete(binding.childId);
+      expect(isAdmittedGroupInput(group.agent, relay)).toBe(false);
+      expect(await group.step()).toMatchObject({ kind: 'reject' });
+    } finally { workerReservations.delete(binding.childId); }
+  });
+
 });

@@ -38,6 +38,7 @@ export class GroupState {
   public activations = new Map<string, SubagentActivation>();
   public settledInputs = new Set<string>();
   public inputAdmissions = new Map<string, AbortController>();
+  public wakeTurns = new Map<string, () => void>();
   public cancelledTurns = new Set<string>();
   public unregister?: () => Promise<void>;
   public offTitle?: () => void;

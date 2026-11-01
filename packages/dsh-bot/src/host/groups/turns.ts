@@ -83,12 +83,13 @@ export class GroupTurns {
         membershipRevision: g.membershipRevision,
         orderedMemberIds: selected.map((m) => m.id),
         mode: g.mode,
+        ...(g.mode !== 'round-robin' ? { protocol: 2 as const, automaticExecutions: 0, continuationAllowance: this.state.registry.config.groupMaxContinuations } : {}),
         ...(g.modelSelection ? { modelSelection: { ...g.modelSelection } } : {}),
         ...(g.memberModelSelections ? { memberModelSelections: g.memberModelSelections.map(row => ({
           memberId: row.memberId, modelSelection: { ...row.modelSelection },
         })) } : {}),
         contextThroughSeq: this.messages.messages(g).at(-1)?.seq ?? -1,
-        predecessorTurnIds: g.mode === 'natural' ? [] : this.state.turns(g).filter(t => !terminal(t)).map(t => t.id),
+        predecessorTurnIds: g.mode !== 'round-robin' ? [] : this.state.turns(g).filter(t => !terminal(t)).map(t => t.id),
         ...(input.replyTo ? { replyTo: input.replyTo } : {}),
         state: 'accepted',
         revision: 1,
@@ -134,7 +135,7 @@ export class GroupTurns {
         receiptBinding?.commit();
         await this.roots.flush(root);
         const accepted = await this.state.putTurn({ ...turn, inputSeq: Number(event.seq) });
-        const limit = g.mode === 'natural' ? this.state.registry.config.groupConcurrentTurns : 1;
+        const limit = accepted.protocol === 2 ? Number.MAX_SAFE_INTEGER : 1;
         const running = this.state.schedule(g.id, limit, async () => {
           try { await this.runner.execute(id); }
           catch {
@@ -170,15 +171,17 @@ export class GroupTurns {
       throw new OperationError('conflict');
     const d = this.state.deliveries(t.id).find(row => row.id === target.deliveryId);
     const active = d && this.state.activations.get(d.id), controller = d && this.state.controllers.get(d.id);
+    const worker = d?.childSessionId && t.protocol === 2 ? this.state.workers.get(d.childSessionId) : undefined;
+    const childId = active?.childId ?? (worker?.deliveryId === d?.id && worker?.isActive?.() ? d?.childSessionId : undefined);
     const inputAdmission = d && this.state.inputAdmissions.get(d.id);
     const member = d && this.state.members(g).find(m => m.id === d.memberId && m.enabled && m.removedAt === undefined);
-    if (!d || !active || !controller || !inputAdmission || !member || d.state !== 'running' || d.skipped ||
+    if (!d || !childId || !controller || !inputAdmission || !member || d.state !== 'running' || d.skipped ||
       this.state.settledInputs.has(d.id) || inputAdmission.signal.aborted || terminal(t) ||
       g.archived || this.state.cancelledTurns.has(t.id) || controller.signal.aborted)
       throw new OperationError('unavailable');
     const admissionSignal = AbortSignal.any([controller.signal, inputAdmission.signal]);
     const assertInputOpen = () => {
-      if (admissionSignal.aborted || this.state.stopped || this.state.settledInputs.has(d.id) || this.state.activations.get(d.id) !== active)
+      if (admissionSignal.aborted || this.state.stopped || this.state.settledInputs.has(d.id) || (t.protocol === 2 ? this.state.workers.get(childId) !== worker || !worker?.isActive?.() : this.state.activations.get(d.id) !== active))
         throw new OperationError('unavailable');
     };
     await this.state.validateMembers([d.bot]);
@@ -202,12 +205,12 @@ export class GroupTurns {
       assertInputOpen();
       if (flowId) await need(flow).dispatch(flowId, append, admissionSignal); else append();
       await this.roots.flush(root);
-      const childMessageId = await followupInput(this.state, g, root.agent, d.bot, active.childId,
+      const childMessageId = await followupInput(this.state, g, root.agent, d.bot, childId,
         input.text, `followup:${input.operationId}`, admissionSignal, () => {
           assertInputOpen();
           return this.state.ctx.subagents.prompt({
           requestId: input.operationId as SubagentPromptRequestId, parentSessionId: root.agent.session.id,
-          childSessionId: SessionId(active.childId), mode: 'continuable', delivery: 'steer', content: blocks(input.text),
+          childSessionId: SessionId(childId), mode: 'continuable', delivery: 'steer', content: blocks(input.text),
         }, admissionSignal);
         });
       const current = need(this.state.table('turns').get(t.id));
@@ -226,14 +229,46 @@ export class GroupTurns {
         t = this.state.turns(g).find((t) => t.id === turnId);
       if (!t) throw new OperationError('not-found');
       if (t.revision !== revision) throw new OperationError('conflict');
-      if (terminal(t)) return t;
+      if (terminal(t) && t.state !== 'paused') return t;
       this.state.cancelledTurns.add(t.id);
+      this.state.wakeTurns.get(t.id)?.();
       for (const d of this.state.deliveries(t.id)) {
-        this.state.controllers.get(d.id)?.abort();
+        this.state.controllers.get(d.id)?.abort('user-task-stop');
         if (d.state === 'pending') await this.state.putDelivery({ ...d, state: 'cancelled' });
       }
       const active = this.state.deliveries(t.id).some((d) => ['starting', 'running'].includes(d.state));
       return this.state.putTurn({ ...t, state: active ? t.state : 'cancelled' });
+    });
+  }
+  async continueTurn(key: GroupKey, turnId: string, revision: number) {
+    return this.state.queue.run(async () => {
+      const g = this.state.record(key), t = need(this.state.turns(g).find(row => row.id === turnId));
+      if (t.revision !== revision || t.membershipRevision !== g.membershipRevision) throw new OperationError('conflict');
+      if (t.protocol !== 2 || t.state !== 'paused' || g.archived || this.state.chains.has(t.id)) throw new OperationError('unavailable');
+      if (!this.state.registry.config.groupMaxContinuations) throw new OperationError('invalid');
+      await this.roots.restore(g);
+      const next = await this.state.putTurn({ ...t, state: 'accepted', continuationAllowance: (t.automaticExecutions ?? 0) + this.state.registry.config.groupMaxContinuations });
+      const running = this.runner.execute(t.id).catch(() => this.state.queue.run(async () => {
+        const current = this.state.table('turns').get(t.id);
+        if (current && !terminal(current)) await this.state.putTurn({ ...current, state: 'recovery_needed' });
+      }));
+      this.state.chains.set(t.id, running);
+      void running.finally(() => this.state.chains.delete(t.id)).catch(() => {});
+      return next;
+    });
+  }
+  async stopMember(key: GroupKey, turnId: string, memberId: string, revision: number) {
+    return this.state.queue.run(async () => {
+      const g = this.state.record(key), t = need(this.state.turns(g).find(row => row.id === turnId));
+      if (t.revision !== revision) throw new OperationError('conflict');
+      if (t.protocol !== 2 || !['accepted', 'running', 'paused'].includes(t.state) || !this.state.members(g).some(m => m.id === memberId)) throw new OperationError('invalid');
+      const next = await this.state.putTurn({ ...t, stoppedMemberIds: [...new Set([...(t.stoppedMemberIds ?? []), memberId])] });
+      for (const d of this.state.deliveries(t.id).filter(d => d.memberId === memberId)) {
+        this.state.controllers.get(d.id)?.abort('user-member-stop');
+        if (d.state === 'pending') await this.state.putDelivery({ ...d, state: 'cancelled', endedAt: Date.now(), reasonCode: 'user-member-stop' });
+      }
+      this.state.wakeTurns.get(t.id)?.();
+      return next;
     });
   }
   async archive(key: GroupKey, revision: number) {
@@ -242,9 +277,14 @@ export class GroupTurns {
       if (g.revision !== revision) throw new OperationError('conflict');
       const next = { ...g, archived: true, revision: g.revision + 1, updatedAt: Date.now() };
       await this.state.putGroup(next);
-      for (const t of this.state.turns(g).filter((t) => !terminal(t))) {
+      for (const t of this.state.turns(g).filter((t) => !terminal(t) || t.state === 'paused')) {
         this.state.cancelledTurns.add(t.id);
-        for (const d of this.state.deliveries(t.id)) this.state.controllers.get(d.id)?.abort();
+        this.state.wakeTurns.get(t.id)?.();
+        for (const d of this.state.deliveries(t.id)) {
+          this.state.controllers.get(d.id)?.abort('user-task-stop');
+          if (d.state === 'pending') await this.state.putDelivery({ ...d, state: 'cancelled', reasonCode: 'user-task-stop', endedAt: Date.now() });
+        }
+        if (t.state === 'paused') { await this.state.putTurn({ ...t, state: 'cancelled' }); this.state.cancelledTurns.delete(t.id); }
       }
       return next;
     });
@@ -252,6 +292,7 @@ export class GroupTurns {
     await this.state.queue.run(async () => {
       const h = this.state.roots.get(next.id);
       if (h) {
+        await this.state.ctx.subagents.drainChildren(h.agent, (await this.state.ctx.subagents.listChildren(h.agent.id)).map(child => child.id));
         await this.roots.flush(h);
         await this.roots.release(h);
         this.state.roots.delete(next.id);

@@ -10,6 +10,7 @@ import { auditArtifact, auditInstalled } from '../p34-artifact.mjs';
 export async function webHost(dir, suite, artifact, fixturePath, fixtureConfig = []) {
   const root = process.cwd(), commands = [], children = new Set(), profile = 'b4-browser';
   const env = { PATH: process.env.PATH, USER: 'synthetic', SHELL: process.env.SHELL,
+    ...(process.env.DSH_BOT_DSH_BIN ? { DSH_BOT_DSH_BIN: process.env.DSH_BOT_DSH_BIN } : {}),
     HOME: resolve(dir, 'environment-home'), DSH_HOME: resolve(dir, 'home'), TMPDIR: resolve(dir, 'tmp'),
     DSH_AGENTS_HOME: resolve(dir, 'agents-home'), XDG_STATE_HOME: resolve(dir, 'state'),
     DSH_TELEMETRY_DISABLED: '1', pnpm_config_offline: 'true',

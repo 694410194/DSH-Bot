@@ -43,3 +43,11 @@ Runtime evidence uses synthetic models; real-model task quality is unverified. O
 License / 许可证：**MIT**, Copyright © 2026 MJ-CJM. See the bundled LICENSE and THIRD_PARTY_NOTICES.txt.
 
 完整说明：[中文](https://github.com/MJ-CJM/DSH-Bot/blob/main/README.md) · [English guide](https://github.com/MJ-CJM/DSH-Bot/blob/main/README.en.md) · [Acceptance](https://github.com/MJ-CJM/DSH-Bot/blob/main/docs/acceptance/V063-onboarding-avatars.md) · [Security](https://github.com/MJ-CJM/DSH-Bot/blob/main/SECURITY.md)
+
+### Concurrent group discussions / 群聊并发讨论
+
+Natural and mentioned-member discussions run concurrently (up to four active members per group by default). Specific `group_message` requests drive follow-on work in the same native child sessions; ordinary progress does not wake idle members. Tasks become idle when no work remains. Automatic follow-on work pauses after the configured allowance (default 32) and can be continued explicitly. Stop one member or the entire task from the group page. Execution details open in the native right sidebar without leaving the group draft or starting another model request.
+
+自然讨论和 @ 成员任务默认在同群最多并发 4 个成员；明确请求驱动多轮，普通进展不唤醒空闲成员。后续继续复用各成员的原生子会话；没有待办时自然空闲，自动后续执行达到默认 32 次额度时暂停并提供“继续讨论”。可停止单成员或整项任务，执行过程在同屏原生右侧面板展开。
+
+`groupTaskTimeoutMs` and `groupMemberTimeoutMs` default to `0` (no additional plugin deadline). `groupConcurrentMembers` sets the group-wide concurrency limit; `groupMaxContinuations` sets the automatic follow-on allowance. Explicit round-robin mode retains its serial behavior and `groupRoundTimeoutMs` compatibility setting. Existing native model/tool time limits still apply.

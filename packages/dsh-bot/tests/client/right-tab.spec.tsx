@@ -50,7 +50,7 @@ describe('Bots right tab through public Cordis and SlotCore contracts', () => {
     expect(row.getAttribute('aria-selected')).toBe('true');
     list.focus(); list.scrollTop = 30;
     app.remote.data.activities = [{ ...activity('beta-latest'), botId: 'beta-bot' }];
-    const actions = app.core.entries('sidebar.right.pane.tab')[0]?.inject?.() as unknown as BotsRightTabInjected;
+    const actions = app.core.entries('sidebar.right.pane.tab').find(entry => entry.options.key === BOTS_TAB_ID)?.inject?.() as unknown as BotsRightTabInjected;
     await act(async () => actions.onRefresh());
     expect(list.querySelector('[role="option"]')?.getAttribute('data-bot-id')).toBe('beta-bot');
     expect(option(tab)).toBe(row);
@@ -61,14 +61,14 @@ describe('Bots right tab through public Cordis and SlotCore contracts', () => {
   it.each(['en', 'zh'] as const)('registers a localized type, guide, keyed body/title and both openers, then releases them (%s)', async (language) => {
     const dictionary = language === 'zh' ? zh.ui : en.ui;
     const app = await mount(language);
-    expect(app.registerRightTab).toHaveBeenCalledTimes(1);
+    expect(app.registerRightTab).toHaveBeenCalledTimes(2);
     const definition = app.rightDefinitions.get(BOTS_TAB_ID);
     expect(definition).toMatchObject({ id: BOTS_TAB_ID, kind: BOTS_TAB_KIND });
     expect(definition?.title('')).toBe(dictionary['rightTab.title']);
     expect(definition?.guide?.[0]?.title()).toBe(dictionary['rightTab.title']);
     expect(definition?.guide?.[0]?.description?.()).toBe(dictionary['rightTab.description']);
     expect(definition?.multiple).toBeUndefined();
-    expect(app.core.entries('sidebar.right.pane.tab').map((entry) => entry.options.key)).toEqual([BOTS_TAB_ID]);
+    expect(app.core.entries('sidebar.right.pane.tab').map((entry) => entry.options.key)).toEqual(['dsh-bot.execution', BOTS_TAB_ID]);
     expect((await app.mountRightTitle()).textContent).toBe(dictionary['rightTab.title']);
     await app.setRightSession('current-session');
     const opener = await app.mountRightOpener('current-session');
@@ -90,9 +90,9 @@ describe('Bots right tab through public Cordis and SlotCore contracts', () => {
     expect(app.rightSessionListeners.size).toBe(0);
     expect(app.sessionListeners.size).toBe(0);
     await app.reloadPlugin();
-    expect(app.rightDefinitions.size).toBe(1);
-    expect(app.registerRightTab).toHaveBeenCalledTimes(2);
-    expect(app.core.entries('sidebar.right.pane.tab')).toHaveLength(1);
+    expect(app.rightDefinitions.size).toBe(2);
+    expect(app.registerRightTab).toHaveBeenCalledTimes(4);
+    expect(app.core.entries('sidebar.right.pane.tab')).toHaveLength(2);
   });
 
   it.each(['source', 'built'] as const)('opens the latest eligible Host session after markRead (%s)', async (implementation) => {
@@ -266,7 +266,7 @@ describe('Bots right tab through public Cordis and SlotCore contracts', () => {
     await click(button(opener, zh.ui['rightTab.open']));
     expect(opener.querySelector('[role="alert"]')?.textContent).toBe(zh.ui['rightTab.openError']);
     expect(opener.textContent).not.toContain('private shell error');
-    const actions = app.core.entries('sidebar.right.pane.tab')[0]?.inject?.() as unknown as BotsRightTabInjected;
+    const actions = app.core.entries('sidebar.right.pane.tab').find(entry => entry.options.key === BOTS_TAB_ID)?.inject?.() as unknown as BotsRightTabInjected;
     await app.unloadPlugin();
     await actions.onOpenSession('latest');
     await actions.onStart('alpha-bot');

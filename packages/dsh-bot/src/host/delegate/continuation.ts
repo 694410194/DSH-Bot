@@ -28,10 +28,10 @@ export function protectDelegateContinuation(agent: Agent, bot: BotKey, source: s
   const header = agent.session.header;
   const child = Boolean(header.parentSession || header.origin === 'subagent' || (header.delegationDepth ?? 0));
   const group = getGroupWorkerBinding(agent);
-  const freshGroup = source === 'startup' && group && workerReservations.get(agent.session.id) === group &&
+  const freshGroup = group && (source === 'startup' || group.resumeAllowed) && workerReservations.get(agent.session.id) === group &&
     (!group.agent || group.agent === agent) && group.isActive?.();
   // Fail before native materialization publishes a default-parent activation/settlement.
-  // Cold history reads do not create an Agent; an execution resume requires a new checked child.
+  // Cold history reads do not create an Agent; an execution resume requires a fresh checked group reservation or delegate lease.
   if (child && !active() && !freshGroup)
     throw new HarnessError(en.tools['bot_delegate.continuationBlocked'], 'automation/unavailable');
   return agent.ctx.effect(() => agent.ctx.on('agent/pre-step', async (_payload, next) => {

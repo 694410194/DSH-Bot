@@ -48,6 +48,8 @@ export class GroupsRemote extends TypertRemoteService {
   @Remote async cancel(group: GroupKey, turnId: string, expectedRevision: number) {
     return this.groups.cancel(group, turnId, expectedRevision);
   }
+  @Remote async continueTurn(group: GroupKey, turnId: string, expectedRevision: number) { return this.groups.continueTurn(group, turnId, expectedRevision); }
+  @Remote async stopMember(group: GroupKey, turnId: string, memberId: string, expectedRevision: number) { return this.groups.stopMember(group, turnId, memberId, expectedRevision); }
   @Remote async archive(group: GroupKey, expectedRevision: number) {
     return this.groups.archive(group, expectedRevision);
   }
