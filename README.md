@@ -4,7 +4,7 @@
 
 DeepSeek Harness 的个人智能体插件。创建拥有各自人设、长期记忆、模型、技能和工具的 Bot，在原生工作区里私聊、群聊和协作。
 
-当前版本 **0.6.3**。目前交付方式为本地构建的 tgz；**尚未发布 npm、在线插件市场或 GitHub Release 下载包**。当前许可证为 `UNLICENSED`，尚未授予开源使用或再分发许可，见[许可证](packages/dsh-bot/LICENSE)。
+当前版本 **0.6.3**。目前交付方式为本地构建的 tgz；**尚未发布 npm、在线插件市场或 GitHub Release 下载包**。采用 [MIT 许可证](LICENSE)，Copyright © 2026 MJ-CJM；第三方告知随包提供。
 
 ## 可以做什么
 
@@ -16,15 +16,23 @@ DeepSeek Harness 的个人智能体插件。创建拥有各自人设、长期记
 
 ## 安装与升级
 
-需要 DeepSeek Harness。开发依赖与只读 API 参考锁定 **0.2.1-rc.2**；已有完整 Host / Web 运行证据来自 **0.2.1-rc.3**，精确 rc.2 二进制尚未实跑。包声明范围为 `>=0.2.1-rc.2 <0.3.0`，不代表范围内所有版本均已验收。
+需要 DeepSeek Harness。开发依赖与只读 API 参考锁定 **0.2.1-rc.2**；社区候选版已在该版本完成下述同包 Host/Web 验证，逐项结果见[社区首发验收](docs/acceptance/community-release-ready.md)。历史 Host / Web 记录来自 **0.2.1-rc.3**。包声明范围为 `>=0.2.1-rc.2 <0.3.0`，不代表范围内所有版本均已验收。
 
-1. 从本仓库构建 `dist/dsh-bot-0.6.3.tgz`（见下文），并记录该产物的 SHA256。`dist/` 不纳入 Git；当前没有公开下载地址。
+1. 首发准备中。正式发布后，从 [GitHub Releases](https://github.com/MJ-CJM/DSH-Bot/releases) 下载附件 `dsh-bot-0.6.3.tgz` 和 `SHA256SUMS`；不要选择自动生成的 Source code 压缩包。在下载目录用 `shasum -a 256 -c SHA256SUMS`（macOS）或 `sha256sum -c SHA256SUMS`（Linux）核对。目前尚无公开附件，开发者可按下文自行构建。
 2. 在 DSH 打开 **插件 → 添加插件 → 安装第三方插件**，选择 tgz（需要来源时填写其绝对路径）。
-3. 确认启用后 **Cmd+Q 完全退出并重开**，在侧栏进入 **Bots**。首次启用且没有既有 Bot 数据时会创建两个示例。
+3. 确认启用后**完全退出 DSH 并重开**（macOS 使用 Cmd+Q），在侧栏进入 **Bots**。首次启用且没有既有 Bot 数据时会创建两个示例。
 
 升级前备份原 profile 和完整数据，保持原来的 `DSH_HOME`、profile 与存储配置，通过同一安装入口添加新版包，然后完全退出重开。已有 0.6.2 → 0.6.3 原位升级、安装文件核对与数据保留记录，见[桌面安装验收](docs/acceptance/V063-desktop-install.md)。若宿主要求先卸载插件，卸载不等于删除 Bot；不要删除数据目录或重置 profile。
 
 CLI 安装、迁移与发布步骤见[社区发布说明](docs/community-release.md)。0.4.0 起的记忆迁移写入 Migration Fence，旧插件会拒绝该存储；不能直接降级继续写入。回退需要升级前独立完整备份，并评估遗忘后旧副本复活风险。
+
+## 界面预览
+
+当前版本在隔离 Web Host 中的真实界面，使用合成演示数据；不代表真实模型任务质量。
+
+![Bot 当前职责与私聊界面](packages/dsh-bot/assets/current-role.png)
+
+![深色主题群聊空态与输入区](packages/dsh-bot/assets/group-chat.png)
 
 ## 使用与数据边界
 

@@ -11,6 +11,8 @@ scripts/pnpm check
 
 The default suite includes real Node subprocesses, local loopback fixtures, property sequences, and DOM doubles. A passing default check does not prove complete DSH CLI Host activation, desktop/browser interaction, or real-model behavior. Existing `it.fails` cases retain their explicit expected-failure semantics.
 
+The default worker limit is two because many suites fsync real JSON files or launch subprocesses. Running one worker per available CPU can overload local storage and expire workflow polling deadlines. This bound preserves test assertions and timeouts; do not run full Host/browser suites concurrently with the unit suite.
+
 ## Current packed installation and cache guards
 
 `tests/deepening/v041-cache.spec.ts` packs the current build using `scripts/pnpm pack` into a unique `.dsh-dev/current-cache/` directory, then extracts it into independent installations. The shared `scripts/verify-package.mjs` audits packed metadata, source bytes, publication allowlist, notices, and complete Host manifest coverage. Cold Node processes also verify every Host manifest digest and concrete package export. They exercise fresh linkage, changed/missing modules, linker failures, missing/invalid/version-mismatched manifests, cached unversioned or wrong-version namespaces, and an already-cached bootstrap after disk replacement. Failed installations must show the bilingual restart message before accessing Host services. These deliberate mutations are synthetic current-install tests, not historical release reconstructions.

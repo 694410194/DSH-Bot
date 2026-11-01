@@ -10,11 +10,21 @@ Install the locally built `dsh-bot-0.6.3.tgz` in **Plugins → Add plugin → In
 
 在 **插件 → 添加插件 → 安装第三方插件** 选择本地构建的 tgz，启用后完全退出重开。升级前备份，并保持原 profile 和数据位置。目前没有 npm、在线市场或 GitHub Release 下载包。
 
-Development dependencies/API reference: `0.2.1-rc.2`. Recorded full Host runs: `0.2.1-rc.3`. Declared compatibility: `>=0.2.1-rc.2 <0.3.0`; exact rc.2 runtime is unverified.
+Development dependencies/API reference: `0.2.1-rc.2`. Community candidate validation targets rc.2; historical Host runs used rc.3. Declared compatibility: `>=0.2.1-rc.2 <0.3.0`. See [current acceptance](https://github.com/MJ-CJM/DSH-Bot/blob/main/docs/acceptance/community-release-ready.md) for actual results and limitations.
 
-开发依赖/API 参考为 rc.2，完整 Host 实测为 rc.3；声明范围不代表范围内所有版本已验证。
+开发依赖/API 参考为 rc.2，本轮社区候选在 rc.2 验证，历史运行记录为 rc.3；逐项结果见当前验收，声明范围不代表范围内所有版本已验证。
+
+Public downloads, when available, belong to [GitHub Releases](https://github.com/MJ-CJM/DSH-Bot/releases). Choose the `.tgz` asset and verify `SHA256SUMS`; the Source code archives are not installable packages. No public asset is available yet.
+
+首发准备中；正式发布后在 GitHub Releases 下载 `.tgz` 和校验和。自动生成的 Source code 压缩包不是插件安装包。
 
 ## Use / 使用
+
+Screenshots / 界面截图（isolated Web Host, synthetic demo data / 隔离 Web Host、合成演示数据）：
+
+![Personal Bot](https://raw.githubusercontent.com/MJ-CJM/DSH-Bot/main/packages/dsh-bot/assets/current-role.png)
+
+![Group chat](https://raw.githubusercontent.com/MJ-CJM/DSH-Bot/main/packages/dsh-bot/assets/group-chat.png)
 
 - Create with a name, then chat in the native workspace. Lasting role changes use native approval. / 输入名称创建并聊天；长期职责修改走原生审批。
 - Create groups by selecting Bots; use mentions, replies, attachments, individual stops and per-member model settings. / 选成员建群，支持提及、引用、附件、单项停止和逐成员模型。
@@ -30,6 +40,6 @@ Runtime evidence uses synthetic models; real-model task quality is unverified. O
 
 运行证据使用合成模型，真实模型质量未验。持续主动运行、IM 收发、OS/手机推送及云托管尚未交付；自动共享不可用，离线评测为合成验证；不确定后台结果不自动重放。
 
-Current license: **UNLICENSED**, with no open-source permission granted. See the bundled LICENSE.
+License / 许可证：**MIT**, Copyright © 2026 MJ-CJM. See the bundled LICENSE and THIRD_PARTY_NOTICES.txt.
 
 完整说明：[中文](https://github.com/MJ-CJM/DSH-Bot/blob/main/README.md) · [English guide](https://github.com/MJ-CJM/DSH-Bot/blob/main/README.en.md) · [Acceptance](https://github.com/MJ-CJM/DSH-Bot/blob/main/docs/acceptance/V063-onboarding-avatars.md) · [Security](https://github.com/MJ-CJM/DSH-Bot/blob/main/SECURITY.md)
