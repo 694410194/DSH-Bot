@@ -4,7 +4,7 @@ English · [中文](README.md)
 
 Personal agents for DeepSeek Harness. Create Bots with their own personas, long-term memory, models, skills and tools, then chat and collaborate in the native workspace.
 
-The current version is **0.6.3**. Distribution currently means a locally built tgz. **No npm package, online plugin-market listing or GitHub Release download has been published.** Licensed under [MIT](LICENSE), Copyright © 2026 MJ-CJM. Third-party notices are included in the package.
+The current version is **0.6.3**. The prebuilt package is available in [GitHub Release v0.6.3](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3). Community listing is being requested; no npm package has been published. Licensed under [MIT](LICENSE), Copyright © 2026 MJ-CJM. Third-party notices are included in the package.
 
 ## Features
 
@@ -16,9 +16,9 @@ The current version is **0.6.3**. Distribution currently means a locally built t
 
 ## Install and upgrade
 
-DeepSeek Harness is required. Development dependencies and the read-only API reference are pinned to **0.2.1-rc.2**. The community candidate has completed the documented same-artifact Host/Web checks on **0.2.1-rc.2**; see the [community release acceptance](docs/acceptance/community-release-ready.md) for per-check results. Historical full Host / Web runs used **0.2.1-rc.3**. The declared range is `>=0.2.1-rc.2 <0.3.0`, which does not establish verified compatibility with every version in that range.
+DeepSeek Harness is required. Development dependencies and the read-only API reference are pinned to **0.2.1-rc.2**. The release archive completed installation, reinstallation and cold recovery on **rc.2**, plus group UI checks on **rc.2 / rc.5**. See the [release record](docs/releases/v0.6.3.md) for results and the distinction from historical evidence. The declared range is `>=0.2.1-rc.2 <0.3.0`, which does not establish verified compatibility with every version in that range.
 
-1. The first public release is being prepared. Once published, download the `dsh-bot-0.6.3.tgz` and `SHA256SUMS` assets from [GitHub Releases](https://github.com/MJ-CJM/DSH-Bot/releases), not the automatically generated Source code archives. In the download directory, verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. No public asset is available yet; developers can build from this checkout as described below.
+1. Download the `dsh-bot-0.6.3.tgz` and `SHA256SUMS` assets from [GitHub Release v0.6.3](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3), not the automatically generated Source code archives. In the download directory, verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Developers can also build from this checkout as described below.
 2. Open DSH **Plugins → Add plugin → Install third-party plugin** and select the tgz. Enter its absolute path if the dialog requests an installation source.
 3. Confirm that it is enabled, **fully quit DSH and reopen** (Cmd+Q on macOS), then enter **Bots** from the sidebar. Two examples are created only when no Bot data exists on first activation.
 
