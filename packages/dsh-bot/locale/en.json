@@ -957,6 +957,22 @@
     "connectors.sharedDefinitions": "Service definitions are shared. Connections below apply to the selected Bot.",
     "notifications.emptyPolicies": "No notification policies for this Bot.",
     "editor.cwdWorkspaceOnCreate": "Shared Bots workspace, assigned on creation",
-    "memory.behavior": "How memory is used"
+    "memory.behavior": "How memory is used",
+    "detail.navigation": "Bot details",
+    "detail.overview": "Overview",
+    "detail.work": "Tasks & messages",
+    "detail.memory": "Memory",
+    "detail.settings": "Settings",
+    "detail.history": "Conversations",
+    "detail.profile": "Profile & model",
+    "detail.capabilities": "Tools & skills",
+    "detail.connectors": "Connectors",
+    "detail.notifications": "Notifications",
+    "detail.identity": "Bot identifier",
+    "detail.createTask": "Create a task in chat",
+    "detail.memoryEnabled": "Enabled",
+    "detail.modelAndWorkspace": "Profile, model & workspace",
+    "detail.advancedMigration": "Advanced & migration",
+    "detail.clearSearch": "Clear search"
   }
 }

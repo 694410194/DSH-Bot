@@ -1,5 +1,5 @@
 import { requireValue } from './test-required.js';
-import { openProfile, refreshBots } from './bot-ui-helpers.js';
+import { openEditor, openProfile, refreshBots } from './bot-ui-helpers.js';
 // @vitest-environment jsdom
 import { act } from 'react';
 import { RemoteError } from '@deepseek-ai/dsh-typert-protocol';
@@ -32,7 +32,7 @@ describe('Bots editor, explicit launch and lifecycle', () => {
     expect(app.container.textContent).toContain('Alpha Bot');
     expect(app.container.querySelector('article')?.textContent).toContain('A careful helper');
     expect(app.container.querySelector('article')?.textContent).toContain('🦊');
-    await click(button(app.container, 'Alpha Bot'));
+    await click(button(app.container, t['chat.openChat']));
     expect(app.remote.methods.openConversation).toHaveBeenCalledExactlyOnceWith('alpha-bot');
     expect(app.createSession).not.toHaveBeenCalled();
     expect(app.openSession).toHaveBeenCalledExactlyOnceWith('test-created-session');
@@ -105,7 +105,7 @@ describe('Bots editor, explicit launch and lifecycle', () => {
       model: { provider: 'provider', model: 'model' },
     });
     const app = await mount([original]);
-    await click(button(app.container, t['card.edit']));
+    await openEditor(app);
     expect(app.container.querySelector('label')?.textContent).not.toBe(t['editor.id']);
     await click(button(app.container, t['editor.avatar']));
     await click(button(app.container, t['avatar.clear']));
@@ -124,13 +124,13 @@ describe('Bots editor, explicit launch and lifecycle', () => {
 
   it('shows Remote failures as alerts, preserves the edit form, and can recover by retrying', async () => {
     const app = await mount([bot()]);
-    await click(button(app.container, t['card.edit']));
+    await openEditor(app);
     await fill(field(app.container, t['editor.name']), 'Changed locally');
     app.remote.methods.update.mockResolvedValueOnce({
       ok: false, error: new RemoteError('bot/conflict', 'Host rejected this change', {}),
     });
     await submit(app.container);
-    expect(app.container.querySelector('dialog,[role="dialog"]')).not.toBeNull();
+    expect(app.container.querySelector('[data-bot-detail] form')).not.toBeNull();
     expect(app.container.querySelectorAll('[role="alert"]').length).toBeGreaterThan(0);
     expect((field(app.container, t['editor.name']) as HTMLInputElement).value).toBe('Changed locally');
     expect(app.remote.methods.list).toHaveBeenCalledTimes(1);
@@ -178,7 +178,7 @@ describe('Bots editor, explicit launch and lifecycle', () => {
   it('validates a duplicate id and calls the dedicated Remote operation before refreshing', async () => {
     const app = await mount([bot()]);
     await openProfile(app);
-    await click(requireValue(app.container.querySelector('article summary')));
+    await click(button(requireValue(app.container.querySelector('[data-bot-detail]')), t['card.more']));
     await click(button(app.container, t['card.duplicate']));
     const dialog = app.container.querySelector('dialog');
     expect(dialog?.textContent).toContain('Alpha Bot');
@@ -200,7 +200,7 @@ describe('Bots editor, explicit launch and lifecycle', () => {
     const app = await mount([bot()]);
     const openDelete = async () => {
       if (!app.container.querySelector('article')) await openProfile(app);
-    await click(requireValue(app.container.querySelector('article summary')));
+    await click(button(requireValue(app.container.querySelector('[data-bot-detail]')), t['card.more']));
       await click(button(app.container, t['actions.delete']));
       const dialog = app.container.querySelector('dialog');
       if (!dialog) throw new Error('Delete dialog was not mounted');
@@ -229,7 +229,7 @@ describe('Bots editor, explicit launch and lifecycle', () => {
     const app = await mount([bot()]);
     const openDelete = async () => {
       if (!app.container.querySelector('article')) await openProfile(app);
-    await click(requireValue(app.container.querySelector('article summary')));
+    await click(button(requireValue(app.container.querySelector('[data-bot-detail]')), t['card.more']));
       await click(button(app.container, t['actions.delete']));
       return app.container.querySelector('dialog') as HTMLDialogElement;
     };

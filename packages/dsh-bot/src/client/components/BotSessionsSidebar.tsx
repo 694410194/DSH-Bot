@@ -10,10 +10,11 @@ import type { BotCatalog, BotCatalogEntry } from '../state.js';
 import type { ActivityCatalog } from '../activity-state.js';
 import { botSessionRows, previewText, relativeTime, sortBotEntries } from '../activity-view.js';
 import { type ChatLauncherActions, useChatLauncher } from '../chat-launcher.js';
-import { BotAvatar } from './BotAvatar.js';
+import { BotIdentity } from './BotIdentity.js';
 import { WhaleGlyph } from './WhaleGlyph.js';
 import { Modal } from './Modal.js';
 import styles from '../styles/sidebar.module.css';
+import identityCss from '../styles/identity.module.css?inline';
 import css from '../styles/sidebar.module.css?inline';
 import modalCss from '../styles/bots.module.css?inline';
 
@@ -125,7 +126,7 @@ export function BotSessionsSidebar({
   };
   return (
     <>
-      <style data-dsh-bot-sidebar-styles="">{css}</style>
+      <style data-dsh-bot-sidebar-styles="">{css + identityCss}</style>
       <button
         type="button"
         className={styles.trigger}
@@ -176,11 +177,6 @@ export function BotSessionsSidebar({
           t={t}
         >
           <section className={styles.content} aria-label={t('bots.title')}>
-            <header className={styles.header}>
-              <button type="button" className={styles.action} onClick={manage}>
-                {t('sidebar.manage')}
-              </button>
-            </header>
             {snapshot.error && (
               <div role="alert" className={styles.error}>
                 <p>{t('errors.load')}</p>
@@ -254,8 +250,7 @@ export function BotSessionsSidebar({
                       <span className={styles.chevron} aria-hidden="true">
                         {expanded ? '⌄' : '›'}
                       </span>
-                      <BotAvatar bot={bot} size={28} />
-                      <span className={styles.name}>{bot.name}</span>
+                      <BotIdentity bot={bot} size={28} disambiguate={entries.filter(entry => entry.bot.name === bot.name).length > 1} />
                       {botUnread > 0 && (
                         <span
                           className={styles.unreadCount}

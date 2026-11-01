@@ -136,7 +136,7 @@
 .primaryButton:focus-visible,
 .dangerButton:focus-visible,
 .emojiButton:focus-visible,
-.field input:focus-visible,
+.field > input:focus-visible,
 .field textarea:focus-visible,
 .field select:focus-visible {
   outline: 2px solid var(--dsw-alias-state-business-primary);
@@ -346,7 +346,7 @@
   font-size: 13px;
   font-weight: 550;
 }
-.field input,
+.field > input,
 .field textarea,
 .field select {
   box-sizing: border-box;
@@ -642,3 +642,10 @@
 .recentMore[open] { display: grid; gap: 4px; }
 
 .sectionNavigation[hidden] { display: none; }
+
+.identityEditor { display: flex; align-items: end; gap: 12px; }
+.identityEditor > label { flex: 1; min-width: 0; }
+.identityEditor > button { flex: none; width: 60px; height: 60px; padding: 6px; }
+
+.page [hidden] { display: none; }
+.recentRow > button, .recentRow > div > button { min-height: 44px; }

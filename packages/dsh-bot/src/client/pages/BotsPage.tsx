@@ -3,8 +3,9 @@ import { ManagementWorkspace } from '../components/ManagementWorkspace.js';
 import { SettingsDrafts, useSettingsNavigation } from '../components/SettingsNavigation.js';
 import { useState } from 'react';
 import { RecentConversations } from './RecentConversations.js';
-import { Button, IconPlusOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives';
+import { Button, Toast } from '@deepseek-ai/dsh-client-ui-primitives';
 import styles from '../styles/bots.module.css';
+import identityCss from '../styles/identity.module.css?inline';
 import css from '../styles/bots.module.css?inline';
 
 import type { BotsPageProps } from './bots-page-types.js';
@@ -30,23 +31,19 @@ export function BotsPage(page: BotsPageProps) {
       data-bots-page=""
       aria-label={t('bots.title')}
     >
-      <style data-dsh-bot-styles="">{css}</style>
+      <style data-dsh-bot-styles="">{css + identityCss}</style>
       <div className={styles.pageScroll} ref={model.scrollElement} onScroll={event => model.rememberScroll(event.currentTarget.scrollTop)}>
         <div className={styles.pageContent}>
-          <header className={styles.header}>
+          <header hidden={model.showDetail && tab !== 'management'} className={styles.header}>
             <div className={styles.heading}>
               <h1 className={styles.title}>{t(tab === 'management' ? 'chat.settings' : 'bots.title')}</h1>
               <p className={styles.subtitle}>{tab === 'management' ? t('navigation.settingsFrom', { name: sectionLabel }) : t('bots.subtitle')}</p>
             </div>
             <div className={styles.actions}>
-              {tab !== 'management' && <details><summary className={styles.button} aria-label={text('chat.new')}><IconPlusOutlineRegular size={16} /></summary>
-                <button type="button" className={styles.button} disabled={busy || !snapshot.loaded} onClick={() => open({ kind: 'create' })}>{t('bots.create')}</button>
-                {groups && <button type="button" className={styles.button} onClick={() => { setCreatingGroup(true); setTab('groups'); }}>{t('groups.create')}</button>}
-              </details>}
               <button type="button" ref={model.settingsButton} className={styles.button} data-settings-navigation="" onClick={() => tab === 'management' ? settings.leave(model.returnFromSettings) : setTab('management')}>{tab === 'management' ? t('navigation.returnTo', { name: sectionLabel }) : text('chat.settings')}</button>
             </div>
           </header>
-          <nav hidden={tab === 'management'} className={styles.sectionNavigation} aria-label={t('navigation.sections')}>
+          <nav hidden={tab === 'management' || model.showDetail} className={styles.sectionNavigation} aria-label={t('navigation.sections')}>
             {(['bots', 'groups', 'recent'] as const).filter(key => key !== 'groups' || groups).map(key => <button
               type="button" key={key} className={styles.button} aria-current={tab !== 'management' && section === key ? 'page' : undefined}
               onClick={() => {
@@ -70,7 +67,7 @@ export function BotsPage(page: BotsPageProps) {
             />
             </SettingsDrafts.Provider>
           )}
-          <div hidden={tab === 'management'}>
+          <div hidden={tab === 'management' || model.showDetail}>
           {(section === 'bots' || section === 'recent') && <RecentConversations key={section} page={page} model={model} mode={section} />}
           {groups && section === 'groups' && (
             <GroupsPanel
@@ -123,13 +120,14 @@ export function BotsPage(page: BotsPageProps) {
             </div>
           )}
           </div>
-          <BotsTab page={page} model={model} />
+          {model.showDetail && <BotsTab key={`${model.selected?.bot.id}:${model.selected?.bot.createdAt}`} page={page} model={model} />}
         </div>
       </div>
       <BotDialogs page={page} model={model} />
       {settings.confirmation}
-      {toast && (
-        <div className={styles.toast} role={toast.error ? 'alert' : 'status'}>
+      {toast && !toast.error && <Toast key={toast.text} text={toast.text} tone="success" onDone={() => setToast(undefined)} />}
+      {toast?.error && (
+        <div className={styles.error} role={toast.error ? 'alert' : 'status'}>
           <span>{toast.text}</span>
           <button type="button" className={styles.button} onClick={() => setToast(undefined)}>
             {t('actions.dismiss')}

@@ -17,7 +17,7 @@ export interface ModalProps {
 export function Modal({ title, titleAction, description, busy, onClose, children, t }: ModalProps) {
   return <NativeModal open headless title={title} className={styles.dialog} onClose={() => { if (!busy) onClose(); }}>
     <header className={styles.dialogHeader}>
-      <h2>{titleAction ? <Button variant="ghost" disabled={busy} title={titleAction.label} onClick={titleAction.onClick}>{title}</Button> : title}</h2>
+      <h2>{titleAction ? <Button variant="ghost" disabled={busy} title={titleAction.label} aria-label={titleAction.label} onClick={titleAction.onClick}>{title}</Button> : title}</h2>
       <Button disabled={busy} onClick={onClose}>{t('actions.close')}</Button>
     </header>
     {description && <p className={styles.dialogDescription}>{description}</p>}

@@ -294,7 +294,7 @@ describe('Session Bot badge with public session projection and the shared catalo
     expect(app.selectPanel).toHaveBeenCalledExactlyOnceWith('dsh-bot');
     expect(app.container.querySelector('[data-bot-detail]')?.getAttribute('data-bot-detail')).toBe('beta-bot');
     expect(app.container.querySelector('article')?.textContent).toContain('Beta Bot');
-    await click(button(app.container, en.ui['actions.close']));
+    await click(button(app.container, 'Back to My Bots'));
     expect(app.container.querySelector('dialog')).toBeNull();
     await act(async () => actions.onOpenBot('beta-bot'));
     expect(app.selectPanel).toHaveBeenCalledTimes(2);
@@ -316,7 +316,7 @@ describe('Session Bot badge with public session projection and the shared catalo
     await app.remountPage();
     expect(app.selectPanel).toHaveBeenCalledExactlyOnceWith('dsh-bot');
     expect(app.container.querySelector('[data-bot-detail]')?.getAttribute('data-bot-detail')).toBe('alpha-bot');
-    await click(button(app.container, en.ui['actions.close']));
+    await click(button(app.container, 'Back to My Bots'));
     // A consumed navigation is not replayed by later catalog refreshes.
     await act(async () => app.ctx.emit('connection/reset'));
     expect(app.container.querySelector('dialog')).toBeNull();

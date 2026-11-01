@@ -104,7 +104,19 @@ export function useBotsPage({
   const [copyInvalid, setCopyInvalid] = useState(false);
   const copyInput = useId();
   const lifetime = useRef<AbortController>();
+  const detailOrigin = useRef<HTMLElement>();
+  const detailScroll = useRef(0);
+  const returnFromDetail = () => { setShowDetail(false); };
+  useLayoutEffect(() => {
+    if (showDetail) { if (scrollElement.current) scrollElement.current.scrollTop = 0; backElement.current?.focus({ preventScroll: true }); }
+    else if (detailOrigin.current) {
+      if (scrollElement.current) scrollElement.current.scrollTop = detailScroll.current;
+      detailOrigin.current.focus({ preventScroll: true }); detailOrigin.current = undefined;
+    }
+  }, [showDetail]);
   const showBot = (bot: { id: string; createdAt: number }) => {
+    detailOrigin.current = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
+    detailScroll.current = scrollElement.current?.scrollTop ?? 0;
     setSelectedId(bot.id); setSelectedCreatedAt(bot.createdAt); setShowDetail(true);
   };
   useEffect(() => {
@@ -330,11 +342,12 @@ export function useBotsPage({
     pageState,
     scrollElement,
     settingsButton,
-    rememberScroll: (top: number) => { if (currentTab.current !== 'management') pageState.scroll[currentTab.current] = top; },
+    rememberScroll: (top: number) => { if (currentTab.current !== 'management' && !showDetail) pageState.scroll[currentTab.current] = top; },
     section,
     selectedGroup,
     setSelectedGroup,
     showBot,
+    returnFromDetail,
     returnFromSettings,
     compact,
     tab,
@@ -372,6 +385,7 @@ export function useBotsPage({
     setCopyInvalid,
     copyInput,
     navigate,
+    cancelNavigation,
     perform,
     save,
     createdId,

@@ -4,6 +4,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { bot, button, click, field, fill, mountClient, submit } from './helpers.js';
 import { bots, configure, summary } from './group-fixture.js';
 import { requireValue } from './test-required.js';
+import { openEditor, openProfile } from './bot-ui-helpers.js';
 import { conversationKey, recentPreferences } from '../../src/client/pages/recent-conversations.js';
 import type { BotsPageInjected } from '../../src/client/pages/bots-page-types.js';
 import { connectorSchema } from '../../src/shared/integrations.js';
@@ -41,7 +42,7 @@ it('returns to the same group, allows member details, and consumes navigation ex
   expect(article.querySelectorAll('li')).toHaveLength(2);
   await click(button(article, en.ui['chat.profile']));
   expect(app.container.querySelector('[data-bot-detail]')?.getAttribute('data-bot-detail')).toBe('alpha');
-  await click(button(requireValue(app.container.querySelector('dialog')), en.ui['actions.close']));
+  await click(button(app.container, 'Back to Groups'));
   expect(app.container.querySelector('article')).toBe(article);
   await click(settingsButton(app));
   expect(settingsButton(app).textContent).toBe('Back to Synthetic group');
@@ -121,4 +122,48 @@ it('saved HTTP connector credentials do not cause a false unsaved warning', asyn
   await click(settingsButton(app));
   expect(app.container.querySelector('dialog')).toBeNull();
   expect(app.container.querySelector('h1')?.textContent).toBe(en.ui['bots.title']);
+});
+
+
+it('retains search, scroll and exact profile-button focus when returning from inline details', async () => {
+  const app = await mount([bot()]);
+  await fill(field(app.container, en.ui['navigation.searchBots']), 'Alpha');
+  const scroll = requireValue(app.container.querySelector<HTMLDivElement>('[data-bots-page] > div'));
+  const trigger = button(app.container, en.ui['chat.profile']);
+  await act(async () => { scroll.scrollTop = 120; trigger.focus(); });
+  await openProfile(app);
+  expect(app.container.querySelector('dialog')).toBeNull();
+  await click(button(app.container, 'Back to My Bots'));
+  expect(field(app.container, en.ui['navigation.searchBots']).value).toBe('Alpha');
+  expect(scroll.scrollTop).toBe(120);
+  expect(document.activeElement).toBe(trigger);
+});
+
+it('retains an inline profile draft across tabs and guards leaving it', async () => {
+  const app = await mount([bot()]);
+  await openEditor(app);
+  await fill(field(app.container, en.ui['editor.description']), 'Unsaved profile');
+  await click(button(app.container, en.ui['detail.overview']));
+  await click(button(app.container, en.ui['detail.settings']));
+  expect(field(app.container, en.ui['editor.description']).value).toBe('Unsaved profile');
+  await click(button(app.container, 'Back to My Bots'));
+  await click(button(requireValue(app.container.querySelector('dialog')), en.ui['navigation.keepEditing']));
+  expect(field(app.container, en.ui['editor.description']).value).toBe('Unsaved profile');
+  await click(button(app.container, 'Back to My Bots'));
+  await click(button(requireValue(app.container.querySelector('dialog')), en.ui['navigation.discardLeave']));
+  expect(app.container.querySelector('[data-bot-detail]')).toBeNull();
+  expect(app.remote.methods.update).not.toHaveBeenCalled();
+});
+
+it('never substitutes a recreated Bot into an open detail or draft', async () => {
+  const original = bot();
+  const app = await mount([original]);
+  await openEditor(app);
+  await fill(field(app.container, en.ui['editor.description']), 'Old identity draft');
+  app.remote.data.records = [{ ...original, createdAt: original.createdAt + 1 }];
+  await act(async () => actions(app).onRefresh());
+  expect(app.container.querySelector('[data-bot-detail]')).toBeNull();
+  await openProfile(app);
+  expect(app.container.querySelector('[data-bot-detail]')?.getAttribute('data-bot-identity')).toBe(`${original.id}:${original.createdAt + 1}`);
+  expect(app.remote.methods.update).not.toHaveBeenCalled();
 });

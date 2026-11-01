@@ -124,7 +124,7 @@ export function apply(ctx, config) {
       await save('result', { status: 'PASS', assertions, starts, ends, accepted: { bridge, messageId }, modelRequests: count,
         rootModelRequests: 0, realModelRequests: 0, calls: adapter.calls.map(({ release, ...c }) => c) });
       console.log('GROUP_API_DONE');
-      if (config.suite === 'group-api') {
+      if (['group-api', 'ui-completion'].includes(config.suite)) {
         mark('native-ui-trace'); adapter.ui = true;
         const key = { groupId: g.id, groupCreatedAt: g.createdAt };
         const members = (await groups.view(key)).members;
@@ -136,10 +136,13 @@ export function apply(ctx, config) {
         await wait(async () => (await groups.view(key)).turns.find(t => t.id === second.id && !['accepted', 'running'].includes(t.state)));
         await save('ui-fixture', { rootId: g.rootSessionId, childId: delivery.childSessionId, groupName: g.name,
           inputMessageId: turn.inputMessageId, turnId: turn.id, secondInputMessageId: second.inputMessageId, secondTurnId: second.id, modelRequests: adapter.calls.length });
+        if (config.suite === 'ui-completion') {
+          for (let i = 2; i < 50; i++) await ctx.dshBots.create({ id: `ui-bot-${i}`, name: i < 4 ? '同名助手 / Same name' : `研究与项目协作助手 ${i} — Long name for narrow screens`, template: 'minimal' });
+        }
         clearTimeout(timer); console.log('B4_WEB_READY');
       }
     })().catch(async error => { await save('result', { status: 'FAIL', phase, assertions, error: String(error), stack: error.stack,
-      starts, ends, calls: adapter.calls.map(({ release, ...c }) => c) }); console.log(config.suite === 'group-api' ? 'B4_WEB_FAILED' : 'GROUP_API_FAILED'); });
+      starts, ends, calls: adapter.calls.map(({ release, ...c }) => c) }); console.log(['group-api', 'ui-completion'].includes(config.suite) ? 'B4_WEB_FAILED' : 'GROUP_API_FAILED'); });
     return async () => { clearTimeout(timer); lifetime.abort(); for (const call of adapter.active) call.release?.();
       if (root) await ctx.subagents.drainChildren(root, childIds).catch(() => {}); await run; for (const off of releases.reverse()) off(); };
   });

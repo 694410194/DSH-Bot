@@ -8,14 +8,12 @@ type App = Awaited<ReturnType<typeof mountClient>>;
 export async function openProfile(app: App, language: 'en' | 'zh' = 'en', id = 'alpha-bot') {
   const row = app.container.querySelector(`[data-bot-id="${id}"]`)?.closest('li');
   if (!row) throw new Error(`Missing recent Bot ${id}`);
-  await click(requireValue(row.querySelector('summary')));
   await click(button(row, (language === 'zh' ? zh.ui : en.ui)['chat.profile']));
 }
 export async function openHistory(app: App, language: 'en' | 'zh' = 'en') {
   await openProfile(app, language);
   const article = requireValue(app.container.querySelector('article'));
-  await click(requireValue(article.querySelector('summary')));
-  await click(button(article, (language === 'zh' ? zh.ui : en.ui)['bots.history']));
+  await click(button(article, (language === 'zh' ? zh.ui : en.ui)['detail.history']));
 }
 export async function refreshBots(app: App) {
   await act(async () => (requireValue(app.main.inject)() as unknown as BotsPageInjected).onRefresh());
@@ -29,4 +27,10 @@ export async function openMaintenance(app: App, language: 'en' | 'zh' = 'en') {
   await openSettings(app, language);
   const trigger = [...app.container.querySelectorAll('button')].find(node => node.textContent === (language === 'zh' ? zh.ui : en.ui)['manage.memoryTools']);
   if (trigger) await click(trigger);
+}
+
+export async function openEditor(app: App, language: 'en' | 'zh' = 'en') {
+  if (!app.container.querySelector('[data-bot-detail]')) await openProfile(app, language);
+  const copy = language === 'zh' ? zh.ui : en.ui;
+  await click(button(app.container, copy['card.edit']));
 }

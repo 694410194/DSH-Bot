@@ -1,3 +1,4 @@
+import { openProfile } from './bot-ui-helpers.js';
 // @vitest-environment jsdom
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -262,11 +263,11 @@ describe('MemoryPanel integrated with the public Client slots', () => {
     });
     cleanups.push(app.dispose);
     expect(app.remote.methods.memory.list).not.toHaveBeenCalled();
-    await click(button(app.container, t['card.edit']));
-    await click(button(app.container, t['memory.title']));
+    await openProfile(app);
+    await click(button(app.container, t['detail.memory']));
     const panel = panelOf(app.container);
     expect(app.remote.methods.memory.list).toHaveBeenCalledExactlyOnceWith('alpha-bot', { limit: 51, before: undefined });
-    expect(app.container.querySelectorAll('dialog')).toHaveLength(1);
+    expect(app.container.querySelectorAll('dialog')).toHaveLength(0);
     expect(panel.textContent).not.toContain('Other Bot private memory');
     await click(button(panel, t['memory.sourceSession']));
     expect(app.openSession).toHaveBeenCalledExactlyOnceWith('session-origin');
@@ -301,27 +302,25 @@ describe('MemoryPanel integrated with the public Client slots', () => {
     expect(app.remote.data.memories.find((row) => row.id === 'other-memory')).toBeDefined();
   });
 
-  it('releases memory polling, reset subscription and styles when leaving its tab or closing details', async () => {
+  it('retains an opened memory panel across detail tabs and releases it on leaving details', async () => {
     vi.useFakeTimers();
     vi.spyOn(document, 'hasFocus').mockReturnValue(true);
     const app = await mountClient([bot()], 'en', (remote) => { remote.data.memories = [record()]; });
     cleanups.push(app.dispose);
-    await click(button(app.container, t['card.edit']));
-    const dialog = app.container.querySelector('dialog');
+    await openProfile(app);
+    const dialog = app.container.querySelector('[data-bot-detail]');
     if (!dialog) throw new Error('Bot editor missing');
-    await click(button(dialog, t['memory.title']));
+    await click(button(dialog, t['detail.memory']));
     expect(app.remote.methods.memory.list).toHaveBeenCalledTimes(1);
     await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
     expect(app.remote.methods.memory.list).toHaveBeenCalledTimes(2);
-    await click(button(dialog, t['editor.settings']));
-    expect(app.container.querySelector('style[data-dsh-bot-memory-styles]')).toBeNull();
+    await click(button(dialog, t['detail.settings']));
+    expect(app.container.querySelector('style[data-dsh-bot-memory-styles]')).not.toBeNull();
+    await click(button(dialog, t['detail.memory']));
+    expect(app.remote.methods.memory.list).toHaveBeenCalledTimes(2);
+    await click(button(app.container, 'Back to My Bots'));
     await act(async () => { app.ctx.emit('connection/reset'); await vi.advanceTimersByTimeAsync(15_000); });
     expect(app.remote.methods.memory.list).toHaveBeenCalledTimes(2);
-    await click(button(dialog, t['memory.title']));
-    expect(app.remote.methods.memory.list).toHaveBeenCalledTimes(3);
-    await click(button(app.container, t['actions.close']));
-    await act(async () => { app.ctx.emit('connection/reset'); await vi.advanceTimersByTimeAsync(15_000); });
-    expect(app.remote.methods.memory.list).toHaveBeenCalledTimes(3);
     expect(app.container.querySelector('style[data-dsh-bot-memory-styles]')).toBeNull();
     await app.dispose();
     expect(vi.getTimerCount()).toBe(0);
