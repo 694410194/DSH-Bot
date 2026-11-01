@@ -18,6 +18,10 @@ Download `{{ASSET}}` from this Release's assets. Verify it with `SHA256SUMS`, th
 
 SHA256: `{{SHA256}}`
 
+The same bytes are also attached as `dsh-bot.tgz`, with the single-file checksum `dsh-bot.tgz.sha256`. The community download URL follows the latest stable Release; the versioned URL remains available for reproducible installs.
+
+同一安装包另提供固定文件名 `dsh-bot.tgz`，下载它及 `dsh-bot.tgz.sha256` 后，在下载目录运行 `shasum -a 256 -c dsh-bot.tgz.sha256`（macOS）或 `sha256sum -c dsh-bot.tgz.sha256`（Linux）。社区入口跟随最新稳定 Release；固定版本地址继续保留。已安装的插件不会仅因链接改变而自动升级。
+
 ## Validation / 发布前填写实际验证
 
 This is a candidate template. Replace this section with results for this exact artifact before publishing.

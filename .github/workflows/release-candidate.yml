@@ -25,7 +25,7 @@ jobs:
       - run: scripts/pnpm check:format
       - run: scripts/pnpm check
       - run: scripts/pnpm pack:plugin
-      - name: Prepare exact candidate and review materials
+      - name: Prepare versioned and stable-name assets with review materials
         run: |
           set -- dist/dsh-bot-*.tgz
           test "$#" -eq 1

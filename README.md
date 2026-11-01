@@ -16,6 +16,8 @@ DeepSeek Harness 的个人智能体插件。创建拥有各自人设、长期记
 
 ## 安装与升级
 
+社区安装地址：[最新稳定版 dsh-bot.tgz](https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz)。对应校验文件为同一 Release 的 `dsh-bot.tgz.sha256`，运行 `shasum -a 256 -c dsh-bot.tgz.sha256`（macOS）或 `sha256sum -c dsh-bot.tgz.sha256`（Linux）。该入口随稳定发版更新；已安装的插件仍需执行升级。下面保留固定版本的可复现安装步骤。
+
 需要 DeepSeek Harness。开发依赖与只读 API 参考锁定 **0.2.1-rc.2**；首发安装包在 **rc.2** 完成安装、重装和冷恢复，并在 **rc.2 / rc.5** 完成群聊界面复验；逐项结果及历史证据区别见[首发记录](docs/releases/v0.6.3.md)。包声明范围为 `>=0.2.1-rc.2 <0.3.0`，不代表范围内所有版本均已验收。
 
 1. 从 [GitHub Release v0.6.3](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3) 下载附件 `dsh-bot-0.6.3.tgz` 和 `SHA256SUMS`；不要选择自动生成的 Source code 压缩包。在下载目录用 `shasum -a 256 -c SHA256SUMS`（macOS）或 `sha256sum -c SHA256SUMS`（Linux）核对。开发者也可按下文自行构建。
