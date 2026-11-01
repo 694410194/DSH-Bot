@@ -27,8 +27,10 @@ try {
   try { browser = await chromium.launch({ executablePath, headless: true, chromiumSandbox: true, env: host.env }); }
   finally { if (beforeTmp === undefined) delete process.env.TMPDIR; else process.env.TMPDIR = beforeTmp; }
   const matrix = ['en', 'zh'].flatMap(language => ['light', 'dark'].flatMap(theme => [1360, 390].map(width => ({ language, theme, width }))));
+  if (process.env.DSH_BOT_UI_CASE) assert.ok(matrix.some(({ language, theme, width }) => `${language}-${theme}-${width}` === process.env.DSH_BOT_UI_CASE));
   for (const { language, theme, width } of matrix) {
     const id = `${language}-${theme}-${width}`;
+    if (process.env.DSH_BOT_UI_CASE && process.env.DSH_BOT_UI_CASE !== id) continue;
     const t = JSON.parse(await readFile(resolve(root, `packages/dsh-bot/locale/${language}.json`), 'utf8')).ui;
     const context = await browser.newContext({ colorScheme: theme, locale: language === 'en' ? 'en-US' : 'zh-CN', viewport: { width: 1360, height: 1000 }, reducedMotion: 'reduce' });
     page = await context.newPage(); page.setDefaultTimeout(15000);
@@ -43,7 +45,7 @@ try {
     const question = page.locator(`[data-workspace-group-message="${fixture.inputMessageId}"]`);
     const secondQuestion = page.locator(`[data-workspace-group-message="${fixture.secondInputMessageId}"]`);
     const execution = question.locator(`[data-group-turn="${fixture.turnId}"]`);
-    const disclosure = execution.locator('button[aria-expanded]');
+    const disclosure = execution.locator(':scope > button[aria-expanded]');
     await disclosure.waitFor();
     await secondQuestion.locator(`[data-group-turn="${fixture.secondTurnId}"]`).waitFor();
     check(`${id}: each question owns exactly its execution`, await question.locator('[data-group-turn]').count() === 1 && await secondQuestion.locator('[data-group-turn]').count() === 1);
@@ -54,6 +56,17 @@ try {
     const count = host.requests();
     phase = `${id}:expand`; await disclosure.click();
     check(`${id}: disclosure does not grow the composer`, Math.abs((await composer.boundingBox()).height - composerHeight) < 2);
+    const inline = card.locator('[data-group-member-process]');
+    await inline.getByText('Synthetic native reasoning', { exact: true }).waitFor();
+    await inline.locator('[data-disclosure-row]').click();
+    await inline.locator('.markdown-body, [class*="markdown"], p').filter({ hasText: 'Synthetic native reasoning' }).first().waitFor();
+    check(`${id}: official reasoning is embedded under the correct member`, await inline.getAttribute('data-group-member-process') === fixture.childId);
+    const human = await question.locator('[data-group-author="user"]').boundingBox();
+    const bot = await page.locator('[data-group-author="bot"]').first().boundingBox();
+    const frame = await question.boundingBox();
+    check(`${id}: user right and bots left`, human.x > bot.x + 10 && Math.abs(human.x + human.width - frame.x - frame.width) < 8);
+    check(`${id}: inline process remains left`, (await inline.boundingBox()).x < human.x);
+    check(`${id}: message and reasoning fit the viewport`, await question.evaluate(el => el.scrollWidth <= el.clientWidth + 2));
     await page.screenshot({ path: resolve(dir, `${id}-inline.png`), fullPage: true });
     await disclosure.click(); check(`${id}: user can collapse execution`, await disclosure.getAttribute('aria-expanded') === 'false');
     await disclosure.focus(); await disclosure.press('Enter');
@@ -79,6 +92,32 @@ try {
     check(`${id}: group draft preserved`, await draft.inputValue() === `draft-${id}`);
     await card.getByRole('button', { name: t['groups.executionDetails'], exact: true }).click(); await embedded.locator('[data-conversation-content]').waitFor();
     check(`${id}: viewing and reopening do not execute models`, host.requests() === count);
+    if (language === 'zh' && theme === 'dark' && width === 1360) {
+      await page.locator('[data-dockkit-tab-close]').last().click();
+      phase = `${id}:live`; await draft.fill('UI_LIVE_TRACE');
+      await composer.getByRole('button', { name: t['groups.send'], exact: true }).click();
+      const liveQuestion = page.locator('[data-workspace-group-message]').filter({ has: page.locator('[data-group-author="user"]', { hasText: 'UI_LIVE_TRACE' }) });
+      const liveProcess = liveQuestion.locator('[data-group-member-process]');
+      await liveProcess.nth(1).waitFor();
+      for (const process of await liveProcess.all()) {
+        const childId = await process.getAttribute('data-group-member-process');
+        await process.getByText(`Live reasoning ${childId}`, { exact: true }).first().waitFor();
+      }
+      for (const process of await liveProcess.all()) {
+        const childId = await process.getAttribute('data-group-member-process');
+        await process.getByText(`Live reasoning ${childId} — streamed update`, { exact: true }).first().waitFor();
+      }
+      check('live concurrent reasoning follows each actual child', await liveProcess.count() === 2);
+      const liveCount = host.requests();
+      await liveProcess.first().locator('[data-disclosure-row]').click();
+      await liveQuestion.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: resolve(dir, 'live-members.png'), fullPage: true });
+      const liveDisclosure = liveQuestion.locator('[data-group-turn] > button[aria-expanded]');
+      await liveDisclosure.click(); check('folding releases inline member views', await liveProcess.count() === 0);
+      await liveDisclosure.click(); await liveProcess.nth(1).waitFor();
+      check('reopening live reasoning does not execute models', host.requests() === liveCount);
+      await liveQuestion.getByRole('button', { name: t['groups.cancelTurn'], exact: true }).click();
+    }
     await context.close(); page = undefined;
   }
   check('browser reports no uncaught errors', errors.length === 0);

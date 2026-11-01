@@ -944,6 +944,8 @@
     "execution.timeout": "Configured time limit reached",
     "execution.unknown": "Outcome uncertain; not automatically retried",
     "execution.failed": "Execution could not finish",
-    "execution.allowance": "Automatic follow-on executions"
+    "execution.allowance": "Automatic follow-on executions",
+    "execution.thinking": "Thinking",
+    "execution.noReasoning": "No reasoning content provided yet."
   }
 }

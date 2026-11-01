@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { Context } from '@deepseek-ai/cordis';
 import type { ComposerChainProps, ConversationNodeDefinition } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type { ChatNode } from '@deepseek-ai/dsh-client-ui-chat/client';
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
+import type { PropsLocale, PropsRenderFactories } from '@deepseek-ai/dsh-client-ui-slots';
 import { isAppendSurfaceEvent } from '@deepseek-ai/dsh-session/surface';
 import { groupKeySchema, groupAttachmentSchema, speakerSchema, type GroupMessage } from '../shared/groups.js';
 import type { GroupActions } from './groups-state.js';
@@ -72,8 +72,8 @@ export function WorkspaceGroupComposer({ matched, actions, bots, models, createP
     permissionState={permissionState?.rootSessionId === matched.sessionId ? permissionState : undefined}
     bots={botState.entries.map(row => row.bot)} expandedTurns={{}} onExpandTurn={() => {}} onOpenSession={onOpenSession} t={t} />;
 }
-export function WorkspaceMessage({ node, actions, bots, executionBridge, onOpenSession, t }: { node: ChatNode<'dsh-bot-group'>; actions: GroupActions;
-  bots?: BotCatalog; executionBridge?: ExecutionBridge; onOpenSession(id: string): Promise<void> } & PropsLocale<'dsh-bot'>) {
+export function WorkspaceMessage({ node, actions, bots, executionBridge, renderFactorySlot, onOpenSession, t }: { node: ChatNode<'dsh-bot-group'>; actions: GroupActions;
+  bots?: BotCatalog; executionBridge?: ExecutionBridge; onOpenSession(id: string): Promise<void> } & Partial<PropsRenderFactories> & PropsLocale<'dsh-bot'>) {
   const catalog = useMemo(() => actions.messageView({ groupId: node.data.group.groupId, groupCreatedAt: node.data.group.groupCreatedAt }),
     [actions, node.data.group.groupId, node.data.group.groupCreatedAt]);
   const snapshot = useSyncExternalStore(catalog.subscribe, catalog.getSnapshot);
@@ -104,7 +104,8 @@ export function WorkspaceMessage({ node, actions, bots, executionBridge, onOpenS
       if (row) actions.reply(row.group.rootSessionId, message);
     }} onOpenAttachment={async (messageId, attachmentId) => { const result = await actions.remote().openAttachment(node.data.group, messageId, attachmentId); if (!result.ok) throw result.error; }} />{jumpUnavailable && <p role="status">{t('groups.quoteUnavailable')}</p>}
     {node.data.message.authorKind === 'user' && turn && snapshot.view && bots && executionBridge && <GroupTurnExecution
-      key={JSON.stringify([node.data.group.groupId, node.data.group.groupCreatedAt, turn.id])} view={snapshot.view} turn={turn} actions={actions} bots={bots} onOpenExecution={executionBridge.open} t={t} />}
+      key={JSON.stringify([node.data.group.groupId, node.data.group.groupCreatedAt, turn.id])} view={snapshot.view} turn={turn} actions={actions} bots={bots}
+      onOpenExecution={executionBridge.open} executionBridge={executionBridge} renderFactorySlot={renderFactorySlot} t={t} />}
   </div>;
 }
 export function registerWorkspaceGroups(ctx: Context, actions: GroupActions, bots: BotCatalog, onOpenSession: (id: string) => Promise<void>, models?: ModelActions) {

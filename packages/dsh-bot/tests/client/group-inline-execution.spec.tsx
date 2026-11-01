@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { Context } from '@deepseek-ai/cordis';
 import { expect, it, vi } from 'vitest';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
-import type { GroupTurn, GroupMessage } from '../../src/shared/groups.js';
+import type { GroupTurn, GroupMessage, GroupView } from '../../src/shared/groups.js';
 import type { GroupMethods } from '../../src/shared/groups-contract.js';
 import type { BotCatalog } from '../../src/client/state.js';
 import type { ExecutionBridge } from '../../src/client/group-execution.js';
@@ -70,7 +70,7 @@ it.each(['en', 'zh'] as const)('%s anchors each task only below its question, in
     for (const id of ['first', 'second']) {
       const question = f.question(id), disclosure = question.querySelector('button[aria-expanded]') as HTMLButtonElement;
       expect(question.querySelector(`[data-group-turn="${id}"]`)).toBeTruthy();
-      expect(disclosure.getAttribute('aria-expanded')).toBe('false');
+      expect(disclosure.getAttribute('aria-expanded')).toBe(id === 'second' ? 'true' : 'false');
       expect(question.querySelector(`[data-group-execution-card="delivery-${id}"]`)).toBeTruthy();
       expect((question.querySelector('[data-group-message]')?.compareDocumentPosition(disclosure) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
@@ -79,13 +79,14 @@ it.each(['en', 'zh'] as const)('%s anchors each task only below its question, in
     expect(f.element.querySelector('[data-workspace-group-composer] [data-group-turn], [data-workspace-group-composer] [data-group-working]')).toBeNull();
     expect(f.question('first').textContent).toContain(f.t('groups.failed'));
     expect(f.question('second').textContent).not.toContain(f.t('execution.failed'));
+    expect(f.question('first').querySelector('[data-group-message]')?.getAttribute('data-group-author')).toBe('user');
+    expect(f.element.querySelector('[data-group-message="bot-reply"]')?.getAttribute('data-group-author')).toBe('bot');
   } finally { await f.close(); }
 });
 
 it('preserves independent disclosure choices through live updates and native message remounts', async () => {
   const f = await fixture();
   try {
-    await click(f.question('second').querySelector('button[aria-expanded]') as HTMLButtonElement);
     f.data.turns[1] = { ...f.data.turns[1] as GroupTurn, state: 'paused', revision: 2 };
     await f.refresh();
     expect(f.question('second').querySelector('button[aria-expanded]')?.getAttribute('aria-expanded')).toBe('true');
@@ -102,7 +103,6 @@ it('preserves independent disclosure choices through live updates and native mes
 it('keeps native details, supplement focus, member stop and task cancellation bound to the selected question', async () => {
   const f = await fixture();
   try {
-    await click(f.question('second').querySelector('button[aria-expanded]') as HTMLButtonElement);
     const draft = f.element.querySelector('textarea') as HTMLTextAreaElement;
     await fill(draft, 'Keep this draft');
     await click(button(f.question('second'), f.t('groups.executionDetails')));
@@ -122,7 +122,7 @@ it('shows a failed continuation locally and retries using the refreshed task rev
   const f = await fixture();
   try {
     f.data.turns[1] = { ...f.data.turns[1] as GroupTurn, state: 'paused', revision: 4 };
-    await f.refresh(); await click(f.question('second').querySelector('button[aria-expanded]') as HTMLButtonElement);
+    await f.refresh();
     f.remote.continueTurn.mockRejectedValueOnce(new Error('conflict'));
     await click(button(f.question('second'), f.t('execution.continue')));
     expect(f.question('second').querySelector('[role="alert"]')?.textContent).toBe(f.t('groups.conflict'));
@@ -131,5 +131,21 @@ it('shows a failed continuation locally and retries using the refreshed task rev
     await f.refresh(); await click(button(f.question('second'), f.t('execution.continue')));
     expect(f.remote.continueTurn).toHaveBeenLastCalledWith(f.key, 'second', 5);
     expect(f.question('second').querySelector('[role="alert"]')).toBeNull();
+  } finally { await f.close(); }
+});
+
+it('automatically folds settled work unless the user chose otherwise, and shows a continuing child once', async () => {
+  const f = await fixture();
+  try {
+    f.data.deliveries.push({ ...f.data.deliveries[1] as GroupView['deliveries'][number], id: 'continued-second', ordinal: 1 });
+    await f.refresh();
+    expect(f.question('second').querySelectorAll('[data-group-execution-card]')).toHaveLength(1);
+    expect(f.question('second').querySelector('[data-group-execution-card]')?.getAttribute('data-group-execution-card')).toBe('continued-second');
+    f.data.turns[1] = { ...f.data.turns[1] as GroupTurn, state: 'idle', revision: 2 };
+    await f.refresh();
+    expect(f.question('second').querySelector('button[aria-expanded]')?.getAttribute('aria-expanded')).toBe('false');
+    await click(f.question('second').querySelector('button[aria-expanded]') as HTMLButtonElement);
+    await f.remount();
+    expect(f.question('second').querySelector('button[aria-expanded]')?.getAttribute('aria-expanded')).toBe('true');
   } finally { await f.close(); }
 });
