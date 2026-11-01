@@ -30,9 +30,9 @@ See the [community release guide](docs/community-release.md) for CLI installatio
 
 Actual current-version UI in an isolated Web Host with synthetic demo data. These screenshots do not establish real-model task quality.
 
-![Bot role and personal conversation](packages/dsh-bot/assets/current-role.png)
+![Bot role and personal conversation](packages/dsh-bot/assets/profile.png)
 
-![Group conversation empty state and composer in the dark theme](packages/dsh-bot/assets/group-chat.png)
+![Group execution in the narrow layout](packages/dsh-bot/assets/group-narrow.png)
 
 ## Usage and data boundaries
 

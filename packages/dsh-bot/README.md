@@ -6,25 +6,27 @@ DeepSeek Harness 个人智能体插件：持久主会话、私有与用户发布
 
 ## Install / 安装
 
-Install the locally built `dsh-bot-0.6.3.tgz` in **Plugins → Add plugin → Install third-party plugin**, enable it, then fully quit and reopen DSH. Keep the same profile and data location when upgrading; back them up first. No npm, online-market or GitHub Release publication is claimed.
+Download `dsh-bot-0.6.3.tgz` and `SHA256SUMS` from the [v0.6.3 release](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3). Verify the checksum, then select the tgz in **Plugins → Add plugin → Install third-party plugin**, enable it, and fully quit and reopen DSH. The automatically generated Source code archives are not plugin packages.
 
-在 **插件 → 添加插件 → 安装第三方插件** 选择本地构建的 tgz，启用后完全退出重开。升级前备份，并保持原 profile 和数据位置。目前没有 npm、在线市场或 GitHub Release 下载包。
+从 [v0.6.3 Release](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3) 下载 `dsh-bot-0.6.3.tgz` 和 `SHA256SUMS`。核对校验和后，在 **插件 → 添加插件 → 安装第三方插件** 选择 tgz，启用后完全退出重开。不要选择自动生成的 Source code 压缩包。
 
-Development dependencies/API reference: `0.2.1-rc.2`. Community candidate validation targets rc.2; historical Host runs used rc.3. Declared compatibility: `>=0.2.1-rc.2 <0.3.0`. See [current acceptance](https://github.com/MJ-CJM/DSH-Bot/blob/main/docs/acceptance/community-release-ready.md) for actual results and limitations.
+```sh
+shasum -a 256 -c SHA256SUMS
+```
 
-开发依赖/API 参考为 rc.2，本轮社区候选在 rc.2 验证，历史运行记录为 rc.3；逐项结果见当前验收，声明范围不代表范围内所有版本已验证。
+On Linux use `sha256sum -c SHA256SUMS`. Back up the original profile and complete data before upgrading, and retain the same profile/data location. / Linux 使用 `sha256sum -c SHA256SUMS`。升级前完整备份，保持原 profile 和数据位置。
 
-Public downloads, when available, belong to [GitHub Releases](https://github.com/MJ-CJM/DSH-Bot/releases). Choose the `.tgz` asset and verify `SHA256SUMS`; the Source code archives are not installable packages. No public asset is available yet.
+Development dependencies/API reference: `0.2.1-rc.2`. The U2–U4 product code was checked on rc.2 and rc.5; [UI acceptance](https://github.com/MJ-CJM/DSH-Bot/blob/main/docs/verification/ui-completion/README.md) and [release validation](https://github.com/MJ-CJM/DSH-Bot/blob/main/docs/releases/v0.6.3.md) distinguish artifact hashes, runtime checks and untested behavior. Declared compatibility: `>=0.2.1-rc.2 <0.3.0`, not a claim that every version is tested.
 
-首发准备中；正式发布后在 GitHub Releases 下载 `.tgz` 和校验和。自动生成的 Source code 压缩包不是插件安装包。
+开发依赖/API 参考锁定 rc.2；U2–U4 产品代码已在 rc.2、rc.5 验证。上述报告分别记录产物摘要、实际运行与未验收项；声明范围不等于范围内全部版本都已验证。
 
 ## Use / 使用
 
 Screenshots / 界面截图（isolated Web Host, synthetic demo data / 隔离 Web Host、合成演示数据）：
 
-![Personal Bot](https://raw.githubusercontent.com/MJ-CJM/DSH-Bot/main/packages/dsh-bot/assets/current-role.png)
+![Personal Bot](https://raw.githubusercontent.com/MJ-CJM/DSH-Bot/main/packages/dsh-bot/assets/profile.png)
 
-![Group chat](https://raw.githubusercontent.com/MJ-CJM/DSH-Bot/main/packages/dsh-bot/assets/group-chat.png)
+![Group chat](https://raw.githubusercontent.com/MJ-CJM/DSH-Bot/main/packages/dsh-bot/assets/group-narrow.png)
 
 - Create with a name, then chat in the native workspace. Lasting role changes use native approval. / 输入名称创建并聊天；长期职责修改走原生审批。
 - Create groups by selecting Bots; use mentions, replies, attachments, individual stops and per-member model settings. / 选成员建群，支持提及、引用、附件、单项停止和逐成员模型。

@@ -30,9 +30,9 @@ CLI 安装、迁移与发布步骤见[社区发布说明](docs/community-release
 
 当前版本在隔离 Web Host 中的真实界面，使用合成演示数据；不代表真实模型任务质量。
 
-![Bot 当前职责与私聊界面](packages/dsh-bot/assets/current-role.png)
+![Bot 当前职责与私聊界面](packages/dsh-bot/assets/profile.png)
 
-![深色主题群聊空态与输入区](packages/dsh-bot/assets/group-chat.png)
+![深色主题群聊空态与输入区](packages/dsh-bot/assets/group-narrow.png)
 
 ## 使用与数据边界
 
