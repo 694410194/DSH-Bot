@@ -80,3 +80,5 @@ export function Modal({ open, title, onClose, children, className }: { open: boo
 }
 
 export function Toast({ text, onDone }: { text: string; onDone(): void }) { return <div role="status">{text}<button type="button" onClick={onDone}>Dismiss</button></div>; }
+
+export function JsonBlock({ label, payload }: { label: string; payload: unknown }) { return <details><summary>{label}</summary><pre>{JSON.stringify(payload, null, 2)}</pre></details>; }

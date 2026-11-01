@@ -24,3 +24,7 @@ Modal、Menu、Input、Checkbox、SegmentedTabs 沿用 U0 的 rc.2/rc.5 实测�
 - 群逐问题收折不触发模型；成员停止与整轮停止不串线，@ 与模型/权限继承回归。
 - 中英、亮暗、1440/768/390；长名称、同名与 50 Bot 列表；键盘/菜单/Escape/返回可用。
 - 完整 `scripts/pnpm check`、rc.2/rc.5 隔离 Host、真实 tgz 校验和 GitHub CI；每项分开记录 PASS/FAIL，不把静态检查当运行验收。
+
+## 实施结果
+
+U2 已提交 PR #15，U3 已提交 PR #16，U4 完成设置收敛及完整组合验证。完整清单、命令、PASS/FAIL、公开 API 边界及候选包见 [验收报告](../docs/verification/ui-completion/README.md)。保持 Draft，按 U2 → U3 → U4 审核；GitHub 当前 CI 由 Issue #14 跟踪。

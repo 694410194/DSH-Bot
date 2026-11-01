@@ -1,6 +1,7 @@
+import { Button, Checkbox, SegmentedTabs, JsonBlock } from '@deepseek-ai/dsh-client-ui-primitives';
 import { useSettingsDraft } from './SettingsNavigation.js';
 import { TransferPreview } from './TransferPreview.js';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol';
 import type { WorkspaceActions } from '../workspace-state.js';
@@ -12,6 +13,10 @@ const unwrap = <T,>(r: RemoteResult<T>): T => {
 type Locale = PropsLocale<'dsh-bot'>;
 import { botExportSchema, type BotExport } from '../../shared/workspace.js';
 export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: WorkspaceActions } & Locale) {
+  const uid = useId();
+  const [section, setSection] = useState<'export' | 'import'>(bot ? 'export' : 'import');
+  const [exportDocument, setExportDocument] = useState('');
+  const fileEpoch = useRef(0);
   const [scope, setScope] = useState<'bot' | 'memories'>('bot');
   const [document, setDocument] = useState(''),
     [newId, setNewId] = useState(''),
@@ -47,19 +52,15 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
   return (
     <div>
       <p>{t('manage.portableHint')}</p>
+      <SegmentedTabs label={t('manage.transfer')} value={section} onChange={setSection} items={[{ value: 'export', id: `${uid}-export`, panelId: `${uid}-export-panel`, label: t('manage.export') }, { value: 'import', id: `${uid}-import`, panelId: `${uid}-import-panel`, label: t('manage.import') }]} />
+      <section role="tabpanel" id={`${uid}-export-panel`} aria-labelledby={`${uid}-export`} hidden={section !== 'export'} aria-label={t('manage.export')}>
       <p>{t('manage.textSkills')}</p>
       {bot && (
         <fieldset disabled={busy}>
           <legend>{t('manage.export')}</legend>
-          <label>
-            <input type="checkbox" checked={skills} onChange={(e) => setSkills(e.target.checked)} />
-            {t('manage.includeSkills')}
-          </label>
-          <label>
-            <input type="checkbox" checked={memories} onChange={(e) => setMemories(e.target.checked)} />
-            {t('manage.includeMemories')}
-          </label>
-          <button
+          <Checkbox checked={skills} onChange={setSkills} label={t('manage.includeSkills')} />
+          <Checkbox checked={memories} onChange={setMemories} label={t('manage.includeMemories')} />
+          <Button
             type="button"
             onClick={() => {
               void perform(async () => {
@@ -73,20 +74,18 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
                 );
                 if (alive.current && r.kind === 'export') {
                   const text = JSON.stringify(r.document, null, 2);
-                  setDocument(text);
-                  setAcceptedDraft(JSON.stringify([text, newId]));
-                  invalidate();
+                  setExportDocument(text);
                 }
               });
             }}
           >
             {t('manage.export')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            disabled={!document || !botExportSchema.safeParse(safeJson(document)).success}
+            disabled={!exportDocument}
             onClick={() => {
-              const url = URL.createObjectURL(new Blob([document], { type: 'application/json' }));
+              const url = URL.createObjectURL(new Blob([exportDocument], { type: 'application/json' }));
               const link = window.document.createElement('a');
               link.href = url;
               link.download = `dsh-bot-${bot.id}.json`;
@@ -95,16 +94,27 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
             }}
           >
             {t('manage.download')}
-          </button>
+          </Button>
         </fieldset>
       )}
+      {exportDocument && <JsonBlock label={t('manage.exportJson')} payload={safeJson(exportDocument)} truncatedLabel={count => t('manage.jsonTruncated', { count })} />}
+      </section>
+      <section role="tabpanel" id={`${uid}-import-panel`} aria-labelledby={`${uid}-import`} hidden={section !== 'import'} aria-label={t('manage.import')}>
+      <label>{t('manage.chooseFile')}<input type="file" accept=".json,application/json" disabled={busy} onChange={event => {
+        const file = event.currentTarget.files?.[0], epoch = ++fileEpoch.current;
+        if (!file) return;
+        setError(false);
+        if (file.size > 1024 * 1024) { setError(true); return; }
+        void file.text().then(text => { if (alive.current && epoch === fileEpoch.current) { setDocument(text); invalidate(); } }, () => { if (alive.current && epoch === fileEpoch.current) setError(true); });
+        event.currentTarget.value = '';
+      }} /></label>
       <label>
         {t('manage.document')}
         <textarea
           rows={12}
           value={document}
           onChange={(e) => {
-            setDocument(e.target.value);
+            fileEpoch.current++; setDocument(e.target.value);
             invalidate();
           }}
         />
@@ -136,7 +146,7 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
           />
         </label>
       )}
-      <button
+      <Button
         type="button"
         disabled={busy || !document || (scope === 'bot' && !newId)}
         onClick={() => {
@@ -158,7 +168,7 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
         }}
       >
         {t('manage.preview')}
-      </button>
+      </Button>
       {review && (
         <TransferPreview
           review={review}
@@ -189,6 +199,7 @@ export function TransferPanel({ bot, actions, t }: { bot?: BotRecord; actions: W
           }}
         />
       )}
+      </section>
       {error && <p role="alert">{t('manage.failed')}</p>}
     </div>
   );

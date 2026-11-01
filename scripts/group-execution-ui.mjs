@@ -71,7 +71,7 @@ try {
     await disclosure.click(); check(`${id}: user can collapse execution`, await disclosure.getAttribute('aria-expanded') === 'false');
     await disclosure.focus(); await disclosure.press('Enter');
     check(`${id}: keyboard can expand execution`, await disclosure.getAttribute('aria-expanded') === 'true');
-    await card.getByRole('button', { name: t['groups.executionDetails'], exact: true }).click();
+    await card.getByRole('button', { name: t['execution.viewDetails'], exact: true }).click();
     const embedded = page.locator(`[data-group-execution="${fixture.childId}"]`);
     await embedded.locator(`[data-conversation-content][data-conversation-session="${fixture.childId}"]`).waitFor();
     check(`${id}: native factory bound to exact child`, await embedded.getAttribute('data-group-execution') === fixture.childId);
@@ -90,13 +90,14 @@ try {
     phase = `${id}:collapse`; await page.locator('[data-dockkit-tab-close]').last().click();
     check(`${id}: collapsed view unmounted`, await page.locator('[data-group-execution]').count() === 0);
     check(`${id}: group draft preserved`, await draft.inputValue() === `draft-${id}`);
-    await card.getByRole('button', { name: t['groups.executionDetails'], exact: true }).click(); await embedded.locator('[data-conversation-content]').waitFor();
+    await card.getByRole('button', { name: t['execution.viewDetails'], exact: true }).click(); await embedded.locator('[data-conversation-content]').waitFor();
     check(`${id}: viewing and reopening do not execute models`, host.requests() === count);
     if (language === 'zh' && theme === 'dark' && width === 1360) {
       await page.locator('[data-dockkit-tab-close]').last().click();
       phase = `${id}:live`; await draft.fill('UI_LIVE_TRACE');
       await composer.getByRole('button', { name: t['groups.send'], exact: true }).click();
       const liveQuestion = page.locator('[data-workspace-group-message]').filter({ has: page.locator('[data-group-author="user"]', { hasText: 'UI_LIVE_TRACE' }) });
+      await liveQuestion.locator('[data-group-turn] > button[aria-expanded]').click();
       const liveProcess = liveQuestion.locator('[data-group-member-process]');
       await liveProcess.nth(1).waitFor();
       for (const process of await liveProcess.all()) {
@@ -109,6 +110,18 @@ try {
       }
       check('live concurrent reasoning follows each actual child', await liveProcess.count() === 2);
       const liveCount = host.requests();
+      const liveCard = liveQuestion.locator('[data-group-execution-card]').first();
+      const memberMenu = liveCard.getByRole('button', { name: new RegExp(t['execution.memberActions'].replace('{name}', '.+')) });
+      await memberMenu.click(); await page.getByRole('menu').waitFor();
+      await page.keyboard.press('Escape'); await page.getByRole('menu').waitFor({ state: 'hidden' });
+      check('native member menu supports Escape without stopping a task', host.requests() === liveCount);
+      await draft.fill('Keep this supplement draft');
+      await memberMenu.click(); await page.getByRole('menuitem', { name: t['groups.supplement'], exact: true }).click();
+      check('member supplement focuses existing composer without sending', await draft.evaluate(el => el === document.activeElement) && await draft.inputValue() === 'Keep this supplement draft' && host.requests() === liveCount);
+      await memberMenu.click(); await page.getByRole('menuitem', { name: t['execution.stopMember'], exact: true }).click();
+      await liveCard.getByText(t['execution.memberStopped'], { exact: true }).waitFor();
+      check('member stop leaves the other member running', await liveQuestion.locator('[data-group-execution-card]').filter({ hasText: t['groups.running'] }).count() === 1);
+
       await liveProcess.first().locator('[data-disclosure-row]').click();
       await liveQuestion.scrollIntoViewIfNeeded();
       await page.screenshot({ path: resolve(dir, 'live-members.png'), fullPage: true });
@@ -116,7 +129,7 @@ try {
       await liveDisclosure.click(); check('folding releases inline member views', await liveProcess.count() === 0);
       await liveDisclosure.click(); await liveProcess.nth(1).waitFor();
       check('reopening live reasoning does not execute models', host.requests() === liveCount);
-      await liveQuestion.getByRole('button', { name: t['groups.cancelTurn'], exact: true }).click();
+      await liveQuestion.getByRole('button', { name: t['execution.stopTurn'], exact: true }).click();
     }
     await context.close(); page = undefined;
   }

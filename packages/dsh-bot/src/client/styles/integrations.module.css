@@ -226,3 +226,13 @@
 
 .panel > button { align-self: flex-start; min-height: 44px; }
 .panel form button { justify-self: start; min-height: 44px; }
+
+.panel section { min-width: 0; }
+.panel section:not([hidden]) { display: grid; gap: 16px; }
+.panel [hidden] { display: none; }
+.panel details > summary { cursor: pointer; color: var(--dsw-alias-label-secondary); padding-block: 8px; }
+.panel details[open] { display: block; }
+.panel details[open] > :not(summary) { margin-block: 12px; }
+.panel section > ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; }
+.panel section > ul > li { border-bottom: 1px solid var(--dsw-alias-border-l3); padding-block: 12px; }
+@media (max-width: 760px) { .panel button { min-height: 44px; } .panel [role="tablist"] { max-width: 100%; overflow-x: auto; } }

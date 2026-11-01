@@ -1,3 +1,4 @@
+import { Button } from '@deepseek-ai/dsh-client-ui-primitives';
 import { useSettingsDraft } from './SettingsNavigation.js';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
@@ -91,14 +92,15 @@ function GraphView({
   return (
     <section aria-label={t('manage.graph')}>
       <p>{t('graph.coexist')}</p>
+      <p role="status">
+        {status ? t(`graph.${status.state}`) : t('manage.unknown')}
+        {status?.reason ? ` · ${t(`graph.reason-${status.reason}`)}` : ''}
+      </p>
+      <details><summary>{t('settings.diagnostics')}</summary>
       <p>{t('graph.mainOnly')}</p>
       <p>{t('graph.copyHint')}</p>
       <p>
         {t('graph.version')} 2026.7.4 · {t('graph.scope')}
-      </p>
-      <p role="status">
-        {status ? t(`graph.${status.state}`) : t('manage.unknown')}
-        {status?.reason ? ` · ${t(`graph.reason-${status.reason}`)}` : ''}
       </p>
       <p>
         {t('graph.writer')}: {status ? t(status.writer ? 'graph.yes' : 'graph.no') : t('manage.unknown')}
@@ -108,7 +110,8 @@ function GraphView({
           {t('graph.file')}: {status.binding.fileIdentity}.jsonl · v{status.binding.revision}
         </p>
       )}
-      <button
+      </details>
+      <Button
         type="button"
         disabled={busy || !snapshot.loaded}
         onClick={() => {
@@ -121,8 +124,8 @@ function GraphView({
         }}
       >
         {t(status?.binding?.mode === 'internal+reference-graph' ? 'graph.disable' : 'graph.enable')}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         disabled={busy || status?.binding?.mode !== 'internal+reference-graph'}
         onClick={() => {
@@ -130,8 +133,8 @@ function GraphView({
         }}
       >
         {t('graph.apply')}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         disabled={busy || status?.state !== 'ready'}
         onClick={() => {
@@ -143,12 +146,12 @@ function GraphView({
         }}
       >
         {t('graph.read')}
-      </button>
+      </Button>
       <label>
         {t('graph.query')}
         <input value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
-      <button
+      <Button
         type="button"
         disabled={busy || status?.state !== 'ready'}
         onClick={() => {
@@ -160,7 +163,8 @@ function GraphView({
         }}
       >
         {t('memory.search')}
-      </button>
+      </Button>
+      <details><summary>{t('graph.add')}</summary>
       <fieldset disabled={busy || status?.state !== 'ready'}>
         <legend>{t('graph.add')}</legend>
         <label>
@@ -171,7 +175,7 @@ function GraphView({
           {t('graph.observation')}
           <textarea value={observation} onChange={(e) => setObservation(e.target.value)} />
         </label>
-        <button
+        <Button
           type="button"
           disabled={!name || !observation}
           onClick={() => {
@@ -188,8 +192,8 @@ function GraphView({
           }}
         >
           {t('graph.add')}
-        </button>
-      </fieldset>
+        </Button>
+      </fieldset></details>
       {graph && (
         <ul>
           {graph.entities.map((entity) => (
@@ -212,7 +216,7 @@ function GraphView({
         t={t}
       />
       <h3>{t('graph.copy')}</h3>
-      <button
+      <Button
         type="button"
         disabled={busy}
         onClick={() => {
@@ -220,9 +224,9 @@ function GraphView({
         }}
       >
         {t('manage.preview')}
-      </button>
+      </Button>
       {busy && copyId && (
-        <button
+        <Button
           type="button"
           onClick={() => {
             void perform({
@@ -234,14 +238,14 @@ function GraphView({
           }}
         >
           {t('actions.cancel')}
-        </button>
+        </Button>
       )}
       <ul>
         {status?.copies.map((c) => (
           <li key={c.id}>
-            <button type="button" onClick={() => setCopyId(c.id)}>
+            <Button type="button" onClick={() => setCopyId(c.id)}>
               {t(`graph.phase-${c.phase}`)} · {new Date(c.startedAt).toLocaleString()} · {c.records.length}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

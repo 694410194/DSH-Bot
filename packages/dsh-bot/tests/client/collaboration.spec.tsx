@@ -9,14 +9,15 @@ import zh from '../../locale/zh.json';
 const link = { id: 'team:alpha', bot: { botId: 'alpha', botCreatedAt: 1 }, nativeTeamId: 'main-alpha', leadSessionId: 'main-alpha', enabled: true, revision: 1, createdAt: 1, updatedAt: 1, schemaVersion: 1 as const };
 const task = { id: 'task-1', revision: 1, subject: 'Native task', description: 'Native details', status: 'pending' as const, blockedBy: [], writeScopes: [], ready: true, writeScopeWarnings: [] };
 describe('U04/U05 public slot UI', () => {
-  it.each(['en','zh'] as const)('%s exposes an explicit unsupported state and disabled IM actions', async language => {
+  it.each(['en','zh'] as const)('%s explains unavailable IM without presenting dead actions', async language => {
     const app = await mountClient([bot({ id: 'alpha', name: 'Alpha' })], language); const t = (language === 'en' ? en : zh).ui;
     try {
       await openSettings(app, t === zh.ui ? 'zh' : 'en'); await click(button(app.container, t['team.title']));
       await vi.waitFor(() => expect(app.container.textContent).toContain(t['team.unsupported']));
       expect(app.remote.collaboration.ensure).not.toHaveBeenCalled();
       await openSettings(app, t === zh.ui ? 'zh' : 'en'); await click(button(app.container, t['im.title']));
-      expect(button(app.container, t['im.bind']).disabled).toBe(true); expect(button(app.container, t['im.send']).disabled).toBe(true);
+      expect(app.container.textContent).toContain(t['im.nextStep']);
+      expect([...app.container.querySelectorAll('button')].some(b => b.textContent === t['im.bind'] || b.textContent === t['im.send'])).toBe(false);
       expect(app.container.textContent).toContain(t['im.gateHint']);
     } finally { await app.dispose(); }
   });

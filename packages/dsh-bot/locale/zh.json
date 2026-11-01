@@ -973,6 +973,21 @@
     "detail.memoryEnabled": "已开启",
     "detail.modelAndWorkspace": "资料、模型与工作目录",
     "detail.advancedMigration": "高级与迁移",
-    "detail.clearSearch": "清空搜索"
+    "detail.clearSearch": "清空搜索",
+    "execution.viewDetails": "查看执行详情",
+    "execution.memberActions": "{name} 的操作",
+    "execution.advanced": "执行限制与诊断",
+    "notifications.records": "通知记录",
+    "notifications.emptyRecords": "当前没有符合条件的通知。",
+    "settings.diagnostics": "技术详情",
+    "settings.howItWorks": "工作方式",
+    "team.distinction": "原生 Team 是一个 Bot 内部的任务委派；群聊是多个独立 Bot 一起讨论。",
+    "team.nextStep": "可以先在 Bot 对话中继续工作，或使用群聊让多个 Bot 讨论。宿主启用 Team 服务后再刷新此页。",
+    "im.nextStep": "当前宿主暂不能绑定或发送 IM。可继续使用应用内对话和通知；启用兼容的 IM 服务后再刷新。",
+    "manage.import": "导入",
+    "manage.exportJson": "导出 JSON（高级）",
+    "manage.chooseFile": "选择 JSON 文件（最大 1 MB）",
+    "manage.jsonTruncated": "预览已缩短；下载文件可获取完整内容（{count} 字符）。",
+    "execution.stopTurn": "停止整轮讨论"
   }
 }
