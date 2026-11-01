@@ -69,7 +69,7 @@ describe('built Client management workspace', () => {
       const t = (language === 'en' ? en : zh).ui;
       try {
         await openMaintenance(app, t === zh.ui ? 'zh' : 'en');
-        expect(app.container.textContent).toContain(t['manage.unknown']);
+        expect(app.container.querySelector(`section[aria-label="${t['manage.statistics']}"]`)).toBeNull();
         await click(button(app.container, t['manage.graph']));
         await vi.waitFor(() => expect(button(app.container, t['graph.enable']).disabled).toBe(false));
         await click(button(app.container, t['graph.enable']));

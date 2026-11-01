@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Button, Input, Checkbox } from '@deepseek-ai/dsh-client-ui-primitives';
+import { useCallback, useEffect, useState, useId } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import { CONNECTOR_TEMPLATES, type Connector } from '../../shared/integrations.js';
 import type { IntegrationActions } from '../integrations-state.js';
@@ -7,6 +8,8 @@ import { useSettingsDraft } from './SettingsNavigation.js';
 export function ConnectorEditor({
   actions,
   definition,
+  onCancel,
+  onSaved,
   active,
   busy,
   perform,
@@ -14,10 +17,13 @@ export function ConnectorEditor({
 }: PropsLocale<'dsh-bot'> & {
   actions: IntegrationActions;
   definition?: Connector;
+  onCancel?(): void;
+  onSaved?(): void;
   active: boolean;
   busy: boolean;
   perform(fn: () => Promise<unknown>): Promise<void>;
 }) {
+  const uid = useId();
   const [draft, setDraft] = useState<Connector>();
   const [credentialEpoch, setCredentialEpoch] = useState(0);
   const [definitionId, setDefinitionId] = useState('');
@@ -53,9 +59,8 @@ export function ConnectorEditor({
   }, [definition, edit]);
   return (
     <>
-      <button type="button" onClick={() => edit()}>
-        {t('connectors.newConnector')}
-      </button>{' '}
+      <p>{t('connectors.templateHint')}</p>
+      <p>{t('connectors.credentialsHint')}</p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -95,21 +100,23 @@ export function ConnectorEditor({
             );
             setCredentialEpoch((epoch) => epoch + 1);
             setDraft(d);
+            onSaved?.();
           });
         }}
       >
-        <label>
+        <fieldset disabled={busy}>
+        <label htmlFor={`${uid}-ConnectorEditor-1`}>
           {t('integrations.id')}
-          <input
+          <Input id={`${uid}-ConnectorEditor-1`}
             required
             value={definitionId}
             disabled={Boolean(draft)}
             onChange={(e) => setDefinitionId(e.target.value)}
           />
         </label>
-        <label>
+        <label htmlFor={`${uid}-ConnectorEditor-2`}>
           {t('integrations.label')}
-          <input required value={label} onChange={(e) => setLabel(e.target.value)} />
+          <Input id={`${uid}-ConnectorEditor-2`} required value={label} onChange={(e) => setLabel(e.target.value)} />
         </label>
         <label>
           {t('connectors.template')}
@@ -125,9 +132,9 @@ export function ConnectorEditor({
             ))}
           </select>
         </label>
-        <label>
+        <label htmlFor={`${uid}-ConnectorEditor-3`}>
           {t('connectors.namespace')}
-          <input required value={serverName} onChange={(e) => setServerName(e.target.value)} />
+          <Input id={`${uid}-ConnectorEditor-3`} required value={serverName} onChange={(e) => setServerName(e.target.value)} />
         </label>
         <label>
           {t('connectors.transport')}
@@ -136,9 +143,9 @@ export function ConnectorEditor({
             <option>stdio</option>
           </select>
         </label>
-        <label>
+        <label htmlFor={`${uid}-ConnectorEditor-4`}>
           {t(transport === 'stdio' ? 'connectors.command' : 'connectors.url')}
-          <input required value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />
+          <Input id={`${uid}-ConnectorEditor-4`} required value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />
         </label>
         {transport === 'stdio' && (
           <>
@@ -146,28 +153,25 @@ export function ConnectorEditor({
               {t('connectors.args')}
               <textarea value={args} onChange={(e) => setArgs(e.target.value)} />
             </label>
-            <label>
+            <label htmlFor={`${uid}-ConnectorEditor-5`}>
               {t('connectors.envKey')}
-              <input value={envKey} onChange={(e) => setEnvKey(e.target.value)} />
+              <Input id={`${uid}-ConnectorEditor-5`} value={envKey} onChange={(e) => setEnvKey(e.target.value)} />
             </label>
           </>
         )}
-        <label>
+        <label htmlFor={`${uid}-ConnectorEditor-6`}>
           {t('connectors.credentialRef')}
-          <input
+          <Input id={`${uid}-ConnectorEditor-6`}
             value={credential}
             onChange={(e) => {
               setCredential(e.target.value);
             }}
           />
         </label>
-        <label>
-          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-          {t('integrations.enabled')}
-        </label>
-        <button type="submit" disabled={busy}>
-          {t('integrations.save')}
-        </button>
+        <Checkbox checked={enabled} onChange={setEnabled} label={t('integrations.enabled')} />
+        <Button variant="primary" type="submit" disabled={busy}>{t('integrations.save')}</Button>
+        <Button disabled={busy} onClick={onCancel}>{t('actions.cancel')}</Button>
+        </fieldset>
       </form>
       <CredentialEditor
         key={`${credential}:${credentialEpoch}`}

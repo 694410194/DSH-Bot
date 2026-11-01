@@ -138,3 +138,9 @@
     padding: 20px 18px;
   }
 }
+
+.panel[data-memory-embedded] { padding: 8px 0; }
+
+.scopeStrip { overflow-x: auto; min-width: 0; padding: 4px; }
+.scopeStrip > [role="tablist"] { min-width: max-content; flex-wrap: nowrap; }
+.panel .scopeStrip button { white-space: nowrap; min-height: 44px; }

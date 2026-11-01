@@ -46,7 +46,7 @@ export function BotsPage(page: BotsPageProps) {
               <button type="button" ref={model.settingsButton} className={styles.button} data-settings-navigation="" onClick={() => tab === 'management' ? settings.leave(model.returnFromSettings) : setTab('management')}>{tab === 'management' ? t('navigation.returnTo', { name: sectionLabel }) : text('chat.settings')}</button>
             </div>
           </header>
-          <nav className={styles.sectionNavigation} aria-label={t('navigation.sections')}>
+          <nav hidden={tab === 'management'} className={styles.sectionNavigation} aria-label={t('navigation.sections')}>
             {(['bots', 'groups', 'recent'] as const).filter(key => key !== 'groups' || groups).map(key => <button
               type="button" key={key} className={styles.button} aria-current={tab !== 'management' && section === key ? 'page' : undefined}
               onClick={() => {

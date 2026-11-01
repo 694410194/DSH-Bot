@@ -59,7 +59,7 @@
   align-items: center;
   align-self: center;
 }
-.panel :is(input, select, textarea, button) {
+.panel :is(input:not([class]), select, textarea, button:not([class])) {
   appearance: none;
   font: inherit;
   color: var(--dsw-alias-label-primary);
@@ -77,21 +77,21 @@
   min-height: 6rem;
   resize: vertical;
 }
-.panel button {
+.panel button:not([class]) {
   cursor: pointer;
   line-height: 20px;
   justify-self: start;
   align-self: start;
   text-align: start;
 }
-.panel button:hover:enabled {
+.panel button:not([class]):hover:enabled {
   background: var(--dsw-alias-interactive-bg-hover);
 }
 .panel :is(button, input, select, textarea):disabled {
   color: var(--dsw-alias-label-tertiary);
   cursor: default;
 }
-.panel button[type="submit"] {
+.panel button[type="submit"]:not([class]) {
   border-color: var(--dsw-alias-state-business-primary);
   color: var(--dsw-alias-state-business-primary);
 }
@@ -130,19 +130,19 @@
   padding-inline: 4px;
   color: var(--dsw-alias-label-secondary);
 }
-.panel [role="tablist"] {
+.panel [role="tablist"]:not([class]) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--dsw-alias-border-l3);
 }
-.panel [role="tab"][aria-selected="true"] {
+.panel [role="tab"][aria-selected="true"]:not([class]) {
   color: var(--dsw-alias-state-business-primary);
   background: var(--dsw-alias-bg-layer-1);
   border-color: var(--dsw-alias-state-business-primary);
 }
-.panel input[type="checkbox"] {
+.panel input[type="checkbox"]:not([class]) {
   display: grid;
   place-content: center;
   flex: none;
@@ -152,11 +152,11 @@
   padding: 0;
   border-radius: 4px;
 }
-.panel input[type="checkbox"]:checked {
+.panel input[type="checkbox"]:not([class]):checked {
   background: var(--dsw-alias-state-business-primary);
   border-color: var(--dsw-alias-state-business-primary);
 }
-.panel input[type="checkbox"]:checked::before {
+.panel input[type="checkbox"]:not([class]):checked::before {
   content: "";
   width: 8px;
   height: 5px;
@@ -214,3 +214,15 @@
     padding: 12px;
   }
 }
+
+.panel form > fieldset {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 16px;
+  border: 0;
+  padding: 0;
+  align-items: end;
+}
+
+.panel > button { align-self: flex-start; min-height: 44px; }
+.panel form button { justify-self: start; min-height: 44px; }

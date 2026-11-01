@@ -946,6 +946,17 @@
     "execution.failed": "Execution could not finish",
     "execution.allowance": "Automatic follow-on executions",
     "execution.thinking": "Thinking",
-    "execution.noReasoning": "No reasoning content provided yet."
+    "execution.noReasoning": "No reasoning content provided yet.",
+    "settings.chooseBot": "Select a Bot",
+    "settings.botContext": "Bot settings",
+    "settings.botUnavailable": "This Bot was removed or recreated. Select a Bot to continue.",
+    "settings.noBots": "Create a Bot to configure its memory, connectors and notifications.",
+    "settings.allBots": "All Bots · scheduled tasks and execution statistics",
+    "settings.globalScope": "Global service · applies to all Bots",
+    "connectors.empty": "No connector definitions yet. Add an installed service, then connect it to this Bot.",
+    "connectors.sharedDefinitions": "Service definitions are shared. Connections below apply to the selected Bot.",
+    "notifications.emptyPolicies": "No notification policies for this Bot.",
+    "editor.cwdWorkspaceOnCreate": "Shared Bots workspace, assigned on creation",
+    "memory.behavior": "How memory is used"
   }
 }

@@ -1,3 +1,4 @@
+import { useSettingsDraft } from './SettingsNavigation.js';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol';
@@ -59,6 +60,8 @@ function GraphView({
     [query, setQuery] = useState('');
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(false);
+  const [savedInput, setSavedInput] = useState(JSON.stringify(['', '']));
+  useSettingsDraft(busy || JSON.stringify([name, observation]) !== savedInput);
   const alive = useRef(true);
   useEffect(() => {
     alive.current = true;
@@ -73,6 +76,7 @@ function GraphView({
     try {
       const r = unwrap(await actions.graph(input));
       if (!alive.current) return;
+      if (input.action === 'tool' && ['create_entities', 'add_observations'].includes(input.call.tool)) setSavedInput(JSON.stringify([name, observation]));
       if (r.graph) setGraph(r.graph);
       if (r.copy) setCopyId(r.copy.id);
       await catalog.refresh();

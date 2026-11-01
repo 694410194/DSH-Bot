@@ -1,3 +1,4 @@
+import { useSettingsBot } from './SettingsBotContext.js';
 import { useSettingsDraft } from './SettingsNavigation.js';
 import { ManagementHeader } from './ManagementHeader.js';
 import { hasOperationCode } from '../../shared/operation-errors.js';
@@ -14,8 +15,7 @@ export interface CollaborationPanelProps extends PropsLocale<'dsh-bot'> {
   onOpenSession(id: string): Promise<void>;
 }
 export function CollaborationPanel({ actions, bots, onOpenSession, t }: CollaborationPanelProps) {
-  const [selected, setSelected] = useState('');
-  const bot = bots.find((b) => b.id === selected) ?? bots[0];
+  const { bot, select: setSelected } = useSettingsBot(bots);
   return (
     <section className={styles.panel} aria-label={t('team.title')}>
       <style>{css}</style>

@@ -1,3 +1,5 @@
+import { useSettingsBot } from './SettingsBotContext.js';
+import { useSettingsDraft } from './SettingsNavigation.js';
 import { ManagementHeader } from './ManagementHeader.js';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
@@ -16,12 +18,13 @@ export function useIntegrationPanel(actions: IntegrationActions, bots: BotRecord
     actions.catalog.getSnapshot,
     actions.catalog.getSnapshot,
   );
-  const [ownerId, setOwnerId] = useState('');
-  const bot = bots.find((b) => b.id === ownerId) ?? bots[0];
+  const { bot, select: setOwnerId } = useSettingsBot(bots);
   const owner = bot && { botId: bot.id, botCreatedAt: bot.createdAt };
   const [busy, setBusy] = useState(false);
+  useSettingsDraft(busy);
   const [error, setError] = useState(false);
   const alive = useRef(true);
+  const writing = useRef(false);
   useEffect(() => {
     alive.current = true;
     return () => {
@@ -32,7 +35,8 @@ export function useIntegrationPanel(actions: IntegrationActions, bots: BotRecord
     void actions.catalog.refresh();
   }, [actions]);
   const perform = async (fn: () => Promise<unknown>) => {
-    if (busy) return;
+    if (writing.current) return;
+    writing.current = true;
     setBusy(true);
     setError(false);
     try {
@@ -40,6 +44,7 @@ export function useIntegrationPanel(actions: IntegrationActions, bots: BotRecord
     } catch {
       if (alive.current) setError(true);
     } finally {
+      writing.current = false;
       if (alive.current) setBusy(false);
     }
   };

@@ -15,6 +15,7 @@ describe('P34 management through the public main slot and shared polling catalog
     const t = (language === 'en' ? en : zh).ui;
     try {
       await openSettings(app, t === zh.ui ? 'zh' : 'en'); await click(button(app.container, t['connectors.connectors']));
+      await click(button(app.container, t['connectors.newConnector']));
       await fill(field(app.container, t['integrations.id']), 'connector'); await fill(field(app.container, t['integrations.label']), 'Example connector');
       await fill(field(app.container, t['connectors.url']), 'https://example.test/mcp'); await fill(field(app.container, t['connectors.credentialRef']), 'GITHUB_TOKEN');
       const node = field(app.container, t['integrations.label']);
@@ -32,7 +33,7 @@ describe('P34 management through the public main slot and shared polling catalog
       await click(button(app.container, t['connectors.assign']));
       expect(app.remote.connectors.saveAssignment).toHaveBeenCalledWith(expect.objectContaining({ bot: { botId: 'alpha', botCreatedAt: 1 }, enabled: true }), 0);
       expect(app.container.textContent).toContain(t['integrations.operationFailed']);
-      expect(app.container.textContent).toContain(t['connectors.credentialsHint']);
+      expect(app.container.querySelector('form')).toBeNull();
     } finally { await app.dispose(); }
   });
   it.each(['en','zh'] as const)('%s shows local notification, unread whale, unsupported transports and read action', async language => {
@@ -57,6 +58,7 @@ describe('P34 management through the public main slot and shared polling catalog
     const release = app.ctx.provide('remote.credentials', { describe, set } as never);
     try {
       await openSettings(app, t === zh.ui ? 'zh' : 'en'); await click(button(app.container, t['connectors.connectors']));
+      await click(button(app.container, t['connectors.newConnector']));
       await fill(field(app.container, t['connectors.credentialRef']), 'GITHUB_TOKEN');
       await click(button(app.container, t['connectors.describeCredential'])); expect(describe).toHaveBeenCalledWith(['GITHUB_TOKEN']);
       const password = field(app.container, t['connectors.secret']) as HTMLInputElement; expect(password.type).toBe('password'); expect(password.value).toBe('');
@@ -79,6 +81,7 @@ describe('P34 management through the public main slot and shared polling catalog
       expect(app.container.textContent).not.toContain(t['connectors.credentialsHint']);
       await openSettings(app, t === zh.ui ? 'zh' : 'en');
       await click(button(app.container, t['connectors.connectors']));
+      await click(button(app.container, t['connectors.newConnector']));
       const input = field(app.container, t['integrations.label']);
       await fill(input, 'Persistent non-secret draft');
       await fill(field(app.container, t['connectors.credentialRef']), 'TOKEN');
@@ -100,6 +103,7 @@ describe('P34 management through the public main slot and shared polling catalog
     const app = await mountClient([bot({ id: 'alpha', name: 'Alpha' })]); const t = en.ui;
     try {
       await openSettings(app, t === zh.ui ? 'zh' : 'en'); await click(button(app.container, t['notifications.notifications']));
+      await click(button(app.container, t['notifications.newPolicy']));
       await fill(field(app.container, t['integrations.id']), 'local');
       await click(field(app.container, t['notifications.preapproved']));
       expect((field(app.container, t['notifications.confirmScope']) as HTMLInputElement).checked).toBe(false);
