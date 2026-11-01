@@ -1,3 +1,4 @@
+import type { PageIdentity } from '../pages/page-navigation.js';
 import { GroupComposerInput } from './GroupComposer.js';
 import { GroupModelControl } from './GroupModelControl.js';
 import { GroupPermissionControl } from './GroupPermissionControl.js';
@@ -23,9 +24,14 @@ export function GroupsPanel({
   bots,
   onOpenSession,
   initialCreate = false,
+  selectedGroup, onSelectGroup, onOpenBot, onCreateFinished,
   t,
 }: {
   initialCreate?: boolean;
+  selectedGroup?: PageIdentity;
+  onSelectGroup?(value: PageIdentity | undefined): void;
+  onOpenBot?(bot: BotRecord): void;
+  onCreateFinished?(): void;
   actions: GroupActions;
   bots: BotRecord[];
   onOpenSession(id: string): Promise<void>;
@@ -35,25 +41,19 @@ export function GroupsPanel({
     actions.catalog.getSnapshot,
     actions.catalog.getSnapshot,
   );
-  const requested = useSyncExternalStore(
-    actions.selection.subscribe,
-    actions.selection.getSnapshot,
-    actions.selection.getSnapshot,
-  );
-  const [selected, setSelected] = useState<string>();
+  const [selected, setSelected] = useState<PageIdentity>();
   const [creating, setCreating] = useState(initialCreate);
   const [created, setCreated] = useState<GroupRecord>();
   const createdRef = useRef<GroupRecord>();
   const [expandedTurns, setExpandedTurns] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(actions.turnExpansion),
   );
-  const active = list.groups.find((g) => g.group.id === (selected ?? requested.selectedId)) ?? list.groups[0];
-  useEffect(() => {
-    if (requested.selectedId && !initialCreate) {
-      setSelected(requested.selectedId);
-      setCreating(false);
-    }
-  }, [requested.selectedId, initialCreate]);
+  const choice = onSelectGroup ? selectedGroup : selected;
+  const active = list.groups.find(row => row.group.id === choice?.id && row.group.createdAt === choice.createdAt);
+  const select = (group: GroupRecord) => {
+    const identity = { id: group.id, createdAt: group.createdAt };
+    setSelected(identity); onSelectGroup?.(identity); setCreating(false);
+  };
   return (
     <section className={styles.panel} aria-label={t('groups.title')}>
       <style>{css}</style>
@@ -81,8 +81,7 @@ export function GroupsPanel({
               key={row.group.id}
               aria-current={!creating && active?.group.id === row.group.id ? 'page' : undefined}
               onClick={() => {
-                setSelected(row.group.id);
-                setCreating(false);
+                select(row.group);
               }}
             >
               <GroupAvatar size={28} />
@@ -94,13 +93,14 @@ export function GroupsPanel({
                     return b ? <BotAvatar key={m.id} bot={b} size={22} /> : <span key={m.id}>?</span>;
                   })}
               </span>
-              {row.group.name}{' '}
+              <strong>{row.group.name}</strong>{' '}
               {row.unread && (
                 <span role="status" aria-label={t('groups.unread')}>
                   ●
                 </span>
               )}{' '}
-              {row.latest?.speaker?.name ?? ''} · {row.members.filter((m) => m.enabled).length}{' '}
+              <span>{t('navigation.memberCount', { count: row.members.filter(m => m.removedAt === undefined).length })}</span>
+              {row.latest?.speaker?.name && <span>{t('navigation.lastSpeaker', { name: row.latest.speaker.name })}</span>}
               {row.running ? t('groups.running') : row.group.archived ? t('groups.archived') : ''}
             </button>
           ))}
@@ -113,7 +113,7 @@ export function GroupsPanel({
               createdName={created?.name}
               bots={bots}
               t={t}
-              onCancel={() => setCreating(false)}
+              onCancel={() => { setCreating(false); onCreateFinished?.(); }}
               onSave={async (input) => {
                 if (!createdRef.current) {
                   const saved = unwrapGroup(await actions.remote().create(input));
@@ -123,8 +123,7 @@ export function GroupsPanel({
                 const g = createdRef.current;
                 await actions.catalog.refresh();
                 await actions.open(groupKey(g));
-                setSelected(g.id);
-                setCreating(false);
+                select(g); onCreateFinished?.();
               }}
             />
           ) : active ? (
@@ -136,13 +135,14 @@ export function GroupsPanel({
                 setExpandedTurns((old) => ({ ...old, [id]: expanded }));
               }}
               summary={active}
+              onOpenBot={onOpenBot}
               actions={actions}
               bots={bots}
               t={t}
               onOpenSession={onOpenSession}
             />
           ) : (
-            <p>{t('groups.empty')}</p>
+            <p>{t(list.groups.length ? 'navigation.selectGroup' : 'groups.empty')}</p>
           )}
         </div>
       </div>
@@ -668,7 +668,7 @@ export function GroupConversation({
   );
 }
 
-function GroupManager({ summary, actions, bots, t }: Parameters<typeof GroupConversation>[0]) {
+function GroupManager({ summary, actions, bots, t, onOpenBot }: Parameters<typeof GroupConversation>[0] & { onOpenBot?(bot: BotRecord): void }) {
   const navigation = useRef(new AbortController());
   useEffect(() => {
     if (navigation.current.signal.aborted) navigation.current = new AbortController();
@@ -687,12 +687,25 @@ function GroupManager({ summary, actions, bots, t }: Parameters<typeof GroupConv
   };
   if (!view) return <p role="status">{t('groups.loading')}</p>;
   return <article aria-label={view.group.name} className={styles.conversation}>
-    <h3>{view.group.name}</h3>
-    <p>{view.members.filter(member => member.enabled).map(member => bots.find(bot => bot.id === member.bot.botId && bot.createdAt === member.bot.botCreatedAt)?.name ?? member.bot.botId).join(' · ')}</p>
+    <h3>{t('navigation.groupProfile', { name: view.group.name })}</h3>
+    <ul className={styles.memberList} aria-label={t('groups.members')}>
+      {view.members.filter(member => member.removedAt === undefined).map(member => {
+        const bot = bots.find(bot => bot.id === member.bot.botId && bot.createdAt === member.bot.botCreatedAt);
+        const unavailable = !bot || view.unavailableMemberIds.includes(member.id);
+        return <li key={member.id}>
+          {bot && <BotAvatar bot={bot} size={28} />}<span>{bot?.name ?? member.bot.botId}</span>
+          <span>{t(unavailable ? 'groups.unavailable' : member.enabled ? 'navigation.memberEnabled' : 'navigation.memberDisabled')}</span>
+          {bot && onOpenBot && <button type="button" onClick={() => onOpenBot(bot)}>{t('chat.profile')}</button>}
+        </li>;
+      })}
+    </ul>
     {error && <p role="alert">{t('groups.conflict')}</p>}
+    <div className={styles.bar}>
     <button type="button" disabled={busy} onClick={() => { void perform(() => actions.open(groupKey(view.group), navigation.current.signal)); }}>{t('groups.open')}</button>
     <button type="button" disabled={busy} onClick={() => setEditing(view)}>{t('groups.edit')}</button>
-    <button type="button" disabled={busy || view.group.archived} onClick={() => { void perform(async () => { unwrapGroup(await actions.remote().archive(groupKey(view.group), view.group.revision)); }); }}>{t('groups.archive')}</button>
+    <details><summary>{t('card.more')}</summary>
+    <button type="button" disabled={busy || view.group.archived} onClick={() => { void perform(async () => { unwrapGroup(await actions.remote().archive(groupKey(view.group), view.group.revision)); }); }}>{t('groups.archive')}</button></details>
+    </div>
     {editing && <GroupEditor bots={bots} initial={editing} t={t} onCancel={() => setEditing(undefined)} onSave={async input => {
       const { operationId: _operation, cwd: _cwd, ...edit } = input;
       unwrapGroup(await actions.remote().edit(groupKey(view.group), { ...edit, expectedRevision: editing.group.revision,

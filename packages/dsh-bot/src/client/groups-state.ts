@@ -41,8 +41,9 @@ export interface GroupActions {
   loadThrough(key: GroupKey, seq: number): Promise<void>;
   messageView(key: GroupKey): PollingCatalog<{ view?: GroupView }>;
   createView(key: GroupKey): PollingCatalog<{ view?: GroupView }>;
-  selection: PollingCatalog<{ selectedId?: string }>;
-  select(id: string): void;
+  selection: PollingCatalog<{ selectedId?: string; createdAt?: number; requestId?: number }>;
+  select(id: string, createdAt?: number): void;
+  consumeSelection(requestId: number): void;
   /** Client-session preferences, released with the plugin effect. */
   turnExpansion: Map<string, boolean>;
   /** Native display metadata cached only after a user opens the model menu. */
@@ -67,8 +68,9 @@ export function createGroupActions(ctx: Context, options: BotCatalogOptions): Gr
   let live = true, openEpoch = 0;
   ctx.effect(() => () => { live = false; openEpoch++; drafts.clear(); draftListeners.clear(); replyListeners.clear(); reply = undefined; }, 'dsh-bot: group navigation');
   ctx.effect(() => () => { turnExpansion.clear(); modelMetadata.clear(); }, 'dsh-bot: group display preferences');
-  let selectedId: string | undefined;
-  const selection = createPollingCatalog<{ selectedId?: string }>(ctx, {}, async () => ({ selectedId }), options);
+  let requested: { selectedId?: string; createdAt?: number; requestId?: number } = {};
+  let requestSequence = 0;
+  const selection = createPollingCatalog(ctx, requested, async () => requested, options);
   return {
     drafts, draft, patchDraft,
     draftUpdates: { subscribe(listener) { draftListeners.add(listener); return () => { draftListeners.delete(listener); }; }, getSnapshot: () => draftRevision },
@@ -100,9 +102,14 @@ export function createGroupActions(ctx: Context, options: BotCatalogOptions): Gr
     turnExpansion, modelMetadata,
     remote,
     selection,
-    select(id) {
-      selectedId = id;
-      void selection.refresh();
+    select(id, createdAt) {
+      requested = { selectedId: id, createdAt, requestId: ++requestSequence };
+      selection.reset(requested);
+    },
+    consumeSelection(requestId) {
+      if (requested.requestId !== requestId) return;
+      requested = {};
+      selection.reset(requested);
     },
     catalog: createPollingCatalog(
       ctx,

@@ -3,6 +3,7 @@ import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { MemoryRecord } from '../../shared/schema.js';
 import styles from '../styles/bots.module.css';
 import panel from '../styles/memory.module.css';
+import { useSettingsDraft } from './SettingsNavigation.js';
 export interface Draft {
   record?: MemoryRecord;
   content: string;
@@ -28,6 +29,8 @@ interface Props {
   onCancel(): void;
 }
 export function MemoryEditor({ draft, busy, invalid, uid, t, setDraft, onSubmit, onCancel }: Props) {
+  useSettingsDraft(JSON.stringify([draft.content, draft.kind, draft.tags, draft.pinned]) !==
+    JSON.stringify([draft.record?.content ?? '', draft.record?.kind ?? 'note', draft.record?.tags.join('\n') ?? '', draft.record?.pinned ?? false]));
   return (
     <form
       className={panel.form}

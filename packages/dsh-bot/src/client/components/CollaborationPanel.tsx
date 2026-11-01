@@ -1,3 +1,4 @@
+import { useSettingsDraft } from './SettingsNavigation.js';
 import { ManagementHeader } from './ManagementHeader.js';
 import { hasOperationCode } from '../../shared/operation-errors.js';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
@@ -33,6 +34,9 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [blockedBy, setBlockedBy] = useState<string[]>([]);
+  const [savedDraft, setSavedDraft] = useState(JSON.stringify(['', '', []]));
+  const draftSignature = JSON.stringify([subject, description, blockedBy]);
+  useSettingsDraft(draftSignature !== savedDraft);
   const [error, setError] = useState<'conflict' | 'recovery' | 'failed'>();
   const [busy, setBusy] = useState(false);
   const alive = useRef(true);
@@ -172,7 +176,11 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              void write(() => actions.remote().createTask(key, { subject, description, blockedBy }));
+              void write(async () => {
+                const result = await actions.remote().createTask(key, { subject, description, blockedBy });
+                if (result.ok) setSavedDraft(draftSignature);
+                return result;
+              });
             }}
           >
             <label>

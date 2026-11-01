@@ -1,3 +1,4 @@
+import { useSettingsDraft } from './SettingsNavigation.js';
 import { useState } from 'react';
 import { type NotificationPolicy, sameBot } from '../../shared/integrations.js';
 import { IntegrationFrame, useIntegrationPanel, type IntegrationPanelProps } from './IntegrationFrame.js';
@@ -37,9 +38,13 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
     policyEnabled,
     testText,
   ]);
+  const formValue = JSON.stringify([policyId, policyEnabled, channel, target, timezone, start, end, limit, cooldown, preapproved]);
+  const [savedForm, setSavedForm] = useState(formValue);
+  useSettingsDraft(formValue !== savedForm || Boolean(testText));
   const confirmed = confirmation === scopeDraft;
   const setConfirmed = (value: boolean) => setConfirmation(value ? scopeDraft : undefined);
   const editPolicy = (p?: NotificationPolicy) => {
+    setSavedForm(JSON.stringify([p?.id ?? '', p?.enabled ?? true, p?.channel ?? 'in-app', p?.targetRef ?? '', p?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone, p?.quietHours?.start ?? '', p?.quietHours?.end ?? '', String(p?.dailyLimit ?? data.defaults.dailyLimit), String(p?.cooldownSec ?? data.defaults.cooldownSec), p?.authorization.mode === 'preapproved']));
     setPolicy(p);
     setPolicyEnabled(p?.enabled ?? true);
     setPolicyId(p?.id ?? '');
@@ -59,8 +64,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
       state={state}
       title="notifications"
       onOwnerChange={() => {
-        setPolicy(undefined);
-        setPolicyId('');
+        editPolicy(); setTestText(''); setTestRequest(undefined); setRetryOf(undefined);
       }}
     >
       <p>{t('notifications.scheduleHint')}</p>
@@ -163,6 +167,7 @@ export function NotificationsPanel(props: IntegrationPanelProps) {
               ),
             );
             setPolicy(p);
+            setSavedForm(formValue);
             setConfirmed(false);
           });
         }}

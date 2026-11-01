@@ -1,5 +1,7 @@
 # DSH-Bot 开发计划（v1）
 
+> 2026-11-01 实施更新：获批的[整体优化方案](design/group-concurrent-discussion-proposal.md)由 [Issue #8](https://github.com/MJ-CJM/DSH-Bot/issues/8) / [Draft PR #9](https://github.com/MJ-CJM/DSH-Bot/pull/9) 跟踪。优先完成 U 的 Bot 展示与设置原路返回，见[本阶段验收](acceptance/U-bots-navigation.md)；并发与多轮协作 A–D 尚待实施。下文旧环境快照保留历史日期，当前 U 浏览器实跑宿主为 rc.5，开发依赖仍锁 rc.2。
+
 > 目标：在 DeepSeek Harness（DSH）上以插件 bundle 的形式，分期复刻 Grok Bot 的"多 bot + 背后能力"体系。
 > 角色分工：**DSH-Bot（我）** 写计划、拆任务、派发给 huihui 上的 **Codex CLI**、验收并提交；**Codex** 写代码与测试；**佳民** 在 huihui 的 DSH 桌面版里做最终体验验收。
 > 版本基线：DSH **0.2.1-rc.2**（huihui 桌面版 = 源码 tag `dsh-v0.2.1-rc.2` = npm dist-tag `next`）。

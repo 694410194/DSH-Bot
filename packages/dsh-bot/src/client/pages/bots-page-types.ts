@@ -16,8 +16,10 @@ import type { MemoryPanelProps } from '../components/MemoryPanel.js';
 import type { BotDetailSource } from '../detail-state.js';
 import type { BotCatalog } from '../state.js';
 import type { ChatLauncherActions } from '../chat-launcher.js';
+import type { BotsPageNavigation } from './page-navigation.js';
 
 export interface BotsPageInjected extends ChatLauncherActions {
+  pageNavigation?: BotsPageNavigation;
   models?: ModelActions;
   background?: BackgroundActions;
   messages?: MessageActions;

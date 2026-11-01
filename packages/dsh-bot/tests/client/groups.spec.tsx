@@ -96,7 +96,8 @@ describe('workspace group composer and management', () => {
   it('plugin group page manages and opens the workspace, without a parallel chat', async () => {
     const app = await mountClient(bots, 'en', configure);
     try {
-      await click(button(app.container, en.ui['chat.profile']));
+      await click(button(app.container, en.ui['groups.title']));
+      await click([...app.container.querySelectorAll('nav button')].find(node => node.textContent?.includes('Synthetic group')) as HTMLButtonElement);
       await vi.waitFor(() => expect(app.container.textContent).toContain('Synthetic group'));
       expect(app.container.querySelector('[role="log"]')).toBeNull();
       expect(app.container.querySelector('textarea')).toBeNull();

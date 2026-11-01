@@ -100,6 +100,19 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+.memberList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.memberList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
 .members > span {
   display: flex;
   align-items: center;

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { BotRecord } from '../../shared/schema.js';
 import styles from '../styles/management-header.module.css';
 import css from '../styles/management-header.module.css?inline';
+import { useSettingsLeave } from './SettingsNavigation.js';
 
 /** Shared title → Bot selection → actions order for management pages. */
 export function ManagementHeader({ title, selector, actions, description, level = 2, t }: {
@@ -13,6 +14,7 @@ export function ManagementHeader({ title, selector, actions, description, level 
   level?: 2 | 3;
 } & PropsLocale<'dsh-bot'>) {
   const Heading = level === 2 ? 'h2' : 'h3';
+  const leave = useSettingsLeave();
   return (
     <header className={styles.header} data-management-header="">
       <style>{css}</style>
@@ -20,7 +22,7 @@ export function ManagementHeader({ title, selector, actions, description, level 
       {selector && (
         <label className={styles.selector}>
           {t('integrations.bot')}
-          <select value={selector.value} onChange={(event) => selector.onChange(event.target.value)}>
+          <select value={selector.value} onChange={(event) => { const id = event.target.value; leave(() => selector.onChange(id)); }}>
             {selector.bots.map((bot) => <option key={bot.id} value={bot.id}>{bot.name} ({bot.id})</option>)}
           </select>
         </label>

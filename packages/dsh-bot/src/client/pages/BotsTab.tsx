@@ -14,7 +14,7 @@ export function BotsTab({ page, model }: { page: BotsPageProps; model: BotsPageM
   const { t } = page;
   const text = (key: string) => t(key as Parameters<typeof t>[0]);
   const { selected, showDetail, tab, busy, open } = model;
-  if (tab !== 'bots' || !showDetail || !selected || model.dialog) return null;
+  if (tab === 'management' || !showDetail || !selected || model.dialog) return null;
   return <Modal title={selected.bot.name} busy={busy} onClose={() => { model.setShowDetail(false); setPanel(undefined); }} t={t}>
     <article className={styles.editorBody} data-bot-detail={selected.bot.id}>
       <header className={styles.detailHeader}>
