@@ -1,3 +1,4 @@
+import { Button } from '@deepseek-ai/dsh-client-ui-primitives';
 import { useState } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { WorkspaceActions } from '../workspace-state.js';
@@ -60,7 +61,7 @@ export function GraphTools({
           }}
         />
       </label>
-      <button
+      <Button
         type="button"
         disabled={busy || status?.state !== 'ready' || !from || !to || !relationType}
         onClick={() => {
@@ -75,7 +76,7 @@ export function GraphTools({
         }}
       >
         {t('graph.addRelation')}
-      </button>
+      </Button>
       <ul>
         {graph?.relations.map((r) => (
           <li key={JSON.stringify([r.from, r.to, r.relationType])}>
@@ -83,7 +84,7 @@ export function GraphTools({
           </li>
         ))}
       </ul>
-      <button
+      <Button
         type="button"
         disabled={
           busy ||
@@ -106,7 +107,7 @@ export function GraphTools({
         }}
       >
         {t('graph.appendObservation')}
-      </button>
+      </Button>
       <label>
         <input
           type="checkbox"
@@ -117,7 +118,7 @@ export function GraphTools({
         />
         {t('graph.confirmTool')}
       </label>
-      <button
+      <Button
         type="button"
         disabled={
           busy ||
@@ -137,8 +138,8 @@ export function GraphTools({
         }}
       >
         {t('graph.deleteEntity')}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         disabled={
           busy ||
@@ -160,7 +161,7 @@ export function GraphTools({
         }}
       >
         {t('graph.deleteRelation')}
-      </button>
+      </Button>
     </details>
   );
 }

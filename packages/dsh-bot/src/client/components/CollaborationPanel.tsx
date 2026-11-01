@@ -1,3 +1,4 @@
+import { Button } from '@deepseek-ai/dsh-client-ui-primitives';
 import { useSettingsBot } from './SettingsBotContext.js';
 import { useSettingsDraft } from './SettingsNavigation.js';
 import { ManagementHeader } from './ManagementHeader.js';
@@ -71,16 +72,16 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
   const link = data.link;
   return (
     <>
-      <ManagementHeader title={t('team.title')} selector={{ bots, value: bot.id, onChange: onBotChange }} actions={<button
+      <ManagementHeader title={t('team.title')} selector={{ bots, value: bot.id, onChange: onBotChange }} actions={<Button
         type="button"
         onClick={() => {
           void catalog.refresh();
         }}
       >
         {t('bots.refresh')}
-      </button>} t={t} />
-      <p>{t('team.inherits')}</p>
-      <p>{t('team.delegateHint')}</p>
+      </Button>} t={t} />
+      <p>{t('team.distinction')}</p>
+      {data.supported && <details><summary>{t('settings.howItWorks')}</summary><p>{t('team.inherits')}</p><p>{t('team.delegateHint')}</p></details>}
       {data.error && <p role="alert">{t('integrations.loadFailed')}</p>}
       {error && (
         <p role="alert">
@@ -94,9 +95,9 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
         </p>
       )}
       {!data.loaded && data.loading && <p role="status">{t('bots.loading')}</p>}
-      {data.loaded && !data.supported && <p>{t('team.unsupported')}</p>}
+      {data.loaded && !data.supported && <div role="status"><p>{t('team.unsupported')}</p><p>{t('team.nextStep')}</p></div>}
       {data.loaded && data.supported && !data.link && (
-        <button
+        <Button
           type="button"
           disabled={busy}
           onClick={() => {
@@ -104,21 +105,21 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
           }}
         >
           {t('team.ensure')}
-        </button>
+        </Button>
       )}
       {link && (
         <>
           <p>
             {bot.name} · {link.nativeTeamId}
           </p>
-          <button
+          <Button
             type="button"
             onClick={() => {
               void onOpenSession(link.leadSessionId);
             }}
           >
             {t('notifications.openSession')}
-          </button>
+          </Button>
           <h3>{t('team.members')}</h3>
           <ul>
             {data.members.map((m) => (
@@ -144,7 +145,7 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
                 {[...new Set(task.writeScopeWarnings)].map((w) => (
                   <p key={w}>{w}</p>
                 ))}
-                <button
+                <Button
                   type="button"
                   disabled={busy || !task.ready || task.status !== 'pending'}
                   onClick={() => {
@@ -156,8 +157,8 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
                   }}
                 >
                   {t('team.claim')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   disabled={busy || task.status !== 'in_progress'}
                   onClick={() => {
@@ -169,7 +170,7 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
                   }}
                 >
                   {t('team.complete')}
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
@@ -210,9 +211,9 @@ function Board({ actions, bot, bots, onBotChange, onOpenSession, t }: Collaborat
                 ))}
               </select>
             </label>
-            <button type="submit" disabled={busy}>
+            <Button type="submit" disabled={busy}>
               {t('team.createTask')}
-            </button>
+            </Button>
           </form>
         </>
       )}
@@ -224,26 +225,18 @@ export function ImPanel({ actions, t }: { actions: CollaborationActions } & Prop
   return (
     <section className={styles.panel} aria-label={t('im.title')}>
       <style>{css}</style>
-      <ManagementHeader title={t('im.title')} actions={<button
+      <ManagementHeader title={t('im.title')} actions={<Button
         type="button"
         onClick={() => {
           void actions.im.refresh();
         }}
       >
         {t('bots.refresh')}
-      </button>} t={t} />
+      </Button>} t={t} />
       {data.error && <p role="alert">{t('integrations.loadFailed')}</p>}
-      <p>
-        {t('im.pin')}: {data.pin}
-      </p>
-      <p>{t(`im.${data.reason}`)}</p>
-      <p>{t('im.gateHint')}</p>
-      <button type="button" disabled>
-        {t('im.bind')}
-      </button>
-      <button type="button" disabled>
-        {t('im.send')}
-      </button>
+      <p role="status">{t(`im.${data.reason}`)}</p>
+      <p>{t('im.nextStep')}</p>
+      <details><summary>{t('settings.diagnostics')}</summary><p>{t('im.pin')}: {data.pin}</p><p>{t('im.gateHint')}</p></details>
     </section>
   );
 }

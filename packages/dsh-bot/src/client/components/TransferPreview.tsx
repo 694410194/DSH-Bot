@@ -1,3 +1,4 @@
+import { Button } from '@deepseek-ai/dsh-client-ui-primitives';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { WorkspaceActions } from '../workspace-state.js';
 type Result = Extract<Awaited<ReturnType<WorkspaceActions['workspace']>>, { ok: true }>['value'];
@@ -29,9 +30,9 @@ export function TransferPreview({
         ))}
       </ul>
       {review.conflict && <p role="alert">{t('manage.conflict')}</p>}
-      <button type="button" disabled={busy || review.conflict || review.phase !== 'preview'} onClick={confirm}>
+      <Button type="button" disabled={busy || review.conflict || review.phase !== 'preview'} onClick={confirm}>
         {t(review.scope === 'memories' ? 'manage.confirmMemories' : 'manage.confirmImport')}
-      </button>
+      </Button>
     </section>
   );
 }

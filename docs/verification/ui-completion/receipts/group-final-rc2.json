@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "checks": [
+    "zh-dark-1360: each question owns exactly its execution",
+    "zh-dark-1360: composer contains no task list or status bars",
+    "zh-dark-1360: execution defaults to a collapsed line",
+    "zh-dark-1360: disclosure does not grow the composer",
+    "zh-dark-1360: official reasoning is embedded under the correct member",
+    "zh-dark-1360: user right and bots left",
+    "zh-dark-1360: inline process remains left",
+    "zh-dark-1360: message and reasoning fit the viewport",
+    "zh-dark-1360: user can collapse execution",
+    "zh-dark-1360: keyboard can expand execution",
+    "zh-dark-1360: native factory bound to exact child",
+    "zh-dark-1360: no visible child composer",
+    "zh-dark-1360: native reasoning present",
+    "zh-dark-1360: native tool present",
+    "zh-dark-1360: collapsed view unmounted",
+    "zh-dark-1360: group draft preserved",
+    "zh-dark-1360: viewing and reopening do not execute models",
+    "live concurrent reasoning follows each actual child",
+    "native member menu supports Escape without stopping a task",
+    "member supplement focuses existing composer without sending",
+    "member stop leaves the other member running",
+    "folding releases inline member views",
+    "reopening live reasoning does not execute models",
+    "browser reports no uncaught errors"
+  ],
+  "errors": [],
+  "modelRequestsAfter": 12,
+  "fixture": {
+    "rootId": "group-root-c034e6e8-2b3d-45f7-a32a-5b98c5222522",
+    "childId": "073945ec-a2a4-45f6-84c1-4fd513da1bfe",
+    "groupName": "Native API fixture",
+    "inputMessageId": "3bd56a54-3c5c-4c44-8f83-e15ad3c66f7b",
+    "turnId": "turn:7ee713a76236dbe874a725593d72226b08a6e43edee991326e17083b9bd3e08a",
+    "secondInputMessageId": "2809f209-03aa-4259-a2a4-6f0869a9254f",
+    "secondTurnId": "turn:b54e3798eac9f0463deb6918f8d4abde2bb5459e973cc8aec61999fb7e2cf764",
+    "modelRequests": 10
+  }
+}

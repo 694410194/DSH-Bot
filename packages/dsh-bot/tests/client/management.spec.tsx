@@ -180,6 +180,7 @@ describe('built Client management workspace', () => {
     try {
       await openMaintenance(app, t === zh.ui ? 'zh' : 'en');
       await click(button(app.container, t['manage.transfer']));
+      await click(button(app.container, t['manage.import']));
       await fill(field(app.container, t['manage.document']), JSON.stringify(document));
       await fill(field(app.container, t['manage.newId']), 'portable');
       expect(app.remote.workspaceManagement.request.mock.calls.some(([r]) => r.action === 'import')).toBe(false);
@@ -206,6 +207,34 @@ describe('built Client management workspace', () => {
     }
   });
 });
+
+it('keeps an import draft separate from exported JSON and ignores a late file read after typing', async () => {
+  const app = await mountClient([bot({ id: 'alpha', name: 'Alpha' })], 'en', remote => {
+    remote.workspaceManagement.request.mockResolvedValue({ ok: true, value: { kind: 'export', document } });
+  }, {}, loadBuiltClient());
+  const t = en.ui;
+  try {
+    await openMaintenance(app); await click(button(app.container, t['manage.transfer']));
+    await click(button(app.container, t['manage.import']));
+    const input = field(app.container, t['manage.document']);
+    await fill(input, 'Keep my import draft');
+    await click(button(app.container, t['manage.export']));
+    const exportForm = app.container.querySelector('fieldset') as HTMLFieldSetElement;
+    await click(button(exportForm, t['manage.export']));
+    expect(app.container.textContent).toContain(t['manage.exportJson']);
+    await click(button(app.container, t['manage.import']));
+    expect(input.value).toBe('Keep my import draft');
+    let resolveFile!: (text: string) => void;
+    const file = app.container.querySelector('input[type=file]') as HTMLInputElement;
+    Object.defineProperty(file, 'files', { configurable: true, value: [{ size: 20, text: () => new Promise<string>(resolve => { resolveFile = resolve; }) }] });
+    await act(async () => file.dispatchEvent(new Event('change', { bubbles: true })));
+    await fill(input, 'Newer typed draft');
+    await act(async () => resolveFile('Late file contents'));
+    expect(input.value).toBe('Newer typed draft');
+    expect(app.remote.workspaceManagement.request.mock.calls.some(([request]) => request.action === 'import')).toBe(false);
+  } finally { await app.dispose(); }
+});
+
 function documentActive() {
   return globalThis.document.activeElement;
 }

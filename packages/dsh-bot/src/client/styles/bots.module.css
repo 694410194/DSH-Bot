@@ -273,22 +273,6 @@
 .error p {
   margin: 4px 0;
 }
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 150;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: min(600px, calc(100vw - 48px));
-  padding: 14px 18px;
-  border: 1px solid var(--dsw-alias-border-l3);
-  border-radius: 12px;
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-primary);
-}
 .dialog {
   position: relative;
   margin: 0;
@@ -535,23 +519,12 @@
   min-width: 0;
   padding: 24px 0 24px 28px;
 }
-.detailHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 .detailTitle {
   margin: 0 0 5px;
   font-size: 18px;
   line-height: 26px;
   font-weight: 500;
   overflow-wrap: anywhere;
-}
-.detailActions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 .sessionHistory {
   margin-top: 32px;
@@ -636,10 +609,7 @@
 .listTools { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
 .listTools .field { min-width: 0; max-width: 100%; }
 .recentOpen:hover { background: var(--dsw-alias-interactive-bg-hover); }
-.recentOpen:focus-visible, .recentMore summary:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
-.recentMore { flex: 0 0 auto; max-width: 45%; }
-.recentMore summary { cursor: pointer; padding: 8px; }
-.recentMore[open] { display: grid; gap: 4px; }
+.recentOpen:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
 
 .sectionNavigation[hidden] { display: none; }
 

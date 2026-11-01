@@ -1,6 +1,7 @@
+import { SegmentedTabs } from '@deepseek-ai/dsh-client-ui-primitives';
 import { ManagementHeader } from './ManagementHeader.js';
 import { RetainedPanel } from './RetainedPanel.js';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useId, useState, useContext } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { BotRecord } from '../../shared/schema.js';
 import type { WorkspaceActions } from '../workspace-state.js';
@@ -22,6 +23,7 @@ export function ManagementPanel({
   actions: WorkspaceActions;
   createMemoryPanel: BotsPageInjected['createMemoryPanel'];
 } & Locale) {
+  const uid = useId();
   const embedded = Boolean(useContext(SettingsBotContext));
   const [tab, setTab] = useState<'records' | 'graph' | 'transfer'>('records');
   const { bot, select: setId } = useSettingsBot(bots);
@@ -29,22 +31,16 @@ export function ManagementPanel({
     <section className={styles.panel} aria-label={t('manage.memoryTools')}>
       <style>{css}</style>
       {!embedded && <ManagementHeader title={t('manage.memoryTools')} selector={{ bots, value: bot?.id ?? '', onChange: setId }} t={t} />}
-      <div role="tablist" aria-label={t('manage.memoryTools')}>
-        {(['records', 'graph', 'transfer'] as const).map((key) => (
-          <button type="button" key={key} role="tab" aria-selected={tab === key} onClick={() => setTab(key)}>
-            {t(`manage.${key}`)}
-          </button>
-        ))}
-      </div>
-      <RetainedPanel active={tab === 'transfer'}>
+      <SegmentedTabs label={t('manage.memoryTools')} value={tab} onChange={setTab} items={[{ value: 'records', id: `${uid}-records`, panelId: `${uid}-records-panel`, label: t('manage.records') }, { value: 'graph', id: `${uid}-graph`, panelId: `${uid}-graph-panel`, label: t('manage.graph') }, { value: 'transfer', id: `${uid}-transfer`, panelId: `${uid}-transfer-panel`, label: t('manage.transfer') }]} />
+      <RetainedPanel id={`${uid}-transfer-panel`} labelledBy={`${uid}-transfer`} active={tab === 'transfer'}>
         <TransferPanel key={bot ? `${bot.id}:${bot.createdAt}` : 'none'} bot={bot} actions={actions} t={t} />
       </RetainedPanel>
       {bot && (
         <>
-          <RetainedPanel active={tab === 'graph'}>
+          <RetainedPanel id={`${uid}-graph-panel`} labelledBy={`${uid}-graph`} active={tab === 'graph'}>
             <GraphPanel key={`${bot.id}:${bot.createdAt}`} active={tab === 'graph'} bot={bot} actions={actions} t={t} />
           </RetainedPanel>
-          <RetainedPanel active={tab === 'records'}>
+          <RetainedPanel id={`${uid}-records-panel`} labelledBy={`${uid}-records`} active={tab === 'records'}>
             <RecordsPanel key={`${bot.id}:${bot.createdAt}`} bot={bot} create={createMemoryPanel} t={t} />
           </RetainedPanel>
         </>

@@ -116,7 +116,7 @@ it('keeps native details, supplement focus, member stop and task cancellation bo
     await click(f.question('second').querySelector('button[aria-haspopup=menu]') as HTMLButtonElement);
     await click(button(f.question('second'), f.t('execution.stopMember')));
     expect(f.remote.stopMember).toHaveBeenCalledWith(f.key, 'second', 'member:beta', 1);
-    await click(button(f.question('second'), f.t('groups.cancelTurn')));
+    await click(button(f.question('second'), f.t('execution.stopTurn')));
     expect(f.remote.cancel).toHaveBeenCalledWith(f.key, 'second', 1);
     expect(f.question('first').querySelector('button[aria-expanded]')?.getAttribute('aria-expanded')).toBe('false');
   } finally { await f.close(); }

@@ -10,7 +10,7 @@ import { dismissFirstRunOverlays, installOverlayHandler } from '../packages/dsh-
 const root = process.cwd(), version = process.env.UI_VERSION ?? 'rc5', dir = resolve(root, `.dsh-dev/ui-completion/${version}-${Date.now()}`), out = resolve(root, `output/playwright/ui-completion/${version}`);
 await mkdir(out, { recursive: true });
 const require = createRequire(resolve(root, 'packages/dsh-bot/package.json')), { chromium } = require('playwright-core');
-const host = await webHost(dir, 'ui-completion', undefined, resolve(root, 'packages/dsh-bot/tests/group-native-api-profile.mjs'));
+const host = await webHost(dir, 'ui-completion', process.env.DSH_BOT_ARTIFACT && resolve(process.env.DSH_BOT_ARTIFACT), resolve(root, 'packages/dsh-bot/tests/group-native-api-profile.mjs'));
 let browser, lastPage;
 try {
   const cache = join(homedir(), 'Library/Caches/ms-playwright');
@@ -46,6 +46,27 @@ try {
         for (const key of ['overview', 'work', 'memory', 'settings', 'history']) {
           await tab(`detail.${key}`); await capture(key);
         }
+        await tab('detail.settings');
+        for (const key of ['capabilities', 'connectors', 'notifications']) { await click(`detail.${key}`); await capture(`bot-${key}`); }
+        await tab('notifications.policies'); await capture('notification-policies');
+        await tab('detail.memory'); await tab('manage.graph'); await capture('graph');
+        await tab('manage.transfer'); await capture('export');
+        const exportPanel = main.getByRole('tabpanel', { name: t['manage.export'], exact: true });
+        await exportPanel.getByRole('button', { name: t['manage.export'], exact: true }).click();
+        await exportPanel.getByRole('button', { name: t['manage.exportJson'], exact: false }).click(); await capture('export-json');
+        const downloadPromise = page.waitForEvent('download');
+        await exportPanel.getByRole('button', { name: t['manage.download'], exact: true }).click();
+        const downloaded = await downloadPromise;
+        const payload = await readFile(await downloaded.path());
+        assert.equal(JSON.parse(payload).format, 'dsh-bot-export');
+        await tab('manage.import');
+        await main.locator('input[type=file]').setInputFiles({ name: 'bot.json', mimeType: 'application/json', buffer: payload });
+        await main.getByRole('textbox', { name: t['manage.newId'], exact: true }).fill(`ui-${language}-${theme}-${width}`);
+        await click('manage.preview');
+        await main.getByRole('button', { name: t['manage.confirmImport'], exact: true }).waitFor();
+        await capture('import-preview');
+        await main.getByRole('textbox', { name: t['manage.document'], exact: true }).fill('');
+        await main.getByRole('textbox', { name: t['manage.newId'], exact: true }).fill('');
         await tab('detail.overview'); await click('card.edit');
         await main.getByRole('textbox', { name: t['editor.description'], exact: true }).fill('Unsaved UI validation');
         await capture('editor');
@@ -56,10 +77,33 @@ try {
         await main.getByRole('button', { name: t['navigation.returnTo'].replace('{name}', t['navigation.myBots']), exact: true }).click();
         await dialog.getByRole('button', { name: t['navigation.discardLeave'], exact: true }).click();
         assert.equal(await main.getByRole('searchbox').inputValue(), 'api-alpha');
+        await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+        assert.equal(await main.getByRole('button', { name: `${t['chat.profile']} · api-alpha`, exact: true }).evaluate(el => el === document.activeElement), true);
         await main.getByRole('searchbox').fill('');
+        await click('chat.settings');
+        for (const key of ['connectors.connectors', 'notifications.notifications', 'routine.title', 'team.title', 'im.title', 'manage.memoryTools']) { await tab(key); await capture(`settings-${key.split('.')[0]}`); }
+        await main.locator('[data-settings-navigation]').click();
+        await click('groups.title');
+        const groups = main.getByRole('navigation', { name: t['groups.list'], exact: true });
+        if (await groups.isVisible()) await groups.getByRole('button').first().click();
+        await main.getByRole('article').waitFor(); await capture('group-profile');
+        if (width <= 760) {
+          assert.equal(await groups.isVisible(), false);
+          await main.getByRole('button', { name: t['navigation.returnTo'].replace('{name}', t['groups.title']), exact: true }).click();
+          assert.equal(await groups.isVisible(), true);
+        }
+        await click('navigation.myBots');
       }
     }
-    checks.push(`${language}: 50 Bots, same/long names, 42 theme/viewport screens, inline details, native draft confirmation and list restoration`);
+    await main.getByRole('searchbox').fill('api-alpha');
+    await main.getByRole('button', { name: `${t['chat.profile']} · api-alpha`, exact: true }).click();
+    await click('card.edit');
+    await main.getByRole('textbox', { name: t['editor.description'], exact: true }).fill(`Verified inline save ${language}`);
+    await click('editor.save');
+    await page.getByText(t['bots.saveSuccess'], { exact: true }).waitFor();
+    assert.equal(await main.locator('form:visible').count(), 0);
+    checks.push(`${language}: native inline save and success Toast`);
+    checks.push(`${language}: 50 Bots, same/long names, full-page theme/viewport matrix, inline details, native draft confirmation and list restoration`);
     await context.close();
   }
   assert.deepEqual(errors, []);

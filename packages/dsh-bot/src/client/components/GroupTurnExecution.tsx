@@ -78,7 +78,7 @@ export function GroupTurnExecution({ view, turn, actions, bots, onOpenExecution,
       </div>)}
       {active && <button type="button" disabled={disabled} onClick={() => {
         void perform(async () => unwrapGroup(await actions.remote().cancel(key, turn.id, turn.revision)));
-      }}>{t('groups.cancelTurn')}</button>}
+      }}>{t('execution.stopTurn')}</button>}
       {turn.protocol === 2 && <details className={styles.executionMeta}><summary>{t('execution.advanced')}</summary><p>{t('execution.allowance')} · {turn.automaticExecutions ?? 0} / {turn.continuationAllowance ?? 0}</p></details>}
       {failed && <p role="alert">{t('groups.conflict')}</p>}
     </div>
