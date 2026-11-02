@@ -14,7 +14,7 @@ for (const entry of entries) {
   assert.ok(entry.startsWith('package/') && !entry.split('/').includes('..') && !entry.includes('\\'),
     `Unsafe archive path: ${entry}`);
   if (entry === 'package/') continue;
-  assert.ok(/^package\/(?:lib\/|locale\/|package\.json$|cordis\.patch\.yml$|icon\.svg$|README\.md$|LICENSE$|THIRD_PARTY_NOTICES\.txt$)/.test(entry),
+  assert.ok(/^package\/(?:lib\/|locale\/|package\.json$|cordis\.patch\.yml$|icon\.svg$|README(?:\.en)?\.md$|LICENSE$|THIRD_PARTY_NOTICES\.txt$)/.test(entry),
     `Unexpected published file: ${entry}`);
 }
 await mkdir(resolve(root, '.dsh-dev'), { recursive: true });
@@ -34,7 +34,7 @@ try {
   assert.deepEqual(manifest.exports, current.exports);
   assert.deepEqual(manifest.dsh, current.dsh);
   for (const required of ['lib/index.js', 'lib/index.d.ts', 'lib/client.js', 'lib/client.js.map',
-    'lib/module-manifest.json', 'cordis.patch.yml', 'locale/en.json', 'locale/zh.json', 'icon.svg', 'README.md', 'LICENSE',
+    'lib/module-manifest.json', 'cordis.patch.yml', 'locale/en.json', 'locale/zh.json', 'icon.svg', 'README.md', 'README.en.md', 'LICENSE',
     'THIRD_PARTY_NOTICES.txt']) {
     assert.ok((await readFile(resolve(packed, required))).length > 0, `Missing or empty: ${required}`);
   }

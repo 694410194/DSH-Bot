@@ -1,0 +1,133 @@
+{
+  "hostVersion": "0.2.1-rc.5",
+  "mode": "real isolated Host; local scripted model; linked current build",
+  "captures": [
+    {
+      "language": "zh",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 4,
+      "maxConcurrentStreams": 2,
+      "names": [
+        "研究助手",
+        "审阅助手",
+        "写作助手"
+      ],
+      "screenshots": [
+        "bots",
+        "profile",
+        "memory",
+        "tasks",
+        "conversation",
+        "group"
+      ],
+      "errors": [],
+      "hostRequests": 4
+    },
+    {
+      "language": "en",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 4,
+      "maxConcurrentStreams": 2,
+      "names": [
+        "Research assistant",
+        "Review assistant",
+        "Writing assistant"
+      ],
+      "screenshots": [
+        "bots",
+        "profile",
+        "memory",
+        "tasks",
+        "conversation",
+        "group"
+      ],
+      "errors": [],
+      "hostRequests": 4
+    }
+  ],
+  "publishedImageSha256": {
+    "en-bots.png": "b4ca550e02d2533b733827949660d0f703e82f22f2dcfc1587fd29751b0162fe",
+    "en-group.png": "ce91445423aca8897628ffaff67d96735e4fa9512a3f4380ed6a04b6696cc4c4",
+    "en-memory.png": "e5faab00953184c82e46f85da8947cbb37bc932f59f111e0ccf5cb91784f7410",
+    "en-profile.png": "70bd6e48393be90b76f16a711f9d80708eeef6efb7c36a980e761b59a6d57f98",
+    "en-tasks.png": "3c5630f476c4ffd0e78df8a2a4da0dac76add25a6d9fa4dbe4914c1462bceef5",
+    "zh-bots.png": "9aae2f899308ae5965db2b9d23c5b548bfdb4531abc5da2dd4b26b53db44e9f3",
+    "zh-group.png": "6c50e3b2e994e782fc5a9a00d8cc0394f325b64fb61916991430807a585e1fab",
+    "zh-memory.png": "f73716eea2766180197943e99f8739df2637d886451dd216eb5cbc58774b7a4e",
+    "zh-profile.png": "873ec6f9aa775ad586fed0b1ef995aac5fdbea5fb286465dd1b6f41b25561354",
+    "zh-tasks.png": "20fb030c5392070a078f15d5503ad7e4c189c910d7a4415522041fa128d7dde0"
+  },
+  "rendererCommit": "2ecbb58b71525850630fae26ae25466e4458201a",
+  "preview": [
+    {
+      "language": "zh",
+      "width": 1440,
+      "images": 5,
+      "brokenImages": 0,
+      "horizontalOverflow": false,
+      "errors": [],
+      "kind": "local community renderer preview; not deployed"
+    },
+    {
+      "language": "zh",
+      "width": 768,
+      "images": 5,
+      "brokenImages": 0,
+      "horizontalOverflow": false,
+      "errors": [],
+      "kind": "local community renderer preview; not deployed"
+    },
+    {
+      "language": "zh",
+      "width": 390,
+      "images": 5,
+      "brokenImages": 0,
+      "horizontalOverflow": false,
+      "errors": [],
+      "kind": "local community renderer preview; not deployed"
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "images": 5,
+      "brokenImages": 0,
+      "horizontalOverflow": false,
+      "errors": [],
+      "kind": "local community renderer preview; not deployed"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "images": 5,
+      "brokenImages": 0,
+      "horizontalOverflow": false,
+      "errors": [],
+      "kind": "local community renderer preview; not deployed"
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "images": 5,
+      "brokenImages": 0,
+      "horizontalOverflow": false,
+      "errors": [],
+      "kind": "local community renderer preview; not deployed"
+    }
+  ],
+  "live": [
+    {
+      "language": "zh",
+      "url": "https://awesome-dsh-plugin.com/zh/p/MJ-CJM/DSH-Bot--packages-dsh-bot/",
+      "status": 200,
+      "readmeSections": 0,
+      "checkedAt": "2026-11-02T01:56:50.279Z"
+    },
+    {
+      "language": "en",
+      "url": "https://awesome-dsh-plugin.com/p/MJ-CJM/DSH-Bot--packages-dsh-bot/",
+      "status": 200,
+      "readmeSections": 0,
+      "checkedAt": "2026-11-02T01:57:00.390Z"
+    }
+  ]
+}
