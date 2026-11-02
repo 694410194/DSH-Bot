@@ -1,0 +1,185 @@
+{
+  "scope": "Isolated scripted Host; no external model calls",
+  "observations": {
+    "rc2": {
+      "dockComposition": "unsupported",
+      "error": "Error: slot \"conversation.composer.dock\" is already declared (by an entry in \"conversation.composer.bar\" (Kb))",
+      "childProjections": [
+        {
+          "childId": "10d1b565-43ae-42d4-86e5-6a486f6454aa",
+          "values": {
+            "sessionStats": {
+              "turns": 1,
+              "steps": 1,
+              "llmMs": 1245,
+              "toolMs": 0,
+              "ttftMs": 43,
+              "ttftSteps": 1,
+              "decodeMs": 1202,
+              "decodeTokens": 20
+            },
+            "tokenUsage": {
+              "uncachedInputTokens": 100,
+              "outputTokens": 20,
+              "cacheReadTokens": 40,
+              "cacheWriteTokens": 0
+            },
+            "contextPressure": {
+              "pressureTokens": 140,
+              "projectedTokens": 186
+            }
+          },
+          "preference": {
+            "status": "ready",
+            "value": {
+              "collapseTiming": "completion",
+              "performanceUsage": "detailed",
+              "linkOpening": "sidebar"
+            },
+            "base": {
+              "collapseTiming": "completion",
+              "performanceUsage": "detailed",
+              "linkOpening": "sidebar"
+            },
+            "user": {},
+            "revision": 0,
+            "writable": true
+          }
+        },
+        {
+          "childId": "956100da-9ccf-4b12-9704-4c4ce9849e0f",
+          "values": {
+            "sessionStats": {
+              "turns": 1,
+              "steps": 1,
+              "llmMs": 1251,
+              "toolMs": 0,
+              "ttftMs": 50,
+              "ttftSteps": 1,
+              "decodeMs": 1201,
+              "decodeTokens": 20
+            },
+            "tokenUsage": {
+              "uncachedInputTokens": 100,
+              "outputTokens": 20,
+              "cacheReadTokens": 40,
+              "cacheWriteTokens": 0
+            },
+            "contextPressure": {
+              "pressureTokens": 140,
+              "projectedTokens": 194
+            }
+          },
+          "preference": {
+            "status": "ready",
+            "value": {
+              "collapseTiming": "completion",
+              "performanceUsage": "detailed",
+              "linkOpening": "sidebar"
+            },
+            "base": {
+              "collapseTiming": "completion",
+              "performanceUsage": "detailed",
+              "linkOpening": "sidebar"
+            },
+            "user": {},
+            "revision": 0,
+            "writable": true
+          }
+        }
+      ],
+      "scriptedRequests": 4,
+      "realModelRequests": 0
+    },
+    "rc5": {
+      "dockComposition": "unsupported",
+      "error": "Error: slot \"conversation.composer.dock\" is already declared (by an entry in \"conversation.composer.bar\" (Gb))",
+      "childProjections": [
+        {
+          "childId": "6663a9e3-7492-4c29-b3c9-9d4d35a59b0a",
+          "values": {
+            "sessionStats": {
+              "turns": 1,
+              "steps": 1,
+              "llmMs": 1501,
+              "toolMs": 0,
+              "ttftMs": 300,
+              "ttftSteps": 1,
+              "decodeMs": 1201,
+              "decodeTokens": 20
+            },
+            "tokenUsage": {
+              "uncachedInputTokens": 100,
+              "outputTokens": 20,
+              "cacheReadTokens": 40,
+              "cacheWriteTokens": 0
+            },
+            "contextPressure": {
+              "pressureTokens": 140,
+              "projectedTokens": 194
+            }
+          },
+          "preference": {
+            "status": "ready",
+            "value": {
+              "collapseTiming": "completion",
+              "performanceUsage": "detailed",
+              "linkOpening": "sidebar"
+            },
+            "base": {
+              "collapseTiming": "completion",
+              "performanceUsage": "detailed",
+              "linkOpening": "sidebar"
+            },
+            "user": {},
+            "revision": 0,
+            "writable": true
+          }
+        },
+        {
+          "childId": "48432ab8-ef7c-4af6-a98a-3fe218d0ce67",
+          "values": {
+            "sessionStats": {
+              "turns": 1,
+              "steps": 1,
+              "llmMs": 1245,
+              "toolMs": 0,
+              "ttftMs": 44,
+              "ttftSteps": 1,
+              "decodeMs": 1201,
+              "decodeTokens": 20
+            },
+            "tokenUsage": {
+              "uncachedInputTokens": 100,
+              "outputTokens": 20,
+              "cacheReadTokens": 40,
+              "cacheWriteTokens": 0
+            },
+            "contextPressure": {
+              "pressureTokens": 140,
+              "projectedTokens": 186
+            }
+          },
+          "preference": {
+            "status": "ready",
+            "value": {
+              "collapseTiming": "completion",
+              "performanceUsage": "detailed",
+              "linkOpening": "sidebar"
+            },
+            "base": {
+              "collapseTiming": "completion",
+              "performanceUsage": "detailed",
+              "linkOpening": "sidebar"
+            },
+            "user": {},
+            "revision": 0,
+            "writable": true
+          }
+        }
+      ],
+      "scriptedRequests": 4,
+      "realModelRequests": 0
+    }
+  }
+}

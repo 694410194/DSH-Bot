@@ -34,6 +34,20 @@ export function GroupMemberProcess({ parentId, childId, readyToRead, bridge, ren
     let alive = true;
     const release = bridge.ctx.effect(() => {
       try {
+        if (bridge.statistics) {
+          const statistics = bridge.statistics.source(parentId, childId);
+          const update = () => {
+            if (!alive) return;
+            const current = statistics.getSnapshot();
+            if (current.state === 'unavailable') { setFailed(true); return; }
+            if (!current.binding) return;
+            const conversation = bridge.ctx.get('uiConversation');
+            if (!conversation) { setFailed(true); return; }
+            setSource({ childId, value: conversation.binding(current.binding).target('chat') });
+          };
+          const off = statistics.subscribe(update); update();
+          return () => { alive = false; off(); };
+        }
         const sessions = bridge.ctx.get('sessions') as unknown as ISessions;
         // Fresh workers need not be in the global Session catalog yet. The public
         // parent/child address opens their native history directly, without waking them.

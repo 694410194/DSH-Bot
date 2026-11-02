@@ -574,3 +574,24 @@
   .panel .groupBack { display: inline-flex; margin-bottom: 12px; }
   .panel .memberExecution .delivery button { min-height: 44px; }
 }
+
+.memberStatistics,
+.statisticsBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  min-width: 0;
+}
+.memberStatistics { padding: 4px 0; }
+.statisticsBar { padding: 4px 8px 0; gap: 4px 8px; }
+.statisticsStatus { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.statisticsDetails { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; }
+.statisticsDetails dd { margin: 0; text-align: right; }
+@media (max-width: 768px) {
+  .statisticsWide { display: none; }
+  .statisticsBar { gap: 2px 6px; }
+  .statisticsStatus { max-width: 120px; }
+}

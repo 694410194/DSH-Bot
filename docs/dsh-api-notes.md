@@ -1428,3 +1428,12 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 新增复用公开 `JsonBlock`，从 ui-primitives 根导出核对 `label/payload/defaultOpen/truncatedLabel`；rc.2/rc.5 实际下载和预览导出 JSON 已验证。其余 Menu、Button、Checkbox、SegmentedTabs 沿用 U0 API，SegmentedTab 必须提供唯一 `id/panelId` 并关联外部 panel；不仿制键盘导航。Toast 实际页内保存成功显示通过。原生 Menu 的 Escape、补充后焦点、准确停止单成员与另一成员继续运行均在两个 Host 组合验证。完整证据见 [U2–U4 验收](verification/ui-completion/README.md)。
 
 没有新增 Host API/依赖，也未修改真实模型、权限、IM 门控。完整 child 会话公开 factory 无安全裁剪派发 prompt 的参数，继续只读原生呈现；不得以 DOM 删除、日志改写或私有组件替代。
+
+## 群聊统计 S0（2026-11-02，rc.2 / rc.5）
+
+- `conversation.composer.dock` 的 `activity` / `usage` 是公开插入位，但声明属于原生 `conversation.composer.bar`，**不是可在另一位置调用的公共组件 factory**。重复 children 声明在两个实际 Host 上均报 already declared。`RenderOpts.only` 只过滤获授权的 child，不能授权另一 entry 重用；详见 [S0–S2 记录](verification/group-statistics/README.md)。
+- 批准方案的 fallback：准确父子地址 `sessions.retain` → `ready` → `binding.session.projections.faceOf('sessionStats'|'tokenUsage'|'contextPressure'|'modelSelection')`。只读、订阅/release，不 prompt。公开 face 返回 unknown，用局部 schema 校验，缺失不填零；不导入内部 projection implementation。
+- `sessionStats` 使用 `turns/steps/decodeTokens/decodeMs`；`tokenUsage` 为 uncachedInputTokens/cacheReadTokens/cacheWriteTokens/outputTokens 四个互斥桶；原生 reasoning 已包含输出。速度不跨 child 相加；缓存率按输入权重。Host baseline 为全会话范围，不能以 Chat 已加载窗口替代。
+- `contextPressure.projectedTokens ?? pressureTokens` / `contextWindow` 仅估计；缺容量不显示 0%。`modelSelection.lastUsed` 标记最近使用模型，不代表累计统计期间只用过该模型；next 与 lastUsed 路由不同时暂不显示估计。
+- 原生已接受显示偏好：`configForms.get('ui-chat').getSnapshot().value.performanceUsage` 与 `subscribe`，须通过 scope 调用以保留 this；缺能力时固定简洁模式。不访问宿主乐观更新状态。
+- UI 原生复用限于 Button/Menu/Modal 与既有 reasoning factory。统计数值薄展示为 fallback，不宣称复用了不可导出的原生 pill/ContextMeter。
