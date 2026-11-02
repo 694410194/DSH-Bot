@@ -2,58 +2,127 @@
 
 English · [中文](README.md)
 
-Personal agents for DeepSeek Harness. Create Bots with their own personas, long-term memory, models, skills and tools, then chat and collaborate in the native workspace.
+**Your personal agent workspace.** Create Bots with their own roles and memory in DeepSeek Harness. Keep working with them in ongoing conversations, or bring them together to collaborate in a group chat.
 
-The current version is **0.6.3**. The prebuilt package is available in [GitHub Release v0.6.3](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3). Community listing is being requested; no npm package has been published. Licensed under [MIT](LICENSE), Copyright © 2026 MJ-CJM. Third-party notices are included in the package.
+![Your Bots: research, review and writing assistants](packages/dsh-bot/assets/showcase/en-bots.png)
 
-## Features
+Screenshots show the real DSH interface in an isolated demo environment, with fictional data and a local scripted model. They demonstrate features and interactions, not real-model task quality.
 
-- **Create and chat**: create a Bot with only a name and receive a short introduction on first opening. Save lasting roles through native approval, inspect the current role, or request a change in chat. Search, pin, hide and restore recent conversations.
-- **Workspace groups**: choose members and use a native conversation with mentions, replies, attachments, concurrent work, precise follow-ups and individual cancellation. Select models and reasoning effort per group or member; permissions use native controls.
-- **Memory and skills**: private Bot memory, explicitly user-published shared memory, search and forgetting management. Edit the Bot's own `SKILL.md` files and preview bounded imports and exports.
-- **Collaboration and tasks**: `bot_message` asks another Bot in its persistent main conversation; `bot_delegate` starts a one-off native child task. Schedules reuse DSH services, with delivery and response observations shown separately.
-- **Optional integrations**: managed MCP connectors per Bot, in-app notifications and an additional Reference Memory graph. The native Agent Teams board is available when enabled by the Host.
+## What you can do
 
-## Install and upgrade
+| Capability | How it helps |
+| --- | --- |
+| Personal Bots | Give research, review and writing assistants their own roles, models, tools, skills and persistent main conversations. |
+| Persistent memory | Search, edit and forget each Bot's private memories. Shared content requires explicit user publication. |
+| Multi-Bot groups | Mention a member or let members discuss concurrently. Inspect their execution, add input, or stop one member. |
+| Background work | Delegate native subtasks and inspect them from the Bot's task page. Scheduled delivery uses DSH's native facilities. |
 
-Community installation URL: [latest stable dsh-bot.tgz](https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz). Download `dsh-bot.tgz.sha256` from the same Release and verify with `shasum -a 256 -c dsh-bot.tgz.sha256` (macOS) or `sha256sum -c dsh-bot.tgz.sha256` (Linux). The URL follows stable releases; existing installations still require an upgrade. The pinned-version instructions below remain available for reproducible installs.
+### Divide the work and inspect each member's progress
 
-DeepSeek Harness is required. Development dependencies and the read-only API reference are pinned to **0.2.1-rc.2**. The release archive completed installation, reinstallation and cold recovery on **rc.2**, plus group UI checks on **rc.2 / rc.5**. See the [release record](docs/releases/v0.6.3.md) for results and the distinction from historical evidence. The declared range is `>=0.2.1-rc.2 <0.3.0`, which does not establish verified compatibility with every version in that range.
+Ask a research assistant to organize comparison criteria and a review assistant to check assumptions and evidence. Group chats support replies, attachments, per-member models and expandable execution details below each question.
 
-1. Download the `dsh-bot-0.6.3.tgz` and `SHA256SUMS` assets from [GitHub Release v0.6.3](https://github.com/MJ-CJM/DSH-Bot/releases/tag/v0.6.3), not the automatically generated Source code archives. In the download directory, verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Developers can also build from this checkout as described below.
-2. Open DSH **Plugins → Add plugin → Install third-party plugin** and select the tgz. Enter its absolute path if the dialog requests an installation source.
-3. Confirm that it is enabled, **fully quit DSH and reopen** (Cmd+Q on macOS), then enter **Bots** from the sidebar. Two examples are created only when no Bot data exists on first activation.
+![Group collaboration and per-member execution details](packages/dsh-bot/assets/showcase/en-group.png)
 
-Before upgrading, back up the original profile and complete data. Keep the same `DSH_HOME`, profile and storage configuration; add the new package through the same installation flow and fully reopen DSH. An in-place 0.6.2 → 0.6.3 upgrade, installed-file audit and data retention are recorded in the [desktop acceptance report](docs/acceptance/V063-desktop-install.md). If your Host requires removing the old plugin first, plugin removal is separate from Bot deletion. Do not delete data directories or reset the profile.
+Explicit requests can drive follow-up work; members stop when nothing remains to do. Ordinary progress does not endlessly wake other members. Automatic follow-ups pause at the configured allowance and can be explicitly continued.
 
-See the [community release guide](docs/community-release.md) for CLI installation, migration and release preparation. Memory migration from 0.4.0 writes a Migration Fence that old plugins reject. Do not downgrade and continue writing to that storage. Rollback requires a separate complete pre-upgrade backup and review of whether forgotten data could reappear from old copies.
+### Keep roles and memory with each Bot
 
-## Screenshots
+A research assistant can keep responsibility for comparing sources, while a writing assistant follows your style preferences. Roles and memories have visible management surfaces, so you need not repeat all context in every question.
 
-Actual current-version UI in an isolated Web Host with synthetic demo data. These screenshots do not establish real-model task quality.
+![Research assistant role and profile](packages/dsh-bot/assets/showcase/en-profile.png)
 
-![Bot role and personal conversation](packages/dsh-bot/assets/profile.png)
+![Private memory you can inspect and manage](packages/dsh-bot/assets/showcase/en-memory.png)
 
-![Group execution in the narrow layout](packages/dsh-bot/assets/group-narrow.png)
+### Inspect work outside the conversation
 
-## Usage and data boundaries
+Open a Bot's Tasks & messages page for native background subtasks, scheduled tasks and teammate messages. The pictured task ran through the native subagent service with scripted demo output.
 
-In **Bots**, choose **＋ → New Bot**, enter a name and open its native main conversation. Choose at least two Bots to create a group. Group management handles membership and settings; chat stays in the workspace. Running tasks accept follow-up input and individual stops. Completed or cold-restored child tasks require a new delegation from the main conversation. Uncertain results are never automatically replayed.
+![Native background task record](packages/dsh-bot/assets/showcase/en-tasks.png)
 
-Use **Manage → Memory and import/export** for private and shared memory. Model tools are `bot_memory_save`, `bot_memory_search`, `bot_memory_list` and `bot_memory_forget`. The old `memory_*` names have no aliases; refresh tool definitions in old sessions. Model saves stay private to the Bot; publishing shared content requires explicit user confirmation. Deleting a Bot deletes its private memory by default and keeps its home. Published shared contributions require the separate forgetting preview.
+## Install
 
-The default conversation cwd is `$DSH_HOME/dsh-bot/bots`. Each Bot's `home` is an organization convention, **not a filesystem isolation boundary**. Files, commands and privilege changes remain subject to DSH's native permissions, approval and sandbox. The default `nativeToolPolicy=native` trusts the loaded single-user Host; it does not isolate arbitrary scripts against data exfiltration. Existing strong-forgetting records can keep unaudited general tools blocked across the memory domain. A new main conversation does not remove that protection. Do not delete forgetting records to bypass it.
+Requires DeepSeek Harness with a working model configuration. The current public version is **0.6.3**, licensed under **MIT**.
 
-## Evidence and current limits
+### Option 1: Search the community market
 
-Recorded checks cover isolated Hosts, synthetic models, tgz installation audits and Web UI in both languages, themes and wide/narrow layouts. Desktop records cover installation, cold startup and read-only UI inspection. **Synthetic models establish workflow and routing behavior; real-model wording, role understanding, task quality and third-party service outcomes remain unverified.** See [0.6.3 acceptance](docs/acceptance/V063-onboarding-avatars.md) and the [changelog](CHANGELOG.md). These historical receipts do not mean this checkout has automatically reproduced those runs.
+If the community **dshmarket** plugin is installed, open **Plugins → Plugin Market**, search for `DSH-Bot`, check that the author is **MJ-CJM**, and install. The market synchronizes the community catalog; a newly listed or updated entry may take time to appear. Use direct installation below if it is not yet available.
 
-- Ongoing proactive attention, a primary Bot, external-event wakeups, cloud hosting and operation after the computer sleeps or exits have not shipped. A first greeting is not an ongoing proactive agent.
-- IM binding, inbound and outbound gates remain unverified and disabled. OS/mobile push, full voice conversations, hosted accounts, payments and public sharing services have not shipped. In-app notifications do not establish external delivery.
-- Automatic sharing is unavailable without verified human ingress. Proactive checks and offline organization default to off; offline evaluations test synthetic mechanisms rather than real-world quality.
-- Only one active Host per data backend is supported. Background results are not guaranteed after a forced crash. Schedule delivery and a completed reply do not establish successful task outcomes.
+On DSH versions with the native Discover tab, you can also add this community index under **Plugins → Discover → Index sources**, then search:
 
-See the [architecture](docs/architecture.md) and [deepening acceptance](docs/acceptance/deepening.md) for further boundaries.
+```text
+https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json
+```
+
+See the [dsh-market guide](https://github.com/dsh-market/dsh-market#install) for setup. This is a community market, not an official built-in DSH plugin.
+
+### Option 2: Install directly in Desktop
+
+1. Open the [latest stable Release](https://github.com/MJ-CJM/DSH-Bot/releases/latest). Download `dsh-bot.tgz` and `dsh-bot.tgz.sha256` from the same release, not GitHub's generated Source code archives.
+2. Verify in the download directory with the command below on macOS, or `sha256sum -c dsh-bot.tgz.sha256` on Linux.
+3. In DSH, open **Plugins → Add plugin → Install third-party plugin**, select the downloaded `.tgz`, install and enable it.
+4. Fully quit and reopen DSH, then open **Bots** from the sidebar.
+
+```sh
+shasum -a 256 -c dsh-bot.tgz.sha256
+```
+
+Stable URL: [download dsh-bot.tgz](https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz). For a reproducible version, use that release's versioned archive and `SHA256SUMS`.
+
+### Option 3: Install in a Web profile
+
+This command targets an instance running in the `web` profile. It does not install into Desktop's profile. Substitute your actual profile name for a custom instance.
+
+```sh
+dsh plugin --profile web add "https://github.com/MJ-CJM/DSH-Bot/releases/latest/download/dsh-bot.tgz"
+```
+
+Follow your Host's restart instructions. Use the prebuilt release package; the source-install command automatically generated by the community website is not a verified installation route for this project.
+
+## Your first session
+
+1. **Create a Bot:** open Bots in the sidebar, choose New, name it “Research assistant”, and start chatting.
+2. **Define its role:** try “Help me research technical topics over time. Separate conclusions, evidence and open questions.” Confirm lasting role changes through native approval.
+3. **Manage memory:** open Memory in the Bot's profile and add a preference such as “Compare implementation cost and validation methods.” Confirm that it appears in the list.
+4. **Create a group:** add a “Review assistant”, select both members for a new group, and ask “How should we compare two technical approaches? Please discuss together.”
+5. **Inspect and direct the work:** expand execution below the question. Use a member's menu to inspect details, add input or stop that member.
+
+These examples illustrate the workflow. Actual responses depend on your model, tools, permissions and supplied evidence.
+
+## FAQ
+
+**Do I need a separate DSH-Bot model account?**
+
+No. The plugin uses DSH's model configuration and supports per-Bot and per-member model selection. Normal use requires an available model in the Host; model services may charge for requests.
+
+**Is memory automatically shared between every Bot?**
+
+No. Bots have private memory; shared content requires explicit user publication. You can inspect, edit and forget records in the management UI.
+
+**Will a group discuss forever?**
+
+No. It becomes idle when no work remains. Defaults allow four concurrent members per group and 32 automatic follow-ups. These are configurable; you can stop a member or the whole task. Native model and tool deadlines still apply.
+
+**How do I upgrade and retain data?**
+
+Back up the original profile and complete data first. Keep the same profile and storage location, install the newer package through the same entry point, then fully reopen DSH. Do not delete Bots or reset data as an upgrade step. A changing latest URL does not automatically upgrade existing installations. Older versions cannot write migrated data; rollback requires a pre-upgrade backup.
+
+**Do background tasks keep running after my computer shuts down?**
+
+No such guarantee is provided. Tasks depend on the local DSH Host running; cloud hosting and continuous operation after shutdown are not provided.
+
+## Compatibility and limits
+
+Development dependencies are pinned to DSH `0.2.1-rc.2`. The v0.6.3 archive passed installation, reinstallation and cold recovery on macOS rc.2, plus group UI checks on rc.2 / rc.5. The declared range `>=0.2.1-rc.2 <0.3.0` does not mean every version or platform has been tested. See [release verification](https://github.com/MJ-CJM/DSH-Bot/blob/main/docs/releases/v0.6.3.md).
+
+Bot working directories are not filesystem isolation; Host permissions, approvals and sandboxing still apply. Ongoing proactive operation, external IM ingress/egress, OS/mobile push and cloud hosting have not shipped. Automatic sharing is unavailable. Synthetic checks do not establish real-model quality, and uncertain background results after forced crashes are not automatically replayed.
+
+## Updates and feedback
+
+[Community page](https://awesome-dsh-plugin.com/p/MJ-CJM/DSH-Bot--packages-dsh-bot/) · [Releases and changes](https://github.com/MJ-CJM/DSH-Bot/releases) · [Report an issue](https://github.com/MJ-CJM/DSH-Bot/issues) · [Security reports](https://github.com/MJ-CJM/DSH-Bot/blob/main/SECURITY.md)
+
+Include your DSH/plugin versions, reproduction steps and redacted screenshots or errors. Do not publish model keys, private conversations or a complete profile.
+
+MIT · Copyright © 2026 MJ-CJM. Third-party notices are included in the package.
 
 ## Local development
 
