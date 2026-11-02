@@ -1,3 +1,4 @@
+import { createGroupStatsSource, type GroupStatsSource } from './group-statistics.js';
 import { useEffect, useState } from 'react';
 import type { Context } from '@deepseek-ai/cordis';
 import type { ISessions, SessionReference } from '@deepseek-ai/dsh-api-session-controller/client';
@@ -15,7 +16,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap { 'dsh-bot.group.execution': { kind: 'single'; scope: 'session' } }
 }
 export type ExecutionSlots = PropsRenderSlots<'dsh-bot.group.execution'>;
-export interface ExecutionBridge { ctx: Context; open(childId: string): void; retainReadOnly(id: SessionId, reason: string): () => void }
+export interface ExecutionBridge { ctx: Context; statistics?: GroupStatsSource; open(childId: string): void; retainReadOnly(id: SessionId, reason: string): () => void }
 
 /** Read-only presentation of a real child binding; no Session open/prompt/stop calls. */
 export function GroupExecution({ childId, bridge, SessionProvider, renderSlot, t }: {
@@ -44,7 +45,7 @@ export function GroupExecution({ childId, bridge, SessionProvider, renderSlot, t
 export function registerGroupExecution(ctx: Context): ExecutionBridge {
   const mounted = new Map<SessionId, number>();
   let active = true;
-  const bridge: ExecutionBridge = { ctx, open(childId) { if (!active) return; ctx.get('sidebarRight')?.openTab('dsh-bot-execution', { params: { childId } }); }, retainReadOnly(id, reason) {
+  const bridge: ExecutionBridge = { ctx, statistics: createGroupStatsSource(ctx), open(childId) { if (!active) return; ctx.get('sidebarRight')?.openTab('dsh-bot-execution', { params: { childId } }); }, retainReadOnly(id, reason) {
     mounted.set(id, (mounted.get(id) ?? 0) + 1);
     ctx.get('conversation')?.blocks.set(id, { reason });
     let live = true;

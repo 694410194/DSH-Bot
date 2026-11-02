@@ -1,3 +1,5 @@
+import type { ExecutionBridge } from '../group-execution.js';
+import { GroupStatisticsBar } from './GroupStatistics.js';
 import { SettingsDrafts, useSettingsNavigation, useSettingsDraft, useSettingsLeave } from './SettingsNavigation.js';
 import type { PageIdentity } from '../pages/page-navigation.js';
 import { GroupComposerInput } from './GroupComposer.js';
@@ -335,6 +337,7 @@ function GroupEditor({
 }
 export function GroupConversation({
   workspace = false,
+  executionBridge,
   models,
   permissionState,
   expandedTurns,
@@ -346,6 +349,7 @@ export function GroupConversation({
   t,
 }: {
   workspace?: boolean;
+  executionBridge?: ExecutionBridge;
   models?: ModelActions;
   permissionState?: GroupPermissionState;
   expandedTurns: Record<string, boolean>;
@@ -355,6 +359,7 @@ export function GroupConversation({
   bots: BotRecord[];
   onOpenSession(id: string): Promise<void>;
 } & Localized) {
+  const [statisticsSent, setStatisticsSent] = useState<{ turnId: string; followup: boolean; sequence: number }>();
   const [catalog] = useState(() => workspace ? actions.messageView(groupKey(summary.group)) : actions.createView(groupKey(summary.group)));
   useEffect(() => () => { if (!workspace) catalog.dispose(); }, [catalog, workspace]);
   const snapshot = useSyncExternalStore(catalog.subscribe, catalog.getSnapshot, catalog.getSnapshot);
@@ -481,7 +486,8 @@ export function GroupConversation({
     const selectedAtSend = [...mentions];
     actions.patchDraft(rootId, value => ({ ...value, sending: true }));
     void perform(async () => {
-      unwrapGroup(await actions.remote().send(groupKey(view.group), pending.request));
+      const sentTurn = unwrapGroup(await actions.remote().send(groupKey(view.group), pending.request));
+      setStatisticsSent(previous => ({ turnId: sentTurn.id, followup: Boolean(pending.request.followup), sequence: (previous?.sequence ?? 0) + 1 }));
       actions.patchDraft(rootId, value => ({ ...value, mentionBindings: value.text === pending.request.text ? [] : value.mentionBindings, followup: value.followup?.deliveryId === pending.request.followup?.deliveryId ? undefined : value.followup }));
       setDraft((current) => (current === pending.request.text ? '' : current));
         setMentions((current) => (JSON.stringify(current) === JSON.stringify(selectedAtSend) ? [] : current));
@@ -669,6 +675,7 @@ export function GroupConversation({
           </div>
         </div>
       </form>
+      {workspace && executionBridge?.statistics && <GroupStatisticsBar key={`${view.group.id}:${view.group.createdAt}`} view={view} bridge={executionBridge} bots={bots} sent={statisticsSent} t={t} />}
     </article>
   );
 }

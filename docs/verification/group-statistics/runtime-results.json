@@ -1,0 +1,124 @@
+{
+  "rc2": {
+    "variants": [
+      {
+        "language": "en",
+        "theme": "light",
+        "mode": "detailed",
+        "widths": [
+          1440,
+          768,
+          390
+        ],
+        "hostRequests": 5,
+        "realModelRequests": 0,
+        "errors": []
+      },
+      {
+        "language": "zh",
+        "theme": "dark",
+        "mode": "detailed",
+        "widths": [
+          1440,
+          768,
+          390
+        ],
+        "hostRequests": 5,
+        "realModelRequests": 0,
+        "errors": []
+      },
+      {
+        "language": "zh",
+        "theme": "light",
+        "mode": "detailed",
+        "widths": [
+          1440,
+          768,
+          390
+        ],
+        "hostRequests": 5,
+        "realModelRequests": 0,
+        "errors": []
+      },
+      {
+        "language": "en",
+        "theme": "dark",
+        "mode": "compact",
+        "widths": [
+          1440,
+          768,
+          390
+        ],
+        "hostRequests": 5,
+        "realModelRequests": 0,
+        "errors": []
+      }
+    ],
+    "coldRestart": {
+      "recordedTokens": 160,
+      "newModelRequests": 0,
+      "errors": []
+    }
+  },
+  "rc5": {
+    "variants": [
+      {
+        "language": "en",
+        "theme": "light",
+        "mode": "detailed",
+        "widths": [
+          1440,
+          768,
+          390
+        ],
+        "hostRequests": 5,
+        "realModelRequests": 0,
+        "errors": []
+      },
+      {
+        "language": "zh",
+        "theme": "dark",
+        "mode": "detailed",
+        "widths": [
+          1440,
+          768,
+          390
+        ],
+        "hostRequests": 5,
+        "realModelRequests": 0,
+        "errors": []
+      },
+      {
+        "language": "zh",
+        "theme": "light",
+        "mode": "detailed",
+        "widths": [
+          1440,
+          768,
+          390
+        ],
+        "hostRequests": 5,
+        "realModelRequests": 0,
+        "errors": []
+      },
+      {
+        "language": "en",
+        "theme": "dark",
+        "mode": "compact",
+        "widths": [
+          1440,
+          768,
+          390
+        ],
+        "hostRequests": 5,
+        "realModelRequests": 0,
+        "errors": []
+      }
+    ],
+    "coldRestart": {
+      "recordedTokens": 160,
+      "newModelRequests": 0,
+      "errors": []
+    }
+  }
+}

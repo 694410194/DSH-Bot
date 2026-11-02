@@ -1,3 +1,5 @@
+import { statisticsDeliveries } from '../group-statistics.js';
+import { GroupMemberStatistics } from './GroupStatistics.js';
 import { Button, Menu } from '@deepseek-ai/dsh-client-ui-primitives';
 import { useId, useRef, useState, useSyncExternalStore } from 'react';
 import type { PropsLocale, PropsRenderFactories } from '@deepseek-ai/dsh-client-ui-slots';
@@ -27,8 +29,8 @@ export function GroupTurnExecution({ view, turn, actions, bots, onOpenExecution,
   const [menu, setMenu] = useState<string>();
   const disabled = busy || view.group.archived || view.group.state !== 'ready';
   // A persistent worker can have several deliveries. Its native trace appears only once.
-  const deliveries = [...new Map(view.deliveries.filter(row => row.turnId === turn.id && row.reasonCode !== 'message-published' && !row.joinedDeliveryId)
-    .map(row => [row.childSessionId ?? row.id, row])).values()];
+  const workers = statisticsDeliveries(view, turn.id);
+  const deliveries = workers.map(row => row.delivery);
   const nameOf = (delivery: GroupView['deliveries'][number]) => botState.entries.find(row =>
     row.bot.id === delivery.bot.botId && row.bot.createdAt === delivery.bot.botCreatedAt)?.bot.name ??
     view.messages.find(message => message.speaker?.bot.botId === delivery.bot.botId && message.speaker.bot.botCreatedAt === delivery.bot.botCreatedAt)?.speaker?.name ?? delivery.bot.botId;
@@ -72,6 +74,7 @@ export function GroupTurnExecution({ view, turn, actions, bots, onOpenExecution,
           onSelect={id => { setMenu(undefined); if (id === 'supplement') supplement(delivery.id); else void perform(async () => unwrapGroup(await actions.remote().stopMember(key, turn.id, delivery.memberId, turn.revision))); }} />}
 
         </div>
+        {expanded && executionBridge?.statistics && workers.find(row => row.delivery.memberId === delivery.memberId)?.delivery === delivery && <GroupMemberStatistics bridge={executionBridge} parentId={view.group.rootSessionId} workers={workers.filter(row => row.delivery.memberId === delivery.memberId)} t={t} />}
         {expanded && delivery.childSessionId && executionBridge && renderFactorySlot && <GroupMemberProcess
           key={delivery.childSessionId} parentId={view.group.rootSessionId} childId={delivery.childSessionId}
           readyToRead={!['pending', 'starting'].includes(delivery.state)} bridge={executionBridge} renderFactorySlot={renderFactorySlot} t={t} />}

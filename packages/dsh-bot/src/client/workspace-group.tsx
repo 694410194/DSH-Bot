@@ -51,7 +51,8 @@ export function selectGroupComposer(owner: Pick<ComposerChainProps, 'sessionId'>
   return actions.catalog.getSnapshot().groups.some(row => row.group.rootSessionId === id) ||
     /^group-root-[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id) ? { sessionId: id } : null;
 }
-export function WorkspaceGroupComposer({ matched, actions, bots, models, createPermissionState, onOpenSession, t }: {
+export function WorkspaceGroupComposer({ matched, actions, bots, models, createPermissionState, executionBridge, onOpenSession, t }: {
+  executionBridge?: ExecutionBridge;
   matched: { sessionId: string }; actions: GroupActions; bots: BotCatalog; models?: ModelActions;
   createPermissionState?(rootSessionId: string): GroupPermissionState; onOpenSession(id: string): Promise<void>;
 } & PropsLocale<'dsh-bot'>) {
@@ -68,7 +69,7 @@ export function WorkspaceGroupComposer({ matched, actions, bots, models, createP
   }, [createPermissionState, rootId]);
   if (!group) return <section><p role="status">{t(state.error ? 'groups.disconnected' : 'groups.loading')}</p>
     <textarea disabled aria-label={t('groups.message')} /><button type="button" disabled>{t('groups.send')}</button></section>;
-  return <GroupConversation key={matched.sessionId} workspace summary={group} actions={actions} models={models}
+  return <GroupConversation key={matched.sessionId} workspace executionBridge={executionBridge} summary={group} actions={actions} models={models}
     permissionState={permissionState?.rootSessionId === matched.sessionId ? permissionState : undefined}
     bots={botState.entries.map(row => row.bot)} expandedTurns={{}} onExpandTurn={() => {}} onOpenSession={onOpenSession} t={t} />;
 }
@@ -113,7 +114,7 @@ export function registerWorkspaceGroups(ctx: Context, actions: GroupActions, bot
   const createPermissionState = (rootSessionId: string) => createGroupPermissionState(ctx, rootSessionId);
   ctx.effect(() => ctx.slots.inject('conversation.composer', () => ctx.slots.register({ name: 'conversation.composer',
     priority: -20, locale: 'dsh-bot', select: owner => selectGroupComposer(owner, actions),
-  }, (props: { matched: { sessionId: string } } & PropsLocale<'dsh-bot'>) => <WorkspaceGroupComposer {...props} actions={actions} bots={bots} models={models} createPermissionState={createPermissionState} onOpenSession={onOpenSession} />)), 'dsh-bot: group workspace composer');
+  }, (props: { matched: { sessionId: string } } & PropsLocale<'dsh-bot'>) => <WorkspaceGroupComposer {...props} executionBridge={executionBridge} actions={actions} bots={bots} models={models} createPermissionState={createPermissionState} onOpenSession={onOpenSession} />)), 'dsh-bot: group workspace composer');
   ctx.inject(['uiConversation'], scope => {
     if (typeof scope.uiConversation.events?.register !== 'function') return;
     scope.effect(() => scope.slots.inject('conversation.chat.node', () => scope.effect(function* () {
