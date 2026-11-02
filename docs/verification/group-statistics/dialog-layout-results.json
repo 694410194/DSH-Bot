@@ -1,0 +1,240 @@
+{
+  "rc2": [
+    {
+      "language": "en",
+      "theme": "light",
+      "mode": "detailed",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 6,
+      "maxConcurrentStreams": 3,
+      "mainId": "session-d31fbd24-ffb9-4e79-b297-144717a94471",
+      "rootId": "group-root-73f1fb6f-bc5a-4e4f-a476-989c53cd5720",
+      "turnId": "turn:3c57af75198887b8551557148fec3a889d2c49c3d532c92c3a1a94f57b0a8ad6",
+      "secondTurnId": "turn:7768742f85bc9a7d6769ed5b6d24d322b5a55cd384349ad390ea7d3a0528c7f5",
+      "names": [
+        "Research assistant",
+        "Review assistant",
+        "Writing assistant"
+      ],
+      "screenshots": [
+        "en-light-detailed-statistics.png",
+        "en-light-detailed-1440.png",
+        "en-light-detailed-768.png",
+        "en-light-detailed-390.png",
+        "en-light-detailed-dialog-1440.png",
+        "en-light-detailed-dialog-768.png",
+        "en-light-detailed-dialog-390.png",
+        "en-light-detailed-member-dialog-390.png"
+      ],
+      "errors": [],
+      "hostRequests": 6,
+      "coldRequests": 0
+    },
+    {
+      "language": "zh",
+      "theme": "dark",
+      "mode": "detailed",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 6,
+      "maxConcurrentStreams": 3,
+      "mainId": "session-bbb20f2a-eaa1-42e8-85e2-5d93c073113f",
+      "rootId": "group-root-a8146669-a30b-4ec3-817e-7d8aa6eec8c9",
+      "turnId": "turn:272b8266399cb37a73a12f494fa870893f249bcb7e81e767de92152f35146c68",
+      "secondTurnId": "turn:5fa4b6af3038771496a312156c0854874f617f3ae7c71553e7f32d08e5e3559c",
+      "names": [
+        "研究助手",
+        "审阅助手",
+        "写作助手"
+      ],
+      "screenshots": [
+        "zh-dark-detailed-statistics.png",
+        "zh-dark-detailed-1440.png",
+        "zh-dark-detailed-768.png",
+        "zh-dark-detailed-390.png",
+        "zh-dark-detailed-dialog-1440.png",
+        "zh-dark-detailed-dialog-768.png",
+        "zh-dark-detailed-dialog-390.png",
+        "zh-dark-detailed-member-dialog-390.png"
+      ],
+      "errors": [],
+      "hostRequests": 6
+    },
+    {
+      "language": "zh",
+      "theme": "light",
+      "mode": "detailed",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 6,
+      "maxConcurrentStreams": 3,
+      "mainId": "session-9fdfbb4b-fba6-480f-82bd-b8c62f13cb3c",
+      "rootId": "group-root-2ad17c73-7aff-418a-8afc-4284c9d66a82",
+      "turnId": "turn:9366ee2e83dcc391c73e7695e93112aeb775df83165a2027f66791225822bbeb",
+      "secondTurnId": "turn:2484ee6a39f7d11eacc5d8a5a35c846a09b0be63860e32a3ce1d0fc2610c0a5c",
+      "names": [
+        "研究助手",
+        "审阅助手",
+        "写作助手"
+      ],
+      "screenshots": [
+        "zh-light-detailed-statistics.png",
+        "zh-light-detailed-1440.png",
+        "zh-light-detailed-768.png",
+        "zh-light-detailed-390.png",
+        "zh-light-detailed-dialog-1440.png",
+        "zh-light-detailed-dialog-768.png",
+        "zh-light-detailed-dialog-390.png",
+        "zh-light-detailed-member-dialog-390.png"
+      ],
+      "errors": [],
+      "hostRequests": 6
+    },
+    {
+      "language": "en",
+      "theme": "dark",
+      "mode": "compact",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 6,
+      "maxConcurrentStreams": 3,
+      "mainId": "session-5a8f7f1e-1a24-4d9b-bc39-da1de86a233c",
+      "rootId": "group-root-4d3573d8-a2e4-4a5c-b76d-bb14ee91f8c3",
+      "turnId": "turn:df036087921b3bd45bed8a8c8c1f61d0d533b8a00528275438a0c8d855857ce8",
+      "secondTurnId": "turn:69b85419089b7c3ccd5b4718c6b3aa4b69d8300545fdb191ec11776a44db8631",
+      "names": [
+        "Research assistant",
+        "Review assistant",
+        "Writing assistant"
+      ],
+      "screenshots": [
+        "en-dark-compact-statistics.png",
+        "en-dark-compact-1440.png",
+        "en-dark-compact-768.png",
+        "en-dark-compact-390.png",
+        "en-dark-compact-dialog-1440.png",
+        "en-dark-compact-dialog-768.png",
+        "en-dark-compact-dialog-390.png",
+        "en-dark-compact-member-dialog-390.png"
+      ],
+      "errors": [],
+      "hostRequests": 6
+    }
+  ],
+  "rc5": [
+    {
+      "language": "en",
+      "theme": "light",
+      "mode": "detailed",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 6,
+      "maxConcurrentStreams": 3,
+      "mainId": "session-5f06f49b-8263-4df9-b430-305b402ef7ad",
+      "rootId": "group-root-92976583-acec-4fa6-9ffb-05fc66e70159",
+      "turnId": "turn:161b0dccb2a965ac56ba3637b9a46c0b88184fafb9d9656cd8d92f1926c277d2",
+      "secondTurnId": "turn:b44e6db60a46f6f5589acf00eb243cc433da7db592cc9d4a04f3e8e186ec13fa",
+      "names": [
+        "Research assistant",
+        "Review assistant",
+        "Writing assistant"
+      ],
+      "screenshots": [
+        "en-light-detailed-statistics.png",
+        "en-light-detailed-1440.png",
+        "en-light-detailed-768.png",
+        "en-light-detailed-390.png",
+        "en-light-detailed-dialog-1440.png",
+        "en-light-detailed-dialog-768.png",
+        "en-light-detailed-dialog-390.png",
+        "en-light-detailed-member-dialog-390.png"
+      ],
+      "errors": [],
+      "hostRequests": 6,
+      "coldRequests": 0
+    },
+    {
+      "language": "zh",
+      "theme": "dark",
+      "mode": "detailed",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 6,
+      "maxConcurrentStreams": 3,
+      "mainId": "session-4381146c-a4ac-4c01-88ab-c8fc7cc08f1c",
+      "rootId": "group-root-9e3b13cc-cab8-4e35-95a2-f27de6c9f04a",
+      "turnId": "turn:31d74ada0c51cb636c91697ac411a73d674b826496c48ea6dbe49356b96c0640",
+      "secondTurnId": "turn:d57e380cc2de145abecc74dc960915b6fa0460817488f071517f60789db99ac4",
+      "names": [
+        "研究助手",
+        "审阅助手",
+        "写作助手"
+      ],
+      "screenshots": [
+        "zh-dark-detailed-statistics.png",
+        "zh-dark-detailed-1440.png",
+        "zh-dark-detailed-768.png",
+        "zh-dark-detailed-390.png",
+        "zh-dark-detailed-dialog-1440.png",
+        "zh-dark-detailed-dialog-768.png",
+        "zh-dark-detailed-dialog-390.png",
+        "zh-dark-detailed-member-dialog-390.png"
+      ],
+      "errors": [],
+      "hostRequests": 6
+    },
+    {
+      "language": "zh",
+      "theme": "light",
+      "mode": "detailed",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 6,
+      "maxConcurrentStreams": 3,
+      "mainId": "session-7491d8c8-f8ea-460e-8e5c-c35c0882be16",
+      "rootId": "group-root-fa5fd91c-2d7a-4e94-b811-bc9a43ce4b67",
+      "turnId": "turn:c55521d7c21aa8c71ad889613c6c6f595ff1f4e39c043b4efb103c3563118cb4",
+      "secondTurnId": "turn:8f6cf22e73c2ebb9430e9113f4a41ff0c9189e7c430e8dc2847a42fcff0c009c",
+      "names": [
+        "研究助手",
+        "审阅助手",
+        "写作助手"
+      ],
+      "screenshots": [
+        "zh-light-detailed-statistics.png",
+        "zh-light-detailed-1440.png",
+        "zh-light-detailed-768.png",
+        "zh-light-detailed-390.png",
+        "zh-light-detailed-dialog-1440.png",
+        "zh-light-detailed-dialog-768.png",
+        "zh-light-detailed-dialog-390.png",
+        "zh-light-detailed-member-dialog-390.png"
+      ],
+      "errors": [],
+      "hostRequests": 6
+    },
+    {
+      "language": "en",
+      "theme": "dark",
+      "mode": "compact",
+      "realModelRequests": 0,
+      "scriptedModelRequests": 6,
+      "maxConcurrentStreams": 3,
+      "mainId": "session-5f5cd85f-9163-4a83-ac04-898950499567",
+      "rootId": "group-root-0e9437d3-7d4d-47a9-8d50-fe2863a9a6a2",
+      "turnId": "turn:dff344486758c379efea146104a5d97f0779141bf66e7ee9df97c008e3bd6fc0",
+      "secondTurnId": "turn:fbd66d48282796d8b2e1afab8bf02a39e69f95a693b635788b1024d85b7307f3",
+      "names": [
+        "Research assistant",
+        "Review assistant",
+        "Writing assistant"
+      ],
+      "screenshots": [
+        "en-dark-compact-statistics.png",
+        "en-dark-compact-1440.png",
+        "en-dark-compact-768.png",
+        "en-dark-compact-390.png",
+        "en-dark-compact-dialog-1440.png",
+        "en-dark-compact-dialog-768.png",
+        "en-dark-compact-dialog-390.png",
+        "en-dark-compact-member-dialog-390.png"
+      ],
+      "errors": [],
+      "hostRequests": 6
+    }
+  ]
+}

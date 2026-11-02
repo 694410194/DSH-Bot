@@ -588,8 +588,21 @@
 .memberStatistics { padding: 4px 0; }
 .statisticsBar { padding: 4px 8px 0; gap: 4px 8px; }
 .statisticsStatus { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.statisticsDetails { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; }
-.statisticsDetails dd { margin: 0; text-align: right; }
+/* Size inside the native overlay's padded bounds; keep native chrome and footer. */
+.statisticsDialog[role="dialog"] { width: min(640px, 100%); max-height: 100%; min-height: 0; }
+.statisticsContent { min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.statisticsQuestion { margin: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.6; }
+.statisticsCoverage { margin: 8px 0 0; color: var(--dsw-alias-label-secondary); font-size: 12px; }
+.statisticsSection { min-width: 0; padding: 20px 0; }
+.statisticsSection + .statisticsSection { border-top: 1px solid var(--dsw-alias-border-l3); }
+.statisticsSection h3 { margin: 0 0 16px; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.statisticsDetails { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 12px 20px; margin: 0; font-size: 13px; line-height: 1.6; }
+.statisticsDetails dt { min-width: 0; color: var(--dsw-alias-label-secondary); }
+.statisticsDetails dd { min-width: 0; margin: 0; text-align: right; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) {
+  .statisticsDetails { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .statisticsDetails dd { text-align: left; margin-bottom: 12px; }
+}
 @media (max-width: 768px) {
   .statisticsWide { display: none; }
   .statisticsBar { gap: 2px 6px; }

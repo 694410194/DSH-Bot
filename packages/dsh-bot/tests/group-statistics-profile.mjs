@@ -16,7 +16,7 @@ export function apply(ctx, config) {
     const data = { realModelRequests: 0, scriptedModelRequests: 0, maxConcurrentStreams: 0 };
     const mainIds = new Set(), taskIds = new Set(); let active = 0;
     class DemoAdapter extends LlmAdapter {
-      async listModels(provider) { return [{ provider, id: 'fixture', name: pick('本地演示模型', 'Local demo model') }]; }
+      async listModels(provider) { return ['fixture', 'fixture-long-model-name-for-statistics-layout-regression'].map(id => ({ provider, id, name: pick('本地演示模型', 'Local demo model') })); }
       async resolveModel(provider, model) { return { provider, id: model, name: 'Local demo model', context: { contextWindow: 4096 } }; }
       async *stream(options) {
         data.scriptedModelRequests++; active++; data.maxConcurrentStreams = Math.max(data.maxConcurrentStreams, active);
@@ -57,7 +57,7 @@ export function apply(ctx, config) {
       ];
       for (const [id, avatar, name, description] of definitions) {
         bots.push(await ctx.dshBots.create({ id, name, avatar, description, template: 'minimal',
-          persona: { prefix: description } }));
+          model: { provider: 'dp-loopback', model: 'fixture-long-model-name-for-statistics-layout-regression' }, persona: { prefix: description } }));
       }
       for (const content of [pick('回答先给结论，再列证据与来源。', 'Start with the conclusion, then give evidence and sources.'),
         pick('方案比较时关注实施成本和验证方法。', 'Compare implementation cost and validation methods.'),
@@ -77,14 +77,14 @@ export function apply(ctx, config) {
       await task.result; await task.dispose();
       const groups = ctx.get('dshBotGroups'); assert.ok(groups);
       const group = await groups.create({ operationId: 'showcase-group', name: pick('方案讨论组', 'Research discussion'), mode: 'natural', historyConfirmed: true,
-        members: bots.slice(0, 2).map(b => ({ botId: b.id, botCreatedAt: b.createdAt })) });
+        members: bots.map(b => ({ botId: b.id, botCreatedAt: b.createdAt })) });
       const key = { groupId: group.id, groupCreatedAt: group.createdAt };
       const turn = await groups.send(key, { operationId: 'showcase-question', text: pick('请一起讨论：我们应该怎样比较两个技术方案？', 'How should we compare two technical approaches? Please discuss together.'), expectedMembershipRevision: 1 });
       const deadline = Date.now() + 45000;
       for (;;) {
         assert.ok(Date.now() < deadline, 'Demo group did not settle');
         const v = await groups.view(key), row = v.turns.find(t => t.id === turn.id);
-        if (row && !['accepted', 'running'].includes(row.state)) { assert.equal(v.deliveries.filter(d => d.turnId === turn.id && d.state === 'completed').length, 2); break; }
+        if (row && !['accepted', 'running'].includes(row.state)) { assert.equal(v.deliveries.filter(d => d.turnId === turn.id && d.state === 'completed').length, 3); break; }
         await delay(50);
       }
       const members = (await groups.view(key)).members;

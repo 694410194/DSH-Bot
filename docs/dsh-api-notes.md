@@ -1437,3 +1437,10 @@ V051 setup 最终真实 Host 通过：`.dsh-dev/groups-workspace/1793260808752-2
 - `contextPressure.projectedTokens ?? pressureTokens` / `contextWindow` 仅估计；缺容量不显示 0%。`modelSelection.lastUsed` 标记最近使用模型，不代表累计统计期间只用过该模型；next 与 lastUsed 路由不同时暂不显示估计。
 - 原生已接受显示偏好：`configForms.get('ui-chat').getSnapshot().value.performanceUsage` 与 `subscribe`，须通过 scope 调用以保留 this；缺能力时固定简洁模式。不访问宿主乐观更新状态。
 - UI 原生复用限于 Button/Menu/Modal 与既有 reasoning factory。统计数值薄展示为 fallback，不宣称复用了不可导出的原生 pill/ContextMeter。
+
+
+### 群聊统计弹窗布局修复（2026-11-02）
+
+- 公开 `Modal` 支持 `closeLabel`、`description`、`footer` 与 `contentClassName`；默认模式提供标题、关闭、正文留白，`headless` 则不提供这些布局。统计页改用默认模式，保留原生 portal、Escape 与焦点恢复。
+- 依据已锁定 npm rc.2 包的 `lib/types/Modal.d.ts` 及 `lib/Modal.module.css` 只读核查：卡片应使用 `max-height: 100%` 约束在原生 overlay 的 padding box 内，不再自行按 viewport 减值；通过公开 `contentClassName` 设内部滚动，底部关闭保持可见。只从公开包入口导入。
+- 当前配置的参考源码目录不存在，本次未重建或修改参考树；rc.2/rc.5 已发布包和隔离 Host 的验证结果见 [弹窗修复记录](verification/group-statistics/dialog-layout-fix.md)。

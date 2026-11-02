@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
-import { Button, Menu } from '@deepseek-ai/dsh-client-ui-primitives';
+import { Button, Menu, Modal } from '@deepseek-ai/dsh-client-ui-primitives';
 import type { GroupDelivery, GroupTurn, GroupView } from '../../shared/groups.js';
 import type { BotRecord } from '../../shared/schema.js';
 import type { ExecutionBridge } from '../group-execution.js';
 import { aggregateStatistics, cachePercent, contextPercent, defaultStatisticsTurn, loadingStatistics, statisticsDeliveries, tokenTotal, type ChildStatistics } from '../group-statistics.js';
-import { Modal } from './Modal.js';
 import styles from '../styles/groups.module.css';
 
 type Localized = PropsLocale<'dsh-bot'>;
@@ -74,8 +73,10 @@ export function GroupMemberStatistics({ bridge, parentId, workers, t }: { bridge
       {single && <span title={t('statistics.lastEstimate')}>{context === undefined ? t('statistics.noEstimate') : t('statistics.contextEstimate', { percent: number(context) })}</span>}
       {partial && <span>{t('statistics.incomplete')}</span>}
       <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>{t('statistics.details')}</Button>
-      {open && <Modal title={t('statistics.details')} description={t('statistics.scope')} onClose={() => setOpen(false)} t={t}>
-        {workers.map((worker, i) => <section key={worker.delivery.childSessionId ?? worker.delivery.id}>
+      {open && <Modal open title={t('statistics.details')} closeLabel={t('actions.close')} description={t('statistics.scope')}
+        className={styles.statisticsDialog} contentClassName={styles.statisticsContent} onClose={() => setOpen(false)}
+        footer={<Button size="sm" onClick={() => setOpen(false)}>{t('actions.close')}</Button>}>
+        {workers.map((worker, i) => <section className={styles.statisticsSection} key={worker.delivery.childSessionId ?? worker.delivery.id}>
           {!single && <h3>{t('statistics.execution', { count: i + 1 })} · {t(`groups.${worker.delivery.state}`)}</h3>}
           {status(worker, values[i] ?? loadingStatistics) ? <p>{t(`statistics.${status(worker, values[i] ?? loadingStatistics) ?? 'unavailable'}`)}</p> : <UsageDetails value={values[i] ?? loadingStatistics} t={t} />}
         </section>)}
@@ -118,9 +119,11 @@ export function GroupStatisticsBar({ view, bridge, sent, bots = [], t }: {
       {partial && <span className={styles.statisticsWide}>{t('statistics.incomplete')} · {t('statistics.partial', { count: readable, total: expected })}</span>}
       {other > 0 && <Button className={styles.statisticsWide} size="sm" variant="ghost" onClick={() => setMenu(true)}>{t('statistics.other', { count: other })}</Button>}
       <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>{t('statistics.details')}</Button>
-      {open && <Modal title={t('statistics.details')} description={t('statistics.scope')} onClose={() => setOpen(false)} t={t}>
-        <p>{title(turn)}</p><p>{t('statistics.partial', { count: readable, total: expected })}</p>
-        {workers.map((worker, i) => <section key={worker.delivery.childSessionId ?? worker.delivery.id}><h3>{label(worker.delivery)} · {t(`groups.${worker.delivery.state}`)}</h3>
+      {open && <Modal open title={t('statistics.details')} closeLabel={t('actions.close')} description={t('statistics.scope')}
+        className={styles.statisticsDialog} contentClassName={styles.statisticsContent} onClose={() => setOpen(false)}
+        footer={<Button size="sm" onClick={() => setOpen(false)}>{t('actions.close')}</Button>}>
+        <p className={styles.statisticsQuestion}>{title(turn)}</p><p className={styles.statisticsCoverage}>{t('statistics.partial', { count: readable, total: expected })}</p>
+        {workers.map((worker, i) => <section className={styles.statisticsSection} key={worker.delivery.childSessionId ?? worker.delivery.id}><h3>{label(worker.delivery)} · {t(`groups.${worker.delivery.state}`)}</h3>
           {worker.conflict ? <p>{t('statistics.conflict')}</p> : values[i]?.state === 'ready' ? <UsageDetails value={values[i] ?? loadingStatistics} t={t} /> : <p>{t(`statistics.${values[i]?.state === 'unavailable' ? 'unavailable' : 'loading'}`)}</p>}
         </section>)}
       </Modal>}
